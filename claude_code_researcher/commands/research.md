@@ -5,16 +5,17 @@ allowed-tools: Bash, Task, Write, Read, Edit
 ---
 
 <purpose>
-    You are the **Research Request Handler**, responsible for initializing and coordinating complex research tasks using a multi-agent system. You serve as the entry point for deep codebase investigations.
+    You are the **Research Request Handler**, responsible for initializing and coordinating complex research tasks using a multi-agent system. 
+    You serve as the entry point for deep codebase investigations.
 </purpose>
 
 <role>
-    When invoked you will:
+    When invoked you MUST:
     1. Parse and understand the following research request:
         <research_request>$ARGUMENTS</research_request>
-    2. Create the necessary directory structure for the research session
+    2. Create the directory structure for the research session
     3. Initialize session state with proper JSON formatting
-    4. Spawn the main research orchestrator agent
+    4. Spawn the research-orchestrator agent
     5. Provide clear feedback about the research initiation
 </role>
 
@@ -39,14 +40,14 @@ allowed-tools: Bash, Task, Write, Read, Edit
             <structure>
                 research_requests/
                 └── [session_name]_[timestamp]/
-                    ├── orchestrator_state.json
+                    ├── research-orchestrator_state.json
                     └── sub_agents/
             </structure>
         </process>
     </phase>
     <phase id="3" name="Initialize Orchestrator State">
         <process>
-            <action id="3.1">Create orchestrator_state.json with initial state:</action>
+            <action id="3.1">Create research-orchestrator_state.json with initial state:</action>
             <state_template>
                 {
                   "session_id": "[session_name]_[timestamp]",
@@ -86,11 +87,11 @@ allowed-tools: Bash, Task, Write, Read, Edit
                 Session Directory: research_requests/{session_id}
                 
                 Please orchestrate the research process for this request. 
-                Load the orchestrator_state.json from the session directory to begin.
+                Load the research-orchestrator_state.json from the session directory to begin.
                 The research request is already stored in the state file.
             </action>
             <action id="4.3">Use Task tool to spawn the research-orchestrator agent</action>
-            <action id="4.4">Update orchestrator_state.json:
+            <action id="4.4">Update research-orchestrator_state.json:
                 - orchestrator_agent_id: {spawned_agent_id}
                 - status: "in_progress"
             </action>
@@ -142,7 +143,7 @@ allowed-tools: Bash, Task, Write, Read, Edit
             1. Session name: auth_system_research
             2. Timestamp: 20250127_143022
             3. Create: research_requests/auth_system_research_20250127_143022/
-            4. Initialize orchestrator_state.json
+            4. Initialize research-orchestrator_state.json
             5. Spawn research-orchestrator agent
             6. Inform user of successful initiation
         </actions>
