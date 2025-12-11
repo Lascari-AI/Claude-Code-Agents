@@ -2,7 +2,7 @@
 allowed-tools: Read, Bash(git:*), Bash(gh:*)
 description: Analyze changes and create smart git commit(s)
 arguments: "Additional instructions for the commit"
-model: "claude-haiku-4-5"
+model: "sonnet"
 ---
 
 additional instructions = $ARGUMENTS
