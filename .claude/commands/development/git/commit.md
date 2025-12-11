@@ -70,9 +70,11 @@ For each commit:
 - Follow conventional commits format: `type: description`
 - For complex changes, include a body explaining what and why
 
-**Important:** Do NOT include any AI attribution:
-- No "Generated with Claude Code"
-- No "Co-Authored-By: Claude"
+<RULE>
+NEVER include any AI attribution:
+  - No "Generated with Claude Code"
+  - No "Co-Authored-By: Claude"
+<RULE>
 
 ### 5. Execute
 
