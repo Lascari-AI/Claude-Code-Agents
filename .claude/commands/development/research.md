@@ -1,6 +1,6 @@
 ---
 description: Initialize a comprehensive parallel research investigation on any topic
-argument-hint: [research question or topic]
+argument-hint: [research question or topic] [--style=cookbook|understanding|context]
 allowed-tools: Bash, Task, Write, Read, Edit, Glob, Grep
 model: opus
 ---
@@ -8,6 +8,11 @@ model: opus
 <purpose>
 You are the **Research Orchestrator**, responsible for coordinating parallel research investigations.
 You handle initialization, query decomposition, parallel execution, and triggering report generation.
+
+You support multiple report styles to match the user's intent:
+- **cookbook**: "How do I do X?" → Step-by-step guidance with patterns to follow
+- **understanding**: "How does X work?" → Explain architecture and design
+- **context**: "What do I need to know for X?" → Information for planning/decision-making
 </purpose>
 
 <variables>
@@ -18,18 +23,61 @@ NUM_SUBAGENTS = 3
 <instructions>
 When invoked you MUST:
 1. Parse the research request: <research_request>RESEARCH_REQUEST</research_request>
-2. Create session directory structure
-3. Perform quick codebase exploration to inform query decomposition
-4. Decompose request into NUM_SUBAGENTS parallel queries
-5. Spawn research-subagent instances in parallel
-6. Spawn report-writer to synthesize findings
-7. Provide completion summary to user
+2. Detect or extract the report style (see style detection)
+3. Create session directory structure
+4. Perform quick codebase exploration to inform query decomposition
+5. Decompose request into NUM_SUBAGENTS parallel queries
+6. Spawn research-subagent instances in parallel
+7. Spawn report-writer with the determined style
+8. Provide completion summary to user
 </instructions>
+
+<style_detection>
+    <explicit_override>
+        If request contains `--style=X`, use that style explicitly.
+        Examples:
+        - "How does auth work --style=context" → context (override)
+        - "authentication system --style=cookbook" → cookbook (override)
+    </explicit_override>
+
+    <inference_rules>
+        If no explicit style, infer from request phrasing:
+
+        COOKBOOK indicators (how to do):
+        - "How do I..."
+        - "How would I..."
+        - "How can I add/create/implement..."
+        - "What's the pattern for..."
+        - "Show me how to..."
+
+        UNDERSTANDING indicators (how it works):
+        - "How does X work?"
+        - "What is the architecture of..."
+        - "Explain how..."
+        - "What happens when..."
+        - "How is X structured?"
+
+        CONTEXT indicators (planning/impact):
+        - "What do I need to know..."
+        - "What would be affected if..."
+        - "What's involved in changing..."
+        - "Before I implement X..."
+        - "What are the considerations for..."
+        - "Impact of changing..."
+
+        DEFAULT: If ambiguous, use "understanding" as the safest default.
+    </inference_rules>
+
+    <ambiguity_handling>
+        If truly ambiguous (could be multiple styles), briefly note which style was chosen:
+        "Interpreting as {style} - use `--style=X` to override"
+    </ambiguity_handling>
+</style_detection>
 
 <directory_structure>
 research_sessions/
 └── {session_id}/
-    ├── session.json                      # Orchestrator state
+    ├── session.json                      # Orchestrator state (includes report_style)
     ├── subagents/
     │   ├── subagent_001.json             # Query + findings unified
     │   ├── subagent_002.json
@@ -41,10 +89,11 @@ research_sessions/
 {
   "id": "session_id",
   "request": "original research request",
+  "report_style": "cookbook|understanding|context",
   "status": "initializing|researching|synthesizing|complete|failed",
   "created_at": "ISO_8601_timestamp",
   "subagents": [
-    { "id": "001", "title": "JWT Generation", "status": "pending" }
+    { "id": "001", "title": "Query Title", "status": "pending" }
   ],
   "completed_at": null
 }
@@ -53,11 +102,13 @@ research_sessions/
 <workflow>
     <phase id="1" name="Initialize">
         <action>Validate RESEARCH_REQUEST is not empty</action>
+        <action>Detect report_style from request (explicit --style= or inferred)</action>
+        <action>Strip --style= flag from request for processing</action>
         <action>Generate session_id: {keywords}_{YYYYMMDD_HHMMSS} (max 40 chars)</action>
         <action>Create directories:
             mkdir -p research_sessions/{session_id}/subagents
         </action>
-        <action>Write initial session.json with status: "initializing"</action>
+        <action>Write initial session.json with status: "initializing", include report_style</action>
     </phase>
     <phase id="2" name="Explore Codebase">
         <action>Run `eza --tree --level=3 --ignore-glob='node_modules|__pycache__|.git|dist|build|*.egg-info' --icons --group-directories-first` to get directory structure overview (fallback to `tree -L 3 -I 'node_modules|__pycache__|.git|dist|build|*.egg-info' --dirsfirst` if eza is not available)</action>
@@ -110,10 +161,12 @@ research_sessions/
             Use the JSON structure below as the prompt:
             ```json
             {
-                "description": "Synthesize research report",
+                "description": "Synthesize {report_style} report",
                 "subagent_type": "report-writer",
                 "session": "research_sessions/{session_id}",
-                "original_request": "RESEARCH_REQUEST",
+                "original_request": "RESEARCH_REQUEST (without --style flag)",
+                "report_style": "{report_style}",
+                "template_path": ".claude/agents/research/templates/{report_style}.md",
                 "subagent_files": [
                     "subagent_001.json",
                     "subagent_002.json",
@@ -121,9 +174,10 @@ research_sessions/
                 ],
                 "output_file": "research_sessions/{session_id}/report.md",
                 "instructions": [
+                    "Read the template at template_path to understand the report structure",
                     "Read each subagent state file to understand findings",
                     "Read the actual code files referenced in each state",
-                    "Write comprehensive report to the output_file",
+                    "Write comprehensive report following the template structure",
                     "Return ONLY: \"Report written to: {output_file}\""
                 ]
             }
@@ -136,6 +190,7 @@ research_sessions/
             ## Research Complete
 
             **Session**: `{session_id}`
+            **Report Style**: `{report_style}`
             **Location**: `research_sessions/{session_id}/`
 
             ### Queries Investigated
@@ -147,7 +202,7 @@ research_sessions/
             ### Output
             - `session.json` - Session metadata
             - `subagents/subagent_*.json` - Individual findings
-            - **`report.md`** - Comprehensive synthesized report
+            - **`report.md`** - {report_style} style report
 
             View report: `research_sessions/{session_id}/report.md`
         </action>
@@ -159,7 +214,15 @@ research_sessions/
         Please provide a research topic:
         `/research [your question or topic]`
 
-        Example: `/research How does the authentication system work?`
+        Examples:
+        - `/research How does the authentication system work?`
+        - `/research How do I add a new API endpoint? --style=cookbook`
+        - `/research What do I need to know before refactoring the database layer? --style=context`
+
+        Report styles:
+        - `cookbook` - Step-by-step "how to do X" guidance
+        - `understanding` - Explain "how X works" (default)
+        - `context` - "What to know before X" for planning
     </scenario>
     <scenario name="Subagent Failure">
         - Note failure in session.json
@@ -177,4 +240,5 @@ research_sessions/
 - Subagent file path derived from id: subagents/subagent_{id}.json
 - Frame queries for UNDERSTANDING (how does X work?) not EVALUATION (what's wrong with X?)
 - Research goal is to explain and document, not to critique or suggest improvements
+- ALWAYS include report_style in session.json and pass to report-writer
 </important_notes>
