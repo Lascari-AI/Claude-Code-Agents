@@ -1,7 +1,7 @@
 {
   "statusLine": {
     "type": "command",
-    "command": "python3 .claude/statuslines/python-git-aware.py"
+    "command": "python3 .claude/statuslines/lascari-ai-default.py"
   },
   "hooks": {
     "PreToolUse": [
