@@ -17,6 +17,16 @@
     ],
     "PostToolUse": [
       {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/core/auto-format.py\"",
+            "timeout": 30000
+          }
+        ]
+      },
+      {
         "matcher": "Read|Write",
         "hooks": [
           {
