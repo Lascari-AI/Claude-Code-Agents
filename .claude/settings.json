@@ -10,7 +10,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/universal_hook_logger.py\""
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/logging/universal_hook_logger.py\""
           }
         ]
       }
@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/context_bundle_builder.py\" --type file_ops"
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/logging/context_bundle_builder.py\" --type file_ops"
           }
         ]
       },
@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/universal_hook_logger.py\""
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/logging/universal_hook_logger.py\""
           }
         ]
       }
@@ -40,11 +40,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/context_bundle_builder.py\" --type user_prompt"
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/logging/context_bundle_builder.py\" --type user_prompt"
           },
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/universal_hook_logger.py\""
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/logging/universal_hook_logger.py\""
           }
         ]
       }
@@ -54,7 +54,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/universal_hook_logger.py\""
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/logging/universal_hook_logger.py\""
           }
         ]
       }
@@ -64,7 +64,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/universal_hook_logger.py\""
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/logging/universal_hook_logger.py\""
           }
         ]
       }
@@ -74,7 +74,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/universal_hook_logger.py\""
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/logging/universal_hook_logger.py\""
           }
         ]
       }
@@ -85,7 +85,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/universal_hook_logger.py\""
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/logging/universal_hook_logger.py\""
           }
         ]
       }
@@ -96,7 +96,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/universal_hook_logger.py\""
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/logging/universal_hook_logger.py\""
           }
         ]
       }
@@ -106,7 +106,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/universal_hook_logger.py\""
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/logging/universal_hook_logger.py\""
           }
         ]
       }
