@@ -1,8 +1,4 @@
 {
-  "statusLine": {
-    "type": "command",
-    "command": "python3 .claude/statuslines/lascari-ai-default.py"
-  },
   "hooks": {
     "PreToolUse": [
       {
@@ -121,5 +117,13 @@
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "python3 .claude/statuslines/lascari-ai-default.py"
+  },
+  "enabledPlugins": {
+    "pyright-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
   }
 }
