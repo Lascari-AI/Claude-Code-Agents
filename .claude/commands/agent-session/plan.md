@@ -28,12 +28,11 @@ TEMPLATES_DIR = .claude/skills/agent-session/templates
 
 Parse PLAN_ARGUMENTS to determine the action:
 
-1. **No arguments**: Use active session with finalized spec
-2. **`[session-id]`**: Use specified session
-3. **`continue`**: Continue existing plan work
-4. **`finalize`**: Finalize the plan (marks it ready for build)
+1. **`[session-id]`**: Use specified session (required)
+2. **`[session-id] continue`**: Continue existing plan work for that session
+3. **`[session-id] finalize`**: Finalize the plan (marks it ready for build)
 
-**IMPORTANT**: Validate that the spec is finalized before proceeding.
+**IMPORTANT**: A session ID is always required. Validate that the spec is finalized before proceeding.
 
 ## Core Principles
 
@@ -45,7 +44,7 @@ Plan mode:
 
 <workflow>
     <phase id="1" name="Load Session">
-        <action>Load active session or specified session</action>
+        <action>Load specified session (session ID required)</action>
         <action>Verify spec.status === "finalized"</action>
         <action>If not finalized, prompt user to finalize spec first</action>
         <action>Read spec.md thoroughly</action>
@@ -254,11 +253,13 @@ provide a roadmap for building this feature.
 
 <validation>
 Before proceeding with planning, validate:
-1. Active session exists OR session-id provided
-2. Session has a spec.md file
-3. Spec status is "finalized"
+1. Session ID is provided
+2. Session exists at SESSIONS_DIR/{session-id}
+3. Session has a spec.md file
+4. Spec status is "finalized"
 
 If validation fails:
-- Missing session: "No active session. Use `/spec [topic]` to start."
-- Spec not finalized: "Spec is not finalized. Use `/spec finalize` first."
+- Missing session ID: "Session ID required. Use `/plan [session-id]` to start planning."
+- Session not found: "Session not found. Check the session ID or use `/spec [topic]` to create a new session."
+- Spec not finalized: "Spec is not finalized. Use `/spec [session-id] finalize` first."
 </validation>

@@ -27,12 +27,12 @@ TEMPLATES_DIR = .claude/skills/agent-session/templates
 
 ## Instructions
 
-Parse `$1` and follow the linear flow:
+Parse `$1` and `$2` to follow the linear flow:
 
-1. **`$1 = "finalize"`**: Jump to finalization phase for active session
-2. **`$1` matches existing session ID**: Load that session (check `SESSIONS_DIR/$1/state.json`)
-3. **`$1` is a topic string**: Create a new session with `$1` as topic, `$2` as optional description
-4. **`$1` is empty**: Create a new session (prompt user for topic)
+1. **`$1` matches existing session ID**: Load that session (check `SESSIONS_DIR/$1/state.json`)
+   - If `$2 = "finalize"`: Jump to finalization phase for that session
+2. **`$1` is a topic string**: Create a new session with `$1` as topic, `$2` as optional description
+3. **`$1` is empty**: Create a new session (prompt user for topic)
 
 Then proceed through: Initialize → Question-driven exploration → Finalize (on user approval)
 
@@ -51,11 +51,12 @@ Spec mode is:
             <description>Parse positional arguments to determine session context</description>
             <inputs>
                 - `$1`: Primary argument - one of:
-                    - "finalize" → trigger finalization
                     - existing session ID → load that session
                     - topic string → create new session
                     - empty → prompt for topic
-                - `$2`: Optional description/context for new sessions
+                - `$2`: Secondary argument - one of:
+                    - "finalize" → trigger finalization (when $1 is session ID)
+                    - description/context for new sessions (when $1 is topic)
             </inputs>
         </phase>
         <phase name="2_resolve_session">
@@ -90,7 +91,6 @@ Spec mode is:
                         - description: $2 (if provided)
                     </step>
                     <step id="5">Create initial spec.md from TEMPLATES_DIR/spec.md</step>
-                    <step id="6">Write active_session.json to SESSIONS_DIR with current session_id</step>
                 </steps>
             </branch>
         </phase>
@@ -186,22 +186,6 @@ Spec mode is:
     </variables>
 </templates>
 
-<active_session_tracking>
-File: agents/sessions/active_session.json
-```json
-{
-  "session_id": "current-active-session-id",
-  "path": "agents/sessions/{session_id}",
-  "activated_at": "timestamp"
-}
-```
-
-This file tracks which session is currently active, allowing:
-- `/spec` to resume the active session automatically
-- `/plan` to automatically pick up the finalized spec
-- Quick status checks
-</active_session_tracking>
-
 <behavior_constraints>
 DURING SPEC MODE:
 - DO NOT write code to non-session directories
@@ -214,7 +198,6 @@ DURING SPEC MODE:
 
 ALLOWED WRITES:
 - agents/sessions/{session_id}/**  (all session files)
-- agents/sessions/active_session.json
 </behavior_constraints>
 
 <user_output>
@@ -280,7 +263,7 @@ implementation planning, which will use this spec as its foundation.
     <scenario name="Finalize Without Required Content">
         List missing required sections and continue question-driven exploration.
     </scenario>
-    <scenario name="No Active Session for Finalize">
-        Inform user no active session exists, prompt for session ID or topic.
+    <scenario name="Finalize Without Session ID">
+        Inform user that a session ID is required to finalize.
     </scenario>
 </error_handling>

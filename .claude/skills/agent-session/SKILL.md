@@ -45,7 +45,6 @@ Sessions are stored in `agents/sessions/`:
 
 ```
 agents/sessions/
-├── active_session.json          # Currently active session pointer
 └── {session-id}/                # Individual sessions
     ├── state.json               # Session state and metadata
     ├── spec.md                  # Specification document
@@ -69,11 +68,10 @@ Example: `2025-12-23_user-export-feature_x7k9m2`
 | Command | Description |
 |---------|-------------|
 | `/session:spec [topic]` | Start new spec session |
-| `/session:spec continue` | Continue active session |
-| `/session:spec finalize` | Finalize current spec |
-| `/session:spec list` | List all sessions |
-| `/session:plan` | Start planning (requires finalized spec) |
-| `/session:plan finalize` | Finalize the plan |
+| `/session:spec [session-id]` | Resume existing session |
+| `/session:spec [session-id] finalize` | Finalize session spec |
+| `/session:plan [session-id]` | Start planning (requires finalized spec) |
+| `/session:plan [session-id] finalize` | Finalize the plan |
 
 ## Phases
 
@@ -146,20 +144,6 @@ Sessions support different granularity levels:
 - **sub_feature** - Component of a feature
 
 Child sessions can reference parent sessions via `parent_session` in state.json.
-
-## Active Session Tracking
-
-The `agents/sessions/active_session.json` file tracks the currently active session:
-
-```json
-{
-  "session_id": "2025-12-23_user-export_x7k9m2",
-  "path": "agents/sessions/2025-12-23_user-export_x7k9m2",
-  "activated_at": "2025-12-23T10:30:00Z"
-}
-```
-
-This allows commands to work without specifying session IDs.
 
 ## Best Practices
 
