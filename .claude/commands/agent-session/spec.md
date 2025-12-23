@@ -1,6 +1,6 @@
 ---
 description: Enter spec mode to define requirements and goals before implementation planning
-argument-hint: [topic] | continue [session-id] | finalize | list
+argument-hint: [topic | session-id | finalize] [description]
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion
 model: opus
 ---
@@ -19,19 +19,22 @@ Read the agent-session skill for templates and full documentation:
 ## Variables
 
 ```
-SPEC_ARGUMENTS = $ARGUMENTS
+$1 = Primary argument (session-id, topic, or "finalize")
+$2 = Optional additional context or description
 SESSIONS_DIR = agents/sessions
 TEMPLATES_DIR = .claude/skills/agent-session/templates
 ```
 
 ## Instructions
 
-Parse SPEC_ARGUMENTS to determine the action:
+Parse `$1` and follow the linear flow:
 
-1. **No arguments or topic string**: Create new session OR list active sessions
-2. **`continue [session-id]`**: Resume an existing session
-3. **`finalize`**: Finalize the current spec (marks it ready for planning)
-4. **`list`**: Show all sessions with their status
+1. **`$1 = "finalize"`**: Jump to finalization phase for active session
+2. **`$1` matches existing session ID**: Load that session (check `SESSIONS_DIR/$1/state.json`)
+3. **`$1` is a topic string**: Create a new session with `$1` as topic, `$2` as optional description
+4. **`$1` is empty**: Create a new session (prompt user for topic)
+
+Then proceed through: Initialize → Question-driven exploration → Finalize (on user approval)
 
 ## Core Principles
 
@@ -42,180 +45,146 @@ Spec mode is:
 - **Iterative** - Refines understanding through conversation
 
 <workflows>
-    <workflow name="new_session">
-        <trigger>Topic string provided (not a subcommand)</trigger>
-        <steps>
-            <step id="1">Generate session_id: {YYYY-MM-DD}_{topic-slug}_{6-char-random-id}</step>
-            <step id="2">Create directory structure:
-                ```bash
-                mkdir -p SESSIONS_DIR/{session_id}/research
-                mkdir -p SESSIONS_DIR/{session_id}/context/diagrams
-                mkdir -p SESSIONS_DIR/{session_id}/context/notes
-                ```
-            </step>
-            <step id="3">Initialize state.json with:
-                - current_phase: "spec"
-                - phases.spec.status: "draft"
-                - phases.spec.started_at: now()
-                - Extract initial topic and description from arguments
-            </step>
-            <step id="4">Create initial spec.md from template (see spec_template below)</step>
-            <step id="5">Write active_session.json to SESSIONS_DIR with current session_id</step>
-            <step id="6">Enter question-driven exploration mode</step>
-        </steps>
-    </workflow>
-
-    <workflow name="continue_session">
-        <trigger>`continue [session-id]` or just `continue` (uses active session)</trigger>
-        <steps>
-            <step id="1">Load session from state.json</step>
-            <step id="2">Read current spec.md to understand context</step>
-            <step id="3">Review open_questions from state</step>
-            <step id="4">Continue question-driven exploration</step>
-        </steps>
-    </workflow>
-
-    <workflow name="finalize_spec">
-        <trigger>`finalize` command</trigger>
-        <steps>
-            <step id="1">Load active session</step>
-            <step id="2">Review spec.md for completeness</step>
-            <step id="3">Ensure required sections are present:
-                - Overview
-                - High-level goals
-                - Mid-level goals
-            </step>
-            <step id="4">Ask user to confirm finalization</step>
-            <step id="5">Update state.json:
-                - phases.spec.status: "finalized"
-                - phases.spec.finalized_at: now()
-            </step>
-            <step id="6">Add finalization header to spec.md</step>
-            <step id="7">Report: "Spec finalized. Ready for `/plan` phase."</step>
-        </steps>
-    </workflow>
-
-    <workflow name="list_sessions">
-        <trigger>`list` command or no arguments with existing sessions</trigger>
-        <steps>
-            <step id="1">Scan SESSIONS_DIR for session directories</step>
-            <step id="2">Read state.json from each</step>
-            <step id="3">Display table:
-                | Session ID | Topic | Phase | Status | Updated |
-            </step>
-            <step id="4">Highlight active session if one exists</step>
-        </steps>
-    </workflow>
-
-    <workflow name="question_driven_exploration">
-        <description>The core interaction loop during spec mode</description>
-        <principles>
-            - Ask ONE focused question at a time
-            - Explain WHY you're asking
-            - After each answer, update spec.md incrementally
-            - Surface assumptions explicitly
-            - Use diagrams when they clarify understanding
-            - Track open questions in state.json
-        </principles>
-        <question_categories>
-            <category name="problem_space">
-                - What problem are we solving?
-                - Who experiences this problem?
-                - What's the current workaround?
-                - What triggers the need for this?
-            </category>
-            <category name="goals">
-                - What does success look like?
-                - How will we know we're done?
-                - What's the minimum viable version?
-            </category>
-            <category name="constraints">
-                - What can't change?
-                - What dependencies exist?
-                - What's the timeline?
-                - Are there technical constraints?
-            </category>
-            <category name="scope">
-                - What's explicitly NOT included?
-                - What could be a future phase?
-                - What's the priority order?
-            </category>
-            <category name="context">
-                - How does this fit with existing systems?
-                - Are there similar implementations to reference?
-                - Who else is involved in this decision?
-            </category>
-        </question_categories>
-        <after_each_answer>
-            1. Acknowledge understanding
-            2. Update relevant section in spec.md
-            3. Note any decisions made (add to key_decisions)
-            4. Identify if new questions emerged (add to open_questions)
-            5. Remove answered questions from open_questions
-            6. Ask next question OR summarize progress
-        </after_each_answer>
+    <workflow name="spec_flow">
+        <description>Linear flow from session resolution through finalization</description>
+        <phase name="1_parse_inputs">
+            <description>Parse positional arguments to determine session context</description>
+            <inputs>
+                - `$1`: Primary argument - one of:
+                    - "finalize" → trigger finalization
+                    - existing session ID → load that session
+                    - topic string → create new session
+                    - empty → prompt for topic
+                - `$2`: Optional description/context for new sessions
+            </inputs>
+        </phase>
+        <phase name="2_resolve_session">
+            <description>Either load existing session or create new one</description>
+            <branch condition="$1 matches existing session ID">
+                <action>Load existing session</action>
+                <steps>
+                    <step id="1">Check if SESSIONS_DIR/$1/state.json exists</step>
+                    <step id="2">Load state.json from SESSIONS_DIR/$1/</step>
+                    <step id="3">Read current spec.md to restore context</step>
+                    <step id="4">Review open_questions from state</step>
+                </steps>
+                <on_failure>Session not found → fall through to create new session</on_failure>
+            </branch>
+            <branch condition="$1 is topic string OR $1 is empty">
+                <action>Create new session</action>
+                <steps>
+                    <step id="1">If $1 is empty, prompt user for topic</step>
+                    <step id="2">Generate session_id: {YYYY-MM-DD}_{topic-slug}_{6-char-random-id}</step>
+                    <step id="3">Create directory structure:
+                        ```bash
+                        mkdir -p SESSIONS_DIR/{session_id}/research
+                        mkdir -p SESSIONS_DIR/{session_id}/context/diagrams
+                        mkdir -p SESSIONS_DIR/{session_id}/context/notes
+                        ```
+                    </step>
+                    <step id="4">Initialize state.json with:
+                        - current_phase: "spec"
+                        - phases.spec.status: "draft"
+                        - phases.spec.started_at: now()
+                        - topic: $1 (or prompted value)
+                        - description: $2 (if provided)
+                    </step>
+                    <step id="5">Create initial spec.md from TEMPLATES_DIR/spec.md</step>
+                    <step id="6">Write active_session.json to SESSIONS_DIR with current session_id</step>
+                </steps>
+            </branch>
+        </phase>
+        <phase name="3_initialize">
+            <description>Prepare session state for interaction</description>
+            <steps>
+                <step id="1">Confirm session is loaded and active</step>
+                <step id="2">Display session status to user (new or resumed)</step>
+                <step id="3">If resuming, summarize current understanding from spec.md</step>
+                <step id="4">If resuming, list open questions from state.json</step>
+            </steps>
+        </phase>
+        <phase name="4_question_driven_exploration">
+            <description>The core interaction loop during spec mode</description>
+            <principles>
+                - Ask ONE focused question at a time
+                - Explain WHY you're asking
+                - After each answer, update spec.md incrementally
+                - Surface assumptions explicitly
+                - Use diagrams when they clarify understanding
+                - Track open questions in state.json
+            </principles>
+            <question_categories>
+                <category name="problem_space">
+                    - What problem are we solving?
+                    - Who experiences this problem?
+                    - What's the current workaround?
+                    - What triggers the need for this?
+                </category>
+                <category name="goals">
+                    - What does success look like?
+                    - How will we know we're done?
+                    - What's the minimum viable version?
+                </category>
+                <category name="constraints">
+                    - What can't change?
+                    - What dependencies exist?
+                    - What's the timeline?
+                    - Are there technical constraints?
+                </category>
+                <category name="scope">
+                    - What's explicitly NOT included?
+                    - What could be a future phase?
+                    - What's the priority order?
+                </category>
+                <category name="context">
+                    - How does this fit with existing systems?
+                    - Are there similar implementations to reference?
+                    - Who else is involved in this decision?
+                </category>
+            </question_categories>
+            <after_each_answer>
+                1. Acknowledge understanding
+                2. Update relevant section in spec.md
+                3. Note any decisions made (add to key_decisions)
+                4. Identify if new questions emerged (add to open_questions)
+                5. Remove answered questions from open_questions
+                6. Ask next question OR summarize progress
+            </after_each_answer>
+            <exit_condition>User signals readiness to finalize OR all key questions answered</exit_condition>
+        </phase>
+        <phase name="5_finalize">
+            <description>Complete and lock the spec for planning phase</description>
+            <trigger>User approval (explicit request or confirmation prompt)</trigger>
+            <steps>
+                <step id="1">Review spec.md for completeness</step>
+                <step id="2">Ensure required sections are present:
+                    - Overview
+                    - High-level goals
+                    - Mid-level goals
+                </step>
+                <step id="3">Ask user to confirm finalization</step>
+                <step id="4">Update state.json:
+                    - phases.spec.status: "finalized"
+                    - phases.spec.finalized_at: now()
+                </step>
+                <step id="5">Add finalization header to spec.md</step>
+                <step id="6">Report: "Spec finalized. Ready for `/plan` phase."</step>
+            </steps>
+            <on_incomplete>List missing required sections and continue exploration</on_incomplete>
+        </phase>
     </workflow>
 </workflows>
 
-<spec_template>
-# {Topic}
-
-> **Session**: `{session_id}`
-> **Status**: Draft
-> **Created**: {date}
-
-## Overview
-
-{Initial understanding - to be refined through conversation}
-
-## Problem Statement
-
-{What problem are we solving? Why does it matter?}
-
-## Goals
-
-### High-Level Goals
-{The north star - what does ultimate success look like?}
-
-### Mid-Level Goals
-{Major capabilities or milestones}
-
-### Detailed Goals (Optional)
-{Specific behaviors or features, added as conversation progresses}
-
-## Non-Goals
-
-{What we are explicitly NOT building - prevents scope creep}
-
-## Success Criteria
-
-{How do we know we're done? Testable outcomes}
-
-## Context & Background
-
-{Relevant existing systems, prior art, stakeholder input}
-
-## Key Decisions
-
-| Decision | Rationale | Date |
-|----------|-----------|------|
-| ... | ... | ... |
-
-## Open Questions
-
-- [ ] {Questions still needing answers}
-
-## Diagrams
-
-{Mermaid or ASCII diagrams as understanding develops}
-
-## Notes
-
-{Working notes, ideas, considerations}
-
----
-*This spec is a living document until finalized.*
-</spec_template>
+<templates>
+    <location>TEMPLATES_DIR/spec.md</location>
+    <description>Read the spec template from the templates directory when creating new sessions</description>
+    <variables>
+        - {{TOPIC}}: Session topic from $1
+        - {{SESSION_ID}}: Generated session ID
+        - {{DATE}}: Current date
+        - {{INITIAL_UNDERSTANDING}}: Initial context from $2 or conversation
+    </variables>
+</templates>
 
 <active_session_tracking>
 File: agents/sessions/active_session.json
@@ -228,7 +197,7 @@ File: agents/sessions/active_session.json
 ```
 
 This file tracks which session is currently active, allowing:
-- `/spec continue` without specifying session ID
+- `/spec` to resume the active session automatically
 - `/plan` to automatically pick up the finalized spec
 - Quick status checks
 </active_session_tracking>
@@ -249,8 +218,8 @@ ALLOWED WRITES:
 </behavior_constraints>
 
 <user_output>
-When starting a new session:
-```
+    <scenario name="new_session" trigger="Creating a new spec session">
+```markdown
 ## Spec Session Started
 
 **Session ID**: `{session_id}`
@@ -263,9 +232,10 @@ the problem, goals, and constraints before we move to planning.
 {First question based on the topic}
 ```
 
-When continuing a session:
-```
-## Resuming Spec Session
+    </scenario>
+    <scenario name="resume_session" trigger="Loading an existing session">
+```markdown
+## Spec Session Resumed
 
 **Session ID**: `{session_id}`
 **Topic**: {topic}
@@ -279,9 +249,10 @@ When continuing a session:
 
 {Continue with next question or ask where to focus}
 ```
+    </scenario>
 
-When finalizing:
-```
+    <scenario name="finalize" trigger="User approves spec finalization">
+```markdown
 ## Spec Finalized
 
 **Session ID**: `{session_id}`
@@ -296,19 +267,20 @@ implementation planning, which will use this spec as its foundation.
 
 **Spec Location**: `agents/sessions/{session_id}/spec.md`
 ```
+    </scenario>
 </user_output>
 
 <error_handling>
-    <scenario name="No Arguments, No Active Session">
-        Ask if user wants to:
-        1. Start a new spec session (provide topic)
-        2. List existing sessions
-        3. Continue a specific session
+    <scenario name="No Arguments">
+        Prompt user for a topic to begin a new spec session.
     </scenario>
-    <scenario name="Session Not Found">
-        Show available sessions and ask user to select one.
+    <scenario name="Session ID Not Found">
+        Inform user the session wasn't found, offer to create a new session instead.
     </scenario>
     <scenario name="Finalize Without Required Content">
-        List missing required sections and offer to continue refining.
+        List missing required sections and continue question-driven exploration.
+    </scenario>
+    <scenario name="No Active Session for Finalize">
+        Inform user no active session exists, prompt for session ID or topic.
     </scenario>
 </error_handling>
