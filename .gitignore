@@ -191,4 +191,5 @@ ai_docs/research/
 
 specs/
 
-agents/
+# Agent logging (high volume, not needed in git history)
+agents/logging/
