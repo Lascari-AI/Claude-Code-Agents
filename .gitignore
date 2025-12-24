@@ -183,8 +183,6 @@ ai_docs/*.md
 !ai_docs/README.md
 
 
-agents/background/
-
 scripts/bg_claude_code_test_idd.sh
 
 ai_docs/research/

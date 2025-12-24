@@ -1,0 +1,123 @@
+{
+  "session_id": "2025-12-24_enhancing-plan-mode_k7m3x9",
+  "topic": "Enhancing Plan Mode",
+  "description": "Improvements to the plan mode phase of the agent-session workflow",
+  "granularity": "feature",
+  "current_phase": "spec",
+  "phases": {
+    "spec": {
+      "status": "finalized",
+      "started_at": "2025-12-24T00:00:00Z",
+      "finalized_at": "2025-12-24T21:00:00Z"
+    },
+    "plan": {
+      "status": "not_started",
+      "started_at": null,
+      "finalized_at": null
+    },
+    "build": {
+      "status": "not_started",
+      "started_at": null,
+      "completed_at": null
+    }
+  },
+  "goals": {
+    "high_level": [],
+    "mid_level": []
+  },
+  "open_questions": [],
+  "key_decisions": [
+    {
+      "decision": "Iterative, phase-by-phase workflow",
+      "rationale": "Generate outline first, confirm, then detail each checkpoint one at a time with user review between each",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "Build phase includes checkpoint verification",
+      "rationale": "After each checkpoint execution, verify state and allow task adjustment if unexpected issues arise",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "State-aware single command",
+      "rationale": "/session:plan [id] detects current state and guides conversationally - fluid, no explicit subcommands",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "JSON as source of truth",
+      "rationale": "plan.json is primary format (structured, editable, machine-readable); plan.md auto-generated via hook/script",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "Plan = execution steps only",
+      "rationale": "No diagrams or architectural overview in plan - that belongs in spec. Plan is focused purely on implementation steps",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "Keep file context with tree visualization",
+      "rationale": "Quality check for before/after state - did it create proper files? Loading correctly?",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "Pre-loaded context per task",
+      "rationale": "Each task includes references (files, lines, docs) so agent can execute without searching",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "Support subtasks",
+      "rationale": "For file-scoped work to avoid cross-cutting concerns when multiple agents work in parallel",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "Tasks have short titles",
+      "rationale": "One-sentence max summary for quick scanning",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "Task status in plan.json",
+      "rationale": "Keep status directly in plan file (may move to state.json later)",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "Testing strategy per checkpoint",
+      "rationale": "Each checkpoint includes how to verify it works",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "IDKs organized in skill by category",
+      "rationale": "Restructure agent-session skill by phase (spec/plan/build); IDKs in plan/idk/ subdirectory, one file per category",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "IDKs are agent-internal",
+      "rationale": "Users see rendered plan, not raw IDK vocabulary. Agent progressively learns IDKs from skill files",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "Full structure, flexible interaction",
+      "rationale": "All tasks need full plan structure, but simple tasks can skip iterative confirmation",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "Plan state in state.json",
+      "rationale": "Add plan_state section with current checkpoint, progress overview for quick resume",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "ASCII tree for human review",
+      "rationale": "File tree visualization is simple ASCII in JSON; primarily for rendered plan.md. Agent uses parsed file list",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "Progressive disclosure skill structure",
+      "rationale": "SKILL.md routes to phase OVERVIEWs; each phase has own templates/ and resources (like idk/ for plan). Reduces context loading.",
+      "date": "2025-12-24"
+    },
+    {
+      "decision": "Templates per phase folder",
+      "rationale": "Each phase (spec/, plan/, build/) has its own templates/ subfolder rather than shared top-level templates/",
+      "date": "2025-12-24"
+    }
+  ],
+  "created_at": "2025-12-24T00:00:00Z",
+  "updated_at": "2025-12-24T00:00:00Z"
+}
