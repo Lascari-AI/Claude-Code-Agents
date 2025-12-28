@@ -11,6 +11,45 @@ Adapt the existing external 4-phase planning system into the **agent-session wor
 
 **Important distinction**: This is about the agent-session skill's plan phase (`/session:plan`), which is a custom workflow in this repository - NOT Claude Code's built-in `EnterPlanMode` feature.
 
+## Mental Model
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│   CURRENT STATE                              DESIRED STATE                  │
+│   ────────────                               ─────────────                  │
+│   The codebase                               What the spec                  │
+│   as it exists                               defines we're                  │
+│   right now                                  building                       │
+│                                                                             │
+│        ┌───────┐                                  ┌───────┐                 │
+│        │       │                                  │       │                 │
+│        │  v1   │ ════════════════════════════▶   │  v2   │                 │
+│        │       │          THE PLAN                │       │                 │
+│        └───────┘         (the bridge)             └───────┘                 │
+│                                                                             │
+│                    ┌─────────────────────┐                                  │
+│                    │  Checkpoint 1       │                                  │
+│                    ├─────────────────────┤                                  │
+│                    │  Checkpoint 2       │                                  │
+│                    ├─────────────────────┤                                  │
+│                    │  Checkpoint 3       │                                  │
+│                    ├─────────────────────┤                                  │
+│                    │  ...                │                                  │
+│                    └─────────────────────┘                                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Spec Mode** defines the **destination** — WHAT we're building and WHY. It describes the desired end state without prescribing how to get there.
+
+**Plan Mode** builds the **bridge** — HOW we transform the current codebase into the new version defined by the spec. The plan is a sequence of checkpoints that incrementally move from the current implementation to the target state.
+
+This framing clarifies:
+- The spec is **state-focused** (describing outcomes)
+- The plan is **transition-focused** (describing transformations)
+- Each checkpoint is a **waypoint** on the bridge — a verifiable intermediate state
+
 ## Problem Statement
 
 The current agent-session plan phase is relatively basic - it produces a plan.md with implementation steps, but lacks:
@@ -464,7 +503,157 @@ This allows the agent to quickly understand:
 | **plan.json** | Define HOW (structured) | Checkpoints, task tranches, low-level tasks with IDK commands |
 | **plan.md** | Define HOW (readable) | Auto-generated from plan.json for human review |
 
-### Proposed plan.json Schema
+### Plan Structure Models (Pydantic)
+
+These models define the type-safe structure for `plan.json`:
+
+```python
+from pydantic import BaseModel, Field
+from typing import Literal, Optional
+from datetime import datetime
+
+
+# ============================================================================
+# Enums / Literals
+# ============================================================================
+
+PlanStatus = Literal["draft", "in_progress", "complete"]
+TaskStatus = Literal["pending", "in_progress", "complete", "blocked"]
+FileStatus = Literal["exists", "new", "modified", "deleted"]
+
+
+# ============================================================================
+# Task-Level Models
+# ============================================================================
+
+class ContextReference(BaseModel):
+    """A file reference to read before executing a task."""
+    file: str = Field(..., description="Path to the file to read")
+    lines: Optional[str] = Field(None, description="Line range, e.g., '1-50' or '10-25'")
+    purpose: str = Field(..., description="Why this context is needed")
+
+
+class TaskContext(BaseModel):
+    """Pre-loaded context for task execution without searching."""
+    read_before: list[ContextReference] = Field(
+        default_factory=list,
+        description="Files to read before executing the task"
+    )
+    related_files: list[str] = Field(
+        default_factory=list,
+        description="Other files that may be affected or referenced"
+    )
+
+
+class Subtask(BaseModel):
+    """File-scoped sub-unit of work within a task."""
+    id: str = Field(..., description="Hierarchical ID, e.g., '1.1.1.1'")
+    title: str = Field(..., description="Short one-sentence summary")
+    description: str = Field(..., description="What this subtask accomplishes")
+    action: str = Field(..., description="IDK-formatted action specification")
+    status: TaskStatus = Field(default="pending")
+
+
+class Task(BaseModel):
+    """A unit of work within a tranche, with full execution context."""
+    id: str = Field(..., description="Hierarchical ID, e.g., '1.1.1'")
+    title: str = Field(..., description="Short one-sentence summary (max)")
+    file_path: str = Field(..., description="Primary file this task operates on")
+    description: str = Field(..., description="Detailed description of what to do")
+    action: str = Field(..., description="IDK-formatted action specification")
+    context: TaskContext = Field(default_factory=TaskContext)
+    depends_on: list[str] = Field(
+        default_factory=list,
+        description="Task IDs that must complete before this task"
+    )
+    status: TaskStatus = Field(default="pending")
+    subtasks: list[Subtask] = Field(
+        default_factory=list,
+        description="File-scoped sub-units for complex tasks"
+    )
+
+
+# ============================================================================
+# Tranche-Level Models
+# ============================================================================
+
+class Tranche(BaseModel):
+    """A parallelizable group of tasks within a checkpoint."""
+    id: str = Field(..., description="Tranche ID, e.g., '1.1'")
+    goal: str = Field(..., description="What this tranche accomplishes")
+    tasks: list[Task] = Field(default_factory=list)
+
+
+# ============================================================================
+# Checkpoint-Level Models
+# ============================================================================
+
+class FileState(BaseModel):
+    """State of a file at a point in time."""
+    path: str = Field(..., description="File path relative to project root")
+    status: FileStatus = Field(..., description="File state: exists, new, modified, deleted")
+    description: str = Field(..., description="What this file contains/does")
+
+
+class FileSnapshot(BaseModel):
+    """Snapshot of file states at a checkpoint boundary."""
+    files: list[FileState] = Field(default_factory=list)
+    tree: Optional[str] = Field(
+        None,
+        description="ASCII tree visualization for human review"
+    )
+
+
+class FileContext(BaseModel):
+    """Beginning and ending file states for a checkpoint."""
+    beginning: FileSnapshot = Field(..., description="State at checkpoint start")
+    ending: FileSnapshot = Field(..., description="Projected state after completion")
+
+
+class TestingStrategy(BaseModel):
+    """How to verify a checkpoint is complete and working."""
+    approach: str = Field(..., description="High-level testing approach")
+    verification_steps: list[str] = Field(
+        default_factory=list,
+        description="Specific commands or checks to run"
+    )
+
+
+class Checkpoint(BaseModel):
+    """A sequential milestone containing parallelizable tranches."""
+    id: int = Field(..., description="Checkpoint number (1-based)")
+    title: str = Field(..., description="Short descriptive title")
+    goal: str = Field(..., description="What this checkpoint achieves")
+    prerequisites: list[int] = Field(
+        default_factory=list,
+        description="Checkpoint IDs that must complete first"
+    )
+    status: TaskStatus = Field(default="pending")
+    file_context: FileContext
+    testing_strategy: TestingStrategy
+    tranches: list[Tranche] = Field(default_factory=list)
+
+
+# ============================================================================
+# Top-Level Plan Model
+# ============================================================================
+
+class Plan(BaseModel):
+    """The complete implementation plan for a session."""
+    session_id: str = Field(..., description="Parent session identifier")
+    spec_reference: str = Field(
+        default="./spec.md",
+        description="Path to the finalized spec"
+    )
+    created_at: datetime
+    updated_at: datetime
+    status: PlanStatus = Field(default="draft")
+    checkpoints: list[Checkpoint] = Field(default_factory=list)
+```
+
+### Example plan.json Instance
+
+An example of what `plan.json` looks like when populated:
 
 ```json
 {
@@ -472,7 +661,7 @@ This allows the agent to quickly understand:
   "spec_reference": "./spec.md",
   "created_at": "2025-12-24T00:00:00Z",
   "updated_at": "2025-12-24T00:00:00Z",
-  "status": "draft|in_progress|complete",
+  "status": "draft",
 
   "checkpoints": [
     {
@@ -480,7 +669,7 @@ This allows the agent to quickly understand:
       "title": "Implement Core Data Types",
       "goal": "Create the foundational types and interfaces",
       "prerequisites": [],
-      "status": "pending|in_progress|complete",
+      "status": "pending",
 
       "file_context": {
         "beginning": {

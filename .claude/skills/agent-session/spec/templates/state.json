@@ -43,5 +43,15 @@
       "rationale": "Team familiarity and existing patterns",
       "made_at": "2025-12-23T10:30:00Z"
     }
-  ]
+  ],
+
+  "plan_state": {
+    "status": "not_started",
+    "current_checkpoint": null,
+    "current_tranche": null,
+    "current_task": null,
+    "checkpoints_completed": [],
+    "last_updated": null,
+    "summary": null
+  }
 }

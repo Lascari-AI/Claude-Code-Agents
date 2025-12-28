@@ -6,22 +6,19 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 # Agent Session Management
 
-This skill provides structured session management for the development cycle:
-**SPEC → PLAN → BUILD**
+Structured session management for the development cycle: **SPEC → PLAN → BUILD**
 
-## Overview
+## Purpose
 
-An **Agent Session** is a workspace that tracks a complete development journey for a feature or project. Each session contains:
-- **Specification** - What we're building and why
-- **Plan** - How we'll implement it
-- **Research** - Investigation and context
-- **State tracking** - Progress through phases
+An **Agent Session** is a workspace that tracks a complete development journey:
+- **Specification** - Define WHAT to build and WHY
+- **Plan** - Design HOW to implement with checkpoints
+- **Build** - Execute the plan with verification
 
 ## When to Use
 
-Use this skill when:
 - Starting a new feature or project that needs requirements clarification
-- You want to separate "what" from "how" in your development process
+- Separating "what" from "how" in your development process
 - Tracking a multi-phase development effort
 - Creating documentation that evolves with understanding
 
@@ -30,29 +27,102 @@ Use this skill when:
 ```
 ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
 │   SPEC   │────▶│   PLAN   │────▶│  BUILD   │────▶│ COMPLETE │
-│   MODE   │     │   MODE   │     │   MODE   │     │          │
+│  (WHAT)  │     │  (HOW)   │     │  (DO)    │     │          │
 └──────────┘     └──────────┘     └──────────┘     └──────────┘
-     │                │                │
-     │ finalize       │ finalize       │ complete
-     │                │                │
-     ▼                ▼                ▼
-  spec.md          plan.md          [code]
 ```
 
-## Directory Structure
+## Mental Model: The Bridge
 
-Sessions are stored in `agents/sessions/`:
+The session lifecycle is designed around a simple but powerful concept:
 
 ```
-agents/sessions/
-└── {session-id}/                # Individual sessions
-    ├── state.json               # Session state and metadata
-    ├── spec.md                  # Specification document
-    ├── plan.md                  # Implementation plan (created in plan phase)
-    ├── research/                # Research artifacts
-    └── context/                 # Supporting context
-        ├── diagrams/
-        └── notes/
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│   CURRENT STATE                              DESIRED STATE                  │
+│   ────────────                               ─────────────                  │
+│   The codebase                               What the spec                  │
+│   as it exists                               defines we're                  │
+│   right now                                  building                       │
+│                                                                             │
+│        ┌───────┐                                  ┌───────┐                 │
+│        │       │                                  │       │                 │
+│        │  v1   │ ═════════════════════════════▶   │  v2   │                 │
+│        │       │          THE PLAN                │       │                 │
+│        └───────┘         (the bridge)             └───────┘                 │
+│                                                                             │
+│                    ┌─────────────────────┐                                  │
+│                    │  Checkpoint 1       │                                  │
+│                    ├─────────────────────┤                                  │
+│                    │  Checkpoint 2       │                                  │
+│                    ├─────────────────────┤                                  │
+│                    │  Checkpoint 3       │                                  │
+│                    ├─────────────────────┤                                  │
+│                    │  ...                │                                  │
+│                    └─────────────────────┘                                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Why This Structure?
+
+**Spec Mode** defines the **destination** — WHAT we're building and WHY.
+- Describes the desired end state without prescribing how to get there
+- Focuses on outcomes, requirements, and success criteria
+- Is **state-focused**: "what should exist when we're done"
+
+**Plan Mode** builds the **bridge** — HOW we transform the codebase.
+- Analyzes the gap between current state and desired state
+- Creates a sequence of checkpoints that incrementally close the gap
+- Is **transition-focused**: "what changes get us there"
+
+**Build Mode** walks the **bridge** — executing checkpoints one by one.
+- Each checkpoint is a **waypoint**: a verifiable intermediate state
+- Verification after each checkpoint allows course correction
+- Progress is tracked so sessions can be paused and resumed
+
+### The Key Insight
+
+By separating WHAT from HOW, we gain:
+1. **Clarity** - Requirements are locked before implementation begins
+2. **Flexibility** - The plan can adapt without changing the destination
+3. **Verifiability** - Each checkpoint can be validated against the spec
+4. **Resumability** - Clear waypoints mean you can stop and restart anywhere
+
+## Phases
+
+### Spec Phase
+Define WHAT to build and WHY.
+→ **Read**: [spec/OVERVIEW.md](spec/OVERVIEW.md)
+
+### Plan Phase
+Design HOW to implement with checkpoints and IDK tasks.
+→ **Read**: [plan/OVERVIEW.md](plan/OVERVIEW.md)
+
+### Build Phase
+Execute the plan checkpoint by checkpoint.
+→ **Read**: [build/OVERVIEW.md](build/OVERVIEW.md)
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `/session:spec [topic]` | Start new spec session |
+| `/session:spec [session-id]` | Resume existing session |
+| `/session:spec [session-id] finalize` | Finalize session spec |
+| `/session:plan [session-id]` | Start/resume planning |
+| `/session:plan [session-id] finalize` | Finalize the plan |
+| `/session:build [session-id]` | Start/resume build |
+
+## Session Directory Structure
+
+```
+agents/sessions/{session-id}/
+├── state.json       # Session state and progress
+├── spec.md          # WHAT: Goals, requirements, context
+├── plan.json        # HOW: Checkpoints and tasks (source of truth)
+├── plan.md          # HOW: Human-readable (generated)
+├── research/        # Research artifacts
+└── context/         # Supporting materials
 ```
 
 ## Session ID Format
@@ -62,79 +132,6 @@ agents/sessions/
 ```
 
 Example: `2025-12-23_user-export-feature_x7k9m2`
-
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `/session:spec [topic]` | Start new spec session |
-| `/session:spec [session-id]` | Resume existing session |
-| `/session:spec [session-id] finalize` | Finalize session spec |
-| `/session:plan [session-id]` | Start planning (requires finalized spec) |
-| `/session:plan [session-id] finalize` | Finalize the plan |
-
-## Phases
-
-### Spec Phase
-
-**Purpose**: Define WHAT we're building
-
-The spec phase is:
-- **Question-driven** - Asks clarifying questions
-- **Almost read-only** - Only writes to session directory
-- **Focused on WHAT and WHY** - Not implementation details
-
-Key sections in spec.md:
-- Overview & Problem Statement
-- High-Level Goals (north star)
-- Mid-Level Goals (capabilities)
-- Non-Goals (explicit exclusions)
-- Success Criteria
-- Key Decisions
-
-### Plan Phase
-
-**Purpose**: Design HOW to implement
-
-The plan phase:
-- Reads the finalized spec as foundation
-- Analyzes existing codebase
-- Makes architectural decisions
-- Creates implementation steps
-
-Key sections in plan.md:
-- Codebase Analysis
-- Architecture & Approach
-- Implementation Steps (ordered, with files)
-- Testing Strategy
-
-### Build Phase
-
-**Purpose**: Execute the plan
-
-The build phase:
-- Follows the plan step-by-step
-- Tracks progress
-- Updates state as steps complete
-
-## State Schema
-
-See [templates/state.json](templates/state.json) for the complete schema.
-
-Key fields:
-- `current_phase`: spec | plan | build | complete | abandoned
-- `phases.{phase}.status`: draft | in_progress | finalized
-- `goals.high_level`: Array of north star goals
-- `goals.mid_level`: Array of capabilities
-- `open_questions`: Questions needing answers
-- `key_decisions`: Decisions with rationale
-
-## Templates
-
-Templates for session files are in this skill's `templates/` directory:
-- [state.json](templates/state.json) - Session state schema
-- [spec.md](templates/spec.md) - Specification template
-- [plan.md](templates/plan.md) - Implementation plan template
 
 ## Granularity
 

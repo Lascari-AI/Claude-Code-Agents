@@ -23,6 +23,16 @@
         ]
       },
       {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/skills/agent-session/plan/scripts/sync-plan-md.py\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
         "matcher": "Read|Write",
         "hooks": [
           {
