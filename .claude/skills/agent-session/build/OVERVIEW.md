@@ -1,14 +1,15 @@
 # Build Phase
 
-Execute the plan checkpoint by checkpoint with verification.
+Execute the plan checkpoint by checkpoint with verification, spawning dedicated agents per checkpoint.
 
 ## Purpose
 
 The build phase executes the planned transformation:
-- Follows checkpoints sequentially
-- Verifies each checkpoint before proceeding
-- Allows course correction if issues arise
-- Tracks progress in state.json
+- Spawns checkpoint agents for clean context per checkpoint
+- Follows checkpoints sequentially with verification
+- Tracks progress in state.json for pause/resume capability
+- Captures implementation learnings in DevNotes
+- Allows user-in-loop validation after each checkpoint
 
 ## Prerequisites
 
@@ -18,41 +19,62 @@ The build phase executes the planned transformation:
 ## Workflow
 
 ```
-1. Load plan.json
+1. Parse arguments ($1=session, $2=checkpoint, $3=tranche)
      ↓
-2. Execute Checkpoint 1
-     ├── Complete Tranche 1.1 tasks
-     ├── Complete Tranche 1.2 tasks
-     └── Run verification steps
+2. Load session (state.json, plan.json, dev-notes.json)
      ↓
-3. Verify checkpoint state
-     ├── Good → Save checkpoint, continue
-     └── Issues → Adjust remaining tasks
+3. Determine target
+     ├── Auto-discover from plan_state
+     ├── Explicit checkpoint ($2)
+     └── Explicit tranche ($2.$3)
      ↓
-4. Execute Checkpoint 2
+4. Spawn checkpoint agent (Task tool)
+     ├── Assemble context (checkpoint, spec goals, prior DevNotes)
+     ├── Execute tasks in tranches
+     └── Return results + DevNotes
      ↓
-5. ... repeat for all checkpoints ...
+5. Run verification steps
+     ├── Pass → Mark complete, continue
+     └── Fail → User decides: override or pause
      ↓
-6. Complete build → Session done
+6. Update state (plan_state, dev-notes.json)
+     ↓
+7. Report to user, wait for confirmation
+     ↓
+8. Repeat for next checkpoint or complete build
 ```
 
 ## Execution Model
 
+### Checkpoint Agents
+
+Each checkpoint spawns a dedicated agent via the Task tool:
+- **Clean context**: Agent starts fresh with only relevant information
+- **Self-contained**: All needed context included in prompt
+- **Focused**: Only executes tasks for that checkpoint
+
+Agent receives:
+- Checkpoint goal and tasks from plan.json
+- Relevant spec goals
+- Prior DevNotes that might affect this work
+- File context (beginning/ending state)
+
 ### Task Execution
 
-For each task:
+For each task within the checkpoint agent:
 1. Load pre-read context from `task.context.read_before`
 2. Execute action using IDK commands
 3. Verify file changes match expectations
-4. Mark task complete in plan_state
+4. Track any deviations as DevNotes
 
 ### Checkpoint Verification
 
-After each checkpoint:
+After all tasks complete:
 1. Run `testing_strategy.verification_steps`
 2. Compare actual files to `file_context.ending`
-3. Document any deviations
-4. Adjust remaining checkpoints if needed
+3. If verification fails:
+   - User can **override** (continues with DevNote documenting decision)
+   - User can **pause** (partial completion, exact position saved)
 
 ## State Tracking
 
@@ -72,42 +94,91 @@ The `plan_state` in state.json tracks progress:
 }
 ```
 
+## DevNotes
+
+DevNotes capture implementation learnings in `dev-notes.json`:
+
+```json
+{
+  "notes": [
+    {
+      "id": "dn-001",
+      "timestamp": "2025-12-28T12:00:00Z",
+      "scope": { "type": "task", "ref": "1.2.3" },
+      "category": "deviation",
+      "content": "Used async/await instead of callbacks as planned"
+    }
+  ]
+}
+```
+
+### Categories
+
+| Category | When to Use |
+|----------|-------------|
+| `deviation` | Did something different than planned |
+| `discovery` | Found something affecting current/future work |
+| `decision` | Made a choice during implementation |
+| `blocker` | Encountered something preventing progress |
+| `resolution` | How a blocker was resolved |
+
+### Scope Types
+
+- `task` - Note about a specific task (ref: task ID like "1.2.3")
+- `checkpoint` - Note about entire checkpoint (ref: checkpoint ID like "1")
+- `session` - Session-wide note (ref: null)
+
 ## Commands
+
+```
+/session:build [session-id] [checkpoint] [tranche]
+
+Arguments:
+  $1 = session-id   (required)
+  $2 = checkpoint   (optional - specific checkpoint number)
+  $3 = tranche      (optional - specific tranche id)
+```
+
+### Examples
 
 | Command | Description |
 |---------|-------------|
-| `/session:build [session-id]` | Start/resume build |
-| `/session:build [session-id] status` | Check build progress |
+| `/session:build my-session` | Auto-discover next checkpoint |
+| `/session:build my-session 2` | Execute checkpoint 2 |
+| `/session:build my-session 2 2.1` | Execute only tranche 2.1 |
 
 ## Error Handling
 
-When issues occur:
+### Partial Completion
 
-1. **Task Failure**:
-   - Mark task blocked
-   - Document issue in state
-   - Determine if blocker or workaround needed
+Errors are treated like a pause:
+- Track exact position (checkpoint, tranche, task)
+- Update plan_state with current progress
+- Add DevNote capturing what went wrong
+- Resume picks up exactly where stopped
 
-2. **Checkpoint Verification Failure**:
-   - Document deviation
-   - Assess impact on future checkpoints
-   - Adjust remaining tasks if needed
+### Verification Failure
 
-3. **Critical Blocker**:
-   - Pause build
-   - Return to plan phase for revision
-   - Update plan.json with learnings
+When verification fails:
+1. Present failure details to user
+2. Offer options:
+   - **Override**: Continue anyway (adds DevNote documenting override)
+   - **Pause**: Stop to fix issue manually
 
 ## Completion
 
 Session is complete when:
-- [ ] All checkpoints executed
-- [ ] All verification steps pass
-- [ ] `phases.build.status` set to "completed"
-- [ ] `current_phase` set to "complete"
+- [x] All checkpoints executed
+- [x] All verification steps pass (or overridden)
+- [x] `phases.build.status` set to "completed"
+- [x] `current_phase` set to "complete"
 
 ## Outputs
 
 - Working code (per plan)
 - Updated `state.json` with completion status
-- Build log in `context/build-log.md` (optional)
+- `dev-notes.json` with implementation learnings
+
+## Templates
+
+- [dev-notes.json](templates/dev-notes.json) - DevNotes template with schema

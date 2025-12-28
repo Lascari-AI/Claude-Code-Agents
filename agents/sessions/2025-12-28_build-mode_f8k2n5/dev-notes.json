@@ -1,0 +1,36 @@
+{
+  "$schema": "DevNotes for session 2025-12-28_build-mode_f8k2n5",
+  "session_id": "2025-12-28_build-mode_f8k2n5",
+  "notes": [
+    {
+      "id": "dn-001",
+      "timestamp": "2025-12-28T13:45:00Z",
+      "scope": {
+        "type": "checkpoint",
+        "ref": "1"
+      },
+      "category": "decision",
+      "content": "Created comprehensive build.md in a single pass rather than incremental tasks. All workflow phases, agent prompt template, user outputs, and error handling included in initial creation for coherence."
+    },
+    {
+      "id": "dn-002",
+      "timestamp": "2025-12-28T13:55:00Z",
+      "scope": {
+        "type": "checkpoint",
+        "ref": "3"
+      },
+      "category": "decision",
+      "content": "Rewrote OVERVIEW.md entirely rather than incremental edits. Added DevNotes section, checkpoint agent documentation, updated command syntax with positional args, and updated workflow diagram."
+    },
+    {
+      "id": "dn-003",
+      "timestamp": "2025-12-28T14:00:00Z",
+      "scope": {
+        "type": "session",
+        "ref": null
+      },
+      "category": "discovery",
+      "content": "Successfully used the session itself to verify state tracking works. plan_state correctly tracked checkpoints_completed array and summary updates throughout the build."
+    }
+  ]
+}

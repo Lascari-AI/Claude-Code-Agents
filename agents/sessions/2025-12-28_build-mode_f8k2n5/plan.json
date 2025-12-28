@@ -1,0 +1,513 @@
+{
+  "$schema": "Plan schema for agent-session checkpoint-based planning",
+
+  "session_id": "2025-12-28_build-mode_f8k2n5",
+  "spec_reference": "./spec.md",
+  "created_at": "2025-12-28T13:15:00Z",
+  "updated_at": "2025-12-28T13:35:00Z",
+  "status": "finalized",
+
+  "checkpoints": [
+    {
+      "id": 1,
+      "title": "Create build.md Command",
+      "goal": "Establish the build command with full workflow definition for checkpoint-based execution",
+      "prerequisites": [],
+      "status": "completed",
+
+      "file_context": {
+        "beginning": {
+          "files": [
+            {
+              "path": ".claude/commands/agent-session/spec.md",
+              "status": "exists",
+              "description": "Reference pattern for command structure"
+            },
+            {
+              "path": ".claude/commands/agent-session/plan.md",
+              "status": "exists",
+              "description": "Reference pattern for command structure"
+            },
+            {
+              "path": ".claude/skills/agent-session/build/OVERVIEW.md",
+              "status": "exists",
+              "description": "Existing build phase documentation"
+            }
+          ],
+          "tree": ".claude/commands/agent-session/\n├── spec.md\n└── plan.md"
+        },
+        "ending": {
+          "files": [
+            {
+              "path": ".claude/commands/agent-session/build.md",
+              "status": "new",
+              "description": "Build mode command with workflows"
+            }
+          ],
+          "tree": ".claude/commands/agent-session/\n├── spec.md\n├── plan.md\n└── build.md"
+        }
+      },
+
+      "testing_strategy": {
+        "approach": "Verify command structure and basic parsing",
+        "verification_steps": [
+          "Confirm build.md exists at correct path",
+          "Verify frontmatter includes required fields",
+          "Test /session:build shows in help"
+        ]
+      },
+
+      "tranches": [
+        {
+          "id": "1.1",
+          "goal": "Create command structure with frontmatter and variables",
+          "tasks": [
+            {
+              "id": "1.1.1",
+              "title": "Create build.md with frontmatter",
+              "file_path": ".claude/commands/agent-session/build.md",
+              "description": "Create the build command file with proper frontmatter matching spec.md and plan.md patterns",
+              "action": "CREATE .claude/commands/agent-session/build.md:\n    ADD frontmatter with description, argument-hint, allowed-tools, model\n    ADD skill reference section\n    ADD variables section with $1, $2, $3 definitions",
+              "context": {
+                "read_before": [
+                  {
+                    "file": ".claude/commands/agent-session/spec.md",
+                    "lines": "1-30",
+                    "purpose": "Reference pattern for frontmatter and variables"
+                  },
+                  {
+                    "file": "agents/sessions/2025-12-28_build-mode_f8k2n5/spec.md",
+                    "lines": "69-90",
+                    "purpose": "Command syntax specification"
+                  }
+                ],
+                "related_files": [
+                  ".claude/commands/agent-session/plan.md"
+                ]
+              },
+              "depends_on": [],
+              "status": "pending",
+              "subtasks": []
+            }
+          ]
+        },
+        {
+          "id": "1.2",
+          "goal": "Define workflow phases for build execution",
+          "tasks": [
+            {
+              "id": "1.2.1",
+              "title": "Add input parsing phase",
+              "file_path": ".claude/commands/agent-session/build.md",
+              "description": "Add workflow phase for parsing $1, $2, $3 arguments",
+              "action": "UPDATE .claude/commands/agent-session/build.md:\n    ADD workflow phase for parsing session-id, checkpoint, tranche args\n    ADD validation logic for each argument",
+              "context": {
+                "read_before": [
+                  {
+                    "file": ".claude/commands/agent-session/spec.md",
+                    "lines": "47-96",
+                    "purpose": "Reference workflow phase structure"
+                  }
+                ],
+                "related_files": []
+              },
+              "depends_on": ["1.1.1"],
+              "status": "pending",
+              "subtasks": []
+            },
+            {
+              "id": "1.2.2",
+              "title": "Add session loading phase",
+              "file_path": ".claude/commands/agent-session/build.md",
+              "description": "Add workflow phase for loading session and validating plan is finalized",
+              "action": "UPDATE .claude/commands/agent-session/build.md:\n    ADD phase for loading state.json\n    ADD validation that plan is finalized\n    ADD loading plan.json",
+              "context": {
+                "read_before": [],
+                "related_files": []
+              },
+              "depends_on": ["1.2.1"],
+              "status": "pending",
+              "subtasks": []
+            },
+            {
+              "id": "1.2.3",
+              "title": "Add target determination phase",
+              "file_path": ".claude/commands/agent-session/build.md",
+              "description": "Add workflow phase for determining what checkpoint/tranche to execute",
+              "action": "UPDATE .claude/commands/agent-session/build.md:\n    ADD logic for auto-discovery from plan_state\n    ADD logic for explicit checkpoint targeting\n    ADD logic for explicit tranche targeting",
+              "context": {
+                "read_before": [],
+                "related_files": []
+              },
+              "depends_on": ["1.2.2"],
+              "status": "pending",
+              "subtasks": []
+            },
+            {
+              "id": "1.2.4",
+              "title": "Add checkpoint agent spawning phase",
+              "file_path": ".claude/commands/agent-session/build.md",
+              "description": "Add workflow phase for spawning checkpoint agent via Task tool",
+              "action": "UPDATE .claude/commands/agent-session/build.md:\n    ADD phase for constructing checkpoint agent prompt\n    ADD Task tool invocation pattern\n    ADD context assembly (checkpoint data, spec goals, prior DevNotes)",
+              "context": {
+                "read_before": [],
+                "related_files": []
+              },
+              "depends_on": ["1.2.3"],
+              "status": "pending",
+              "subtasks": []
+            },
+            {
+              "id": "1.2.5",
+              "title": "Add results handling phase",
+              "file_path": ".claude/commands/agent-session/build.md",
+              "description": "Add workflow phase for handling checkpoint completion and verification",
+              "action": "UPDATE .claude/commands/agent-session/build.md:\n    ADD phase for receiving agent results\n    ADD verification step execution\n    ADD override mechanism for failed verification\n    ADD state update logic",
+              "context": {
+                "read_before": [],
+                "related_files": []
+              },
+              "depends_on": ["1.2.4"],
+              "status": "pending",
+              "subtasks": []
+            }
+          ]
+        },
+        {
+          "id": "1.3",
+          "goal": "Define checkpoint agent prompt template",
+          "tasks": [
+            {
+              "id": "1.3.1",
+              "title": "Create checkpoint agent prompt template",
+              "file_path": ".claude/commands/agent-session/build.md",
+              "description": "Define what context and instructions the checkpoint agent receives",
+              "action": "UPDATE .claude/commands/agent-session/build.md:\n    ADD checkpoint_agent_prompt template section\n    INCLUDE checkpoint goal and tasks\n    INCLUDE relevant spec goals\n    INCLUDE prior DevNotes summary\n    INCLUDE expected outputs format",
+              "context": {
+                "read_before": [
+                  {
+                    "file": "agents/sessions/2025-12-28_build-mode_f8k2n5/spec.md",
+                    "lines": "44-49",
+                    "purpose": "DevNotes structure for agent context"
+                  }
+                ],
+                "related_files": []
+              },
+              "depends_on": ["1.2.5"],
+              "status": "pending",
+              "subtasks": []
+            }
+          ]
+        },
+        {
+          "id": "1.4",
+          "goal": "Add user output templates",
+          "tasks": [
+            {
+              "id": "1.4.1",
+              "title": "Add user output scenarios",
+              "file_path": ".claude/commands/agent-session/build.md",
+              "description": "Add output templates for different scenarios",
+              "action": "UPDATE .claude/commands/agent-session/build.md:\n    ADD output for build started\n    ADD output for checkpoint complete\n    ADD output for error/pause\n    ADD output for build complete",
+              "context": {
+                "read_before": [
+                  {
+                    "file": ".claude/commands/agent-session/spec.md",
+                    "lines": "203-254",
+                    "purpose": "Reference pattern for user output scenarios"
+                  }
+                ],
+                "related_files": []
+              },
+              "depends_on": ["1.3.1"],
+              "status": "pending",
+              "subtasks": []
+            }
+          ]
+        },
+        {
+          "id": "1.5",
+          "goal": "Add error handling and validation",
+          "tasks": [
+            {
+              "id": "1.5.1",
+              "title": "Add validation and error handling",
+              "file_path": ".claude/commands/agent-session/build.md",
+              "description": "Add validation rules and error handling scenarios",
+              "action": "UPDATE .claude/commands/agent-session/build.md:\n    ADD validation section (session exists, plan finalized, valid target)\n    ADD error_handling section with scenarios",
+              "context": {
+                "read_before": [
+                  {
+                    "file": ".claude/commands/agent-session/spec.md",
+                    "lines": "256-269",
+                    "purpose": "Reference pattern for error handling"
+                  }
+                ],
+                "related_files": []
+              },
+              "depends_on": ["1.4.1"],
+              "status": "pending",
+              "subtasks": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Create DevNotes Template",
+      "goal": "Establish the dev-notes.json structure for capturing implementation learnings",
+      "prerequisites": [],
+      "status": "completed",
+
+      "file_context": {
+        "beginning": {
+          "files": [
+            {
+              "path": ".claude/skills/agent-session/build/OVERVIEW.md",
+              "status": "exists",
+              "description": "Build phase documentation"
+            }
+          ],
+          "tree": ".claude/skills/agent-session/build/\n└── OVERVIEW.md"
+        },
+        "ending": {
+          "files": [
+            {
+              "path": ".claude/skills/agent-session/build/templates/dev-notes.json",
+              "status": "new",
+              "description": "DevNotes template"
+            }
+          ],
+          "tree": ".claude/skills/agent-session/build/\n├── OVERVIEW.md\n└── templates/\n    └── dev-notes.json"
+        }
+      },
+
+      "testing_strategy": {
+        "approach": "Verify template is valid JSON with correct schema",
+        "verification_steps": [
+          "Template file exists at correct path",
+          "JSON is valid and parseable",
+          "Schema includes all required fields"
+        ]
+      },
+
+      "tranches": [
+        {
+          "id": "2.1",
+          "goal": "Create DevNotes JSON template",
+          "tasks": [
+            {
+              "id": "2.1.1",
+              "title": "Create dev-notes.json template",
+              "file_path": ".claude/skills/agent-session/build/templates/dev-notes.json",
+              "description": "Create the DevNotes template with proper structure",
+              "action": "CREATE .claude/skills/agent-session/build/templates/dev-notes.json:\n    ADD schema reference\n    ADD notes array with example entries\n    INCLUDE fields: id, timestamp, scope, category, content",
+              "context": {
+                "read_before": [
+                  {
+                    "file": "agents/sessions/2025-12-28_build-mode_f8k2n5/spec.md",
+                    "lines": "44-49",
+                    "purpose": "DevNotes specification"
+                  }
+                ],
+                "related_files": []
+              },
+              "depends_on": [],
+              "status": "pending",
+              "subtasks": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Update Build OVERVIEW.md",
+      "goal": "Align documentation with spec decisions",
+      "prerequisites": [1, 2],
+      "status": "completed",
+
+      "file_context": {
+        "beginning": {
+          "files": [
+            {
+              "path": ".claude/skills/agent-session/build/OVERVIEW.md",
+              "status": "exists",
+              "description": "Current build phase documentation"
+            }
+          ],
+          "tree": ".claude/skills/agent-session/build/\n└── OVERVIEW.md"
+        },
+        "ending": {
+          "files": [
+            {
+              "path": ".claude/skills/agent-session/build/OVERVIEW.md",
+              "status": "modified",
+              "description": "Updated build phase documentation"
+            }
+          ],
+          "tree": ".claude/skills/agent-session/build/\n└── OVERVIEW.md"
+        }
+      },
+
+      "testing_strategy": {
+        "approach": "Review documentation for accuracy and completeness",
+        "verification_steps": [
+          "DevNotes section exists and is accurate",
+          "Command syntax matches spec",
+          "Workflow description includes agent spawning"
+        ]
+      },
+
+      "tranches": [
+        {
+          "id": "3.1",
+          "goal": "Add DevNotes documentation",
+          "tasks": [
+            {
+              "id": "3.1.1",
+              "title": "Add DevNotes section",
+              "file_path": ".claude/skills/agent-session/build/OVERVIEW.md",
+              "description": "Document DevNotes purpose, structure, and usage",
+              "action": "UPDATE .claude/skills/agent-session/build/OVERVIEW.md:\n    ADD DevNotes section after State Tracking\n    INCLUDE purpose and structure\n    INCLUDE category explanations\n    INCLUDE example",
+              "context": {
+                "read_before": [
+                  {
+                    "file": ".claude/skills/agent-session/build/OVERVIEW.md",
+                    "lines": "all",
+                    "purpose": "Current documentation structure"
+                  }
+                ],
+                "related_files": []
+              },
+              "depends_on": [],
+              "status": "pending",
+              "subtasks": []
+            }
+          ]
+        },
+        {
+          "id": "3.2",
+          "goal": "Update command syntax documentation",
+          "tasks": [
+            {
+              "id": "3.2.1",
+              "title": "Update command syntax",
+              "file_path": ".claude/skills/agent-session/build/OVERVIEW.md",
+              "description": "Update command section to match spec syntax",
+              "action": "UPDATE .claude/skills/agent-session/build/OVERVIEW.md:\n    REPLACE Commands section with positional args format\n    ADD examples for checkpoint and tranche targeting",
+              "context": {
+                "read_before": [],
+                "related_files": []
+              },
+              "depends_on": ["3.1.1"],
+              "status": "pending",
+              "subtasks": []
+            }
+          ]
+        },
+        {
+          "id": "3.3",
+          "goal": "Update workflow description",
+          "tasks": [
+            {
+              "id": "3.3.1",
+              "title": "Update workflow with agent spawning",
+              "file_path": ".claude/skills/agent-session/build/OVERVIEW.md",
+              "description": "Update workflow to show checkpoint agent pattern",
+              "action": "UPDATE .claude/skills/agent-session/build/OVERVIEW.md:\n    UPDATE Workflow section to include agent spawning\n    ADD verification with override flow\n    ADD partial completion description",
+              "context": {
+                "read_before": [],
+                "related_files": []
+              },
+              "depends_on": ["3.2.1"],
+              "status": "pending",
+              "subtasks": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Integration Testing",
+      "goal": "Verify the complete build mode flow works end-to-end",
+      "prerequisites": [1, 2, 3],
+      "status": "completed",
+
+      "file_context": {
+        "beginning": {
+          "files": [],
+          "tree": ""
+        },
+        "ending": {
+          "files": [],
+          "tree": ""
+        }
+      },
+
+      "testing_strategy": {
+        "approach": "Manual end-to-end testing with a test session",
+        "verification_steps": [
+          "Command invocation works with all argument patterns",
+          "Checkpoint agent spawns with correct context",
+          "State updates correctly after completion",
+          "DevNotes are created properly",
+          "Pause/resume works across sessions"
+        ]
+      },
+
+      "tranches": [
+        {
+          "id": "4.1",
+          "goal": "Verify command functionality",
+          "tasks": [
+            {
+              "id": "4.1.1",
+              "title": "Test command parsing",
+              "file_path": null,
+              "description": "Verify command handles all argument patterns correctly",
+              "action": "TEST: Run /session:build with various argument combinations\n    VERIFY: Error handling for invalid inputs\n    VERIFY: Correct targeting for valid inputs",
+              "context": {
+                "read_before": [],
+                "related_files": []
+              },
+              "depends_on": [],
+              "status": "pending",
+              "subtasks": []
+            },
+            {
+              "id": "4.1.2",
+              "title": "Test checkpoint execution",
+              "file_path": null,
+              "description": "Verify checkpoint agent spawns and executes correctly",
+              "action": "TEST: Execute a checkpoint from a test session\n    VERIFY: Agent receives correct context\n    VERIFY: Tasks execute in order\n    VERIFY: Verification runs after completion",
+              "context": {
+                "read_before": [],
+                "related_files": []
+              },
+              "depends_on": ["4.1.1"],
+              "status": "pending",
+              "subtasks": []
+            },
+            {
+              "id": "4.1.3",
+              "title": "Test state management",
+              "file_path": null,
+              "description": "Verify state updates correctly throughout execution",
+              "action": "TEST: Check plan_state after checkpoint completion\n    VERIFY: Progress tracked correctly\n    VERIFY: DevNotes created\n    VERIFY: Resume works from saved state",
+              "context": {
+                "read_before": [],
+                "related_files": []
+              },
+              "depends_on": ["4.1.2"],
+              "status": "pending",
+              "subtasks": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
