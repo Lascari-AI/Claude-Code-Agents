@@ -4,7 +4,7 @@ Plan Structure Models (Pydantic)
 Type-safe structure definitions for plan.json checkpoint-based planning.
 
 These models define:
-- Task hierarchy: Plan → Checkpoint → Tranche → Task → Subtask
+- Task hierarchy: Plan → Checkpoint → TaskGroup → Task → Action
 - File context tracking: beginning/ending states per checkpoint
 - Testing strategy per checkpoint
 - IDK-formatted action specifications
@@ -51,44 +51,44 @@ class TaskContext(BaseModel):
     )
 
 
-class Subtask(BaseModel):
-    """File-scoped sub-unit of work within a task."""
+class Action(BaseModel):
+    """File-scoped atomic operation within a task."""
 
     id: str = Field(..., description="Hierarchical ID, e.g., '1.1.1.1'")
-    title: str = Field(..., description="Short one-sentence summary")
-    description: str = Field(..., description="What this subtask accomplishes")
-    action: str = Field(..., description="IDK-formatted action specification")
+    command: str = Field(..., description="IDK-formatted command")
+    file: str = Field(..., description="Target file path")
     status: TaskStatus = Field(default="pending")
 
 
 class Task(BaseModel):
-    """A unit of work within a tranche, with full execution context."""
+    """A unit of work within a task group."""
 
     id: str = Field(..., description="Hierarchical ID, e.g., '1.1.1'")
     title: str = Field(..., description="Short one-sentence summary (max)")
     file_path: str = Field(..., description="Primary file this task operates on")
     description: str = Field(..., description="Detailed description of what to do")
-    action: str = Field(..., description="IDK-formatted action specification")
     context: TaskContext = Field(default_factory=TaskContext)
     depends_on: list[str] = Field(
         default_factory=list, description="Task IDs that must complete before this task"
     )
     status: TaskStatus = Field(default="pending")
-    subtasks: list[Subtask] = Field(
-        default_factory=list, description="File-scoped sub-units for complex tasks"
+    actions: list[Action] = Field(
+        default_factory=list, description="Atomic operations to perform"
     )
 
 
 # ============================================================================
-# Tranche-Level Models
+# TaskGroup-Level Models
 # ============================================================================
 
 
-class Tranche(BaseModel):
-    """A parallelizable group of tasks within a checkpoint."""
+class TaskGroup(BaseModel):
+    """Objective-based grouping of tasks within a checkpoint."""
 
-    id: str = Field(..., description="Tranche ID, e.g., '1.1'")
-    goal: str = Field(..., description="What this tranche accomplishes")
+    id: str = Field(..., description="TaskGroup ID, e.g., '1.1'")
+    title: str = Field(..., description="Short title for scanning")
+    objective: str = Field(..., description="What this task group accomplishes")
+    status: TaskStatus = Field(default="pending")
     tasks: list[Task] = Field(default_factory=list)
 
 
@@ -133,7 +133,7 @@ class TestingStrategy(BaseModel):
 
 
 class Checkpoint(BaseModel):
-    """A sequential milestone containing parallelizable tranches."""
+    """A sequential milestone containing task groups."""
 
     id: int = Field(..., description="Checkpoint number (1-based)")
     title: str = Field(..., description="Short descriptive title")
@@ -144,7 +144,7 @@ class Checkpoint(BaseModel):
     status: TaskStatus = Field(default="pending")
     file_context: FileContext
     testing_strategy: TestingStrategy
-    tranches: list[Tranche] = Field(default_factory=list)
+    task_groups: list[TaskGroup] = Field(default_factory=list)
 
 
 # ============================================================================
@@ -179,8 +179,8 @@ class PlanState(BaseModel):
     current_checkpoint: Optional[int] = Field(
         None, description="Currently executing checkpoint"
     )
-    current_tranche: Optional[str] = Field(
-        None, description="Currently executing tranche ID"
+    current_task_group: Optional[str] = Field(
+        None, description="Currently executing task group ID"
     )
     current_task: Optional[str] = Field(None, description="Currently executing task ID")
     checkpoints_completed: list[int] = Field(default_factory=list)

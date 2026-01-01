@@ -1,0 +1,104 @@
+{
+  "session_id": "2026-01-01_updating-plan-mode_p4k7n2",
+  "topic": "Updating Plan Mode",
+  "description": "Updates and improvements to the agent-session plan phase",
+  "granularity": "feature",
+  "prior_session": "2025-12-24_enhancing-plan-mode_k7m3x9",
+  "created_at": "2026-01-01T00:00:00Z",
+  "current_phase": "build",
+  "phases": {
+    "spec": {
+      "status": "finalized",
+      "started_at": "2026-01-01T00:00:00Z",
+      "finalized_at": "2026-01-01T00:00:00Z"
+    },
+    "plan": {
+      "status": "finalized",
+      "started_at": "2026-01-01T00:00:00Z",
+      "finalized_at": "2026-01-01T00:00:00Z"
+    },
+    "build": {
+      "status": "in_progress",
+      "started_at": "2026-01-01T00:00:00Z",
+      "completed_at": null
+    }
+  },
+  "open_questions": [],
+  "key_decisions": [
+    {
+      "decision": "Replace Tranche → Task Group",
+      "rationale": "Shift from parallel-execution semantics to objective-based grouping",
+      "date": "2026-01-01"
+    },
+    {
+      "decision": "Rename Subtask → Action",
+      "rationale": "Clarifies these are file-scoped atomic operations",
+      "date": "2026-01-01"
+    },
+    {
+      "decision": "Keep 4-level hierarchy",
+      "rationale": "Checkpoint → Task Group → Task → Action provides right granularity",
+      "date": "2026-01-01"
+    },
+    {
+      "decision": "Map to git workflow",
+      "rationale": "Plan=PR, Checkpoint=Commit makes structure intuitive",
+      "date": "2026-01-01"
+    },
+    {
+      "decision": "IDK format required for all Actions",
+      "rationale": "Non-negotiable: every action handed off for execution must use IDK vocabulary",
+      "date": "2026-01-01"
+    },
+    {
+      "decision": "Actions are structured objects",
+      "rationale": "Each action has: id, command (IDK), file, status - enables precise tracking and file-scoped execution",
+      "date": "2026-01-01"
+    },
+    {
+      "decision": "Status tracking at every level",
+      "rationale": "Enables async/resumable execution - new agent can pick up from plan state without prior context",
+      "date": "2026-01-01"
+    },
+    {
+      "decision": "Context at Task level only",
+      "rationale": "Task Group doesn't need context; Task-level read_before/related_files is sufficient",
+      "date": "2026-01-01"
+    },
+    {
+      "decision": "Task Group has title + objective",
+      "rationale": "Allows viewing at different granularity levels (title for scanning, objective for understanding)",
+      "date": "2026-01-01"
+    },
+    {
+      "decision": "Structured prior spec referencing",
+      "rationale": "Prompt for prior specs at session start, store in state.json for context",
+      "date": "2026-01-01"
+    },
+    {
+      "decision": "Tiered progressive confirmation in plan",
+      "rationale": "Generate checkpoints → confirm → task groups → confirm → tasks → confirm → actions",
+      "date": "2026-01-01"
+    },
+    {
+      "decision": "Checkpoint = Commit boundary",
+      "rationale": "Each completed checkpoint results in a git commit in build phase",
+      "date": "2026-01-01"
+    },
+    {
+      "decision": "No auto-continuation in build",
+      "rationale": "After checkpoint commit, output command for next - don't auto-run",
+      "date": "2026-01-01"
+    }
+  ],
+  "plan_state": {
+    "status": "in_progress",
+    "checkpoints_total": 5,
+    "checkpoints_detailed": 5,
+    "checkpoints_completed": [1],
+    "current_checkpoint": 2,
+    "current_task_group": null,
+    "current_task": null,
+    "last_updated": "2026-01-01T00:00:00Z"
+  }
+}
