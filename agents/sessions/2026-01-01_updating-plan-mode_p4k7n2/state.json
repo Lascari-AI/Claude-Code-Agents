@@ -92,13 +92,13 @@
     }
   ],
   "plan_state": {
-    "status": "in_progress",
+    "status": "complete",
     "checkpoints_total": 5,
     "checkpoints_detailed": 5,
-    "checkpoints_completed": [1, 2, 3],
-    "current_checkpoint": 4,
-    "current_task_group": "4.2",
-    "current_task": "4.2.3",
-    "last_updated": "2026-01-01T14:30:00Z"
+    "checkpoints_completed": [1, 2, 3, 4, 5],
+    "current_checkpoint": null,
+    "current_task_group": null,
+    "current_task": null,
+    "last_updated": "2026-01-01T15:15:00Z"
   }
 }

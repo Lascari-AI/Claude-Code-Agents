@@ -89,8 +89,20 @@ Spec mode is:
                         - phases.spec.started_at: now()
                         - topic: $1 (or prompted value)
                         - description: $2 (if provided)
+                        - prior_session: null (will be set if user provides one)
                     </step>
-                    <step id="5">Create initial spec.md from TEMPLATES_DIR/spec.md</step>
+                    <step id="5">Prompt for prior spec references:
+                        - Use AskUserQuestion: "Are there prior specs to reference for context?"
+                        - Options: "Yes - I have a prior session ID", "No - this is standalone"
+                        - If yes, prompt for session ID input
+                        - Update state.json prior_session field with provided ID
+                    </step>
+                    <step id="6">If prior_session provided:
+                        - Read SESSIONS_DIR/{prior_session}/spec.md
+                        - Extract key context: goals, decisions, constraints
+                        - Note relevant prior context for this spec
+                    </step>
+                    <step id="7">Create initial spec.md from TEMPLATES_DIR/spec.md</step>
                 </steps>
             </branch>
         </phase>
@@ -201,6 +213,20 @@ ALLOWED WRITES:
 </behavior_constraints>
 
 <user_output>
+    <scenario name="prior_spec_prompt" trigger="After creating new session directory">
+        Use AskUserQuestion to check for prior specs:
+        ```
+        question: "Are there prior specs to reference for context?"
+        header: "Prior Spec"
+        options:
+          - label: "No prior spec"
+            description: "This is a standalone spec with no prior context needed"
+          - label: "Yes, link prior session"
+            description: "I have a prior session ID to reference for context"
+        ```
+        If user selects "Yes", prompt for session ID via "Other" input field.
+        Then read the prior spec.md and summarize relevant context.
+    </scenario>
     <scenario name="new_session" trigger="Creating a new spec session">
 ```markdown
 ## Spec Session Started
@@ -208,6 +234,7 @@ ALLOWED WRITES:
 **Session ID**: `{session_id}`
 **Topic**: {topic}
 **Location**: `agents/sessions/{session_id}/`
+{if prior_session}**Prior Context**: `{prior_session}` - {brief summary of prior spec}{/if}
 
 I'll help you clarify what you want to build. I'll ask questions to understand
 the problem, goals, and constraints before we move to planning.

@@ -14,18 +14,43 @@ The spec phase captures requirements, goals, and context **before** implementati
 - New session created with `/session:spec [topic]`
 - Or resuming existing session with `/session:spec [session-id]`
 
+## Prior Spec References
+
+When starting a new spec, you may link prior sessions for context:
+
+- **Prompt**: After session creation, agent asks "Are there prior specs to reference?"
+- **Storage**: Prior session ID stored in `state.json` as `prior_session` field
+- **Context Loading**: If provided, agent reads prior spec.md to understand:
+  - Related goals and decisions
+  - Constraints that may carry over
+  - Continuity with previous work
+
+This enables building on prior work without duplicating context. The prior spec is read but not modified.
+
+**Example state.json with prior reference:**
+```json
+{
+  "prior_session": "2025-12-24_user-auth_k7m3x9",
+  ...
+}
+```
+
 ## Workflow
 
 ```
 1. User provides topic/context
      ↓
-2. Ask clarifying questions
+2. Create session, prompt for prior specs
      ↓
-3. Draft spec sections iteratively
+3. If prior spec: read for context
      ↓
-4. User reviews and refines
+4. Ask clarifying questions
      ↓
-5. Finalize spec → Ready for plan phase
+5. Draft spec sections iteratively
+     ↓
+6. User reviews and refines
+     ↓
+7. Finalize spec → Ready for plan phase
 ```
 
 ## Key Principles
@@ -61,7 +86,9 @@ The spec phase captures requirements, goals, and context **before** implementati
 ## Outputs
 
 - `spec.md` - Specification document
-- `state.json` - Session state (updated)
+- `state.json` - Session state with fields including:
+  - `prior_session` - ID of linked prior spec session (if any)
+  - `current_phase`, `phases`, `open_questions`, `key_decisions`
 - `research/` - Any research artifacts gathered
 
 ## Finalization Criteria
