@@ -27,6 +27,16 @@ claude --strict-mcp-config --mcp-config ./mcp-configs/.mcp.json.firecrawl_7k
   claude --mcp-config ./mcp-configs/.mcp.json.firecrawl_7k
   ```
 
+### BrowserMCP
+
+- **Config:** [.mcp.json.browsermcp](./.mcp.json.browsermcp)
+- **Description:** Browser automation MCP server for controlling browsers via the Model Context Protocol
+- **Required Env Vars:** None
+- **Run:**
+  ```bash
+  claude --mcp-config ./mcp-configs/.mcp.json.browsermcp
+  ```
+
 ## Environment Variable Support
 
 Claude Code supports environment variable interpolation in MCP configs, allowing you to:
