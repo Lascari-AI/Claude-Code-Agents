@@ -176,10 +176,6 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 
-
-.mcp*
-!.mcp.json*.sample
-
 ai_docs/*.md
 !ai_docs/README.md
 
