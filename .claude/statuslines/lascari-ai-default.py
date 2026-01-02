@@ -24,10 +24,12 @@ Sections:
 3. DIRECTORY
    - Shows the current working directory basename with 📁 icon
 
-4. LINES CHANGED
-   - Shows lines added (green) and removed (red) during the session
+4. LINES CHANGED (UNCOMMITTED)
+   - Shows lines added (green) and removed (red) that are NOT YET COMMITTED
+   - Combines staged and unstaged changes from git diff
    - Format: +{added}/-{removed}
-   - Only displayed when there are changes
+   - Resets automatically when you commit
+   - Only displayed when there are uncommitted changes
 
 5. CONTEXT WINDOW
    - Shows percentage of context window used with color coding:
@@ -40,11 +42,11 @@ Sections:
 Example Output:
     opus | 🔴 main (4) | 📁 my-project | +42/-15 | Ctx: 12% (24.0k)
 """
+
 import json
 import os
 import subprocess
 import sys
-
 
 # =============================================================================
 # CONFIGURATION: ANSI Color Codes
@@ -165,19 +167,50 @@ current_dir = os.path.basename(data["workspace"]["current_dir"])
 
 
 # =============================================================================
-# SECTION 4: LINES CHANGED
-# Show lines added/removed during this session with color coding:
+# SECTION 4: LINES CHANGED (UNCOMMITTED)
+# Show lines added/removed that are NOT YET COMMITTED with color coding:
 # - Green for additions (+)
 # - Red for removals (-)
-# Only displayed when there are actual changes
+# Combines both staged and unstaged changes
+# Resets automatically when you commit
 # =============================================================================
-cost_data = data.get("cost", {})
-lines_added = cost_data.get("total_lines_added", 0)
-lines_removed = cost_data.get("total_lines_removed", 0)
-
 lines_info = ""
-if lines_added > 0 or lines_removed > 0:
-    lines_info = f" | {GREEN}+{lines_added}{RESET}/{RED}-{lines_removed}{RESET}"
+try:
+    # Get unstaged changes (working directory vs index)
+    unstaged_diff = subprocess.run(
+        ["git", "diff", "--numstat"],
+        capture_output=True,
+        text=True,
+    )
+
+    # Get staged changes (index vs HEAD)
+    staged_diff = subprocess.run(
+        ["git", "diff", "--cached", "--numstat"],
+        capture_output=True,
+        text=True,
+    )
+
+    lines_added = 0
+    lines_removed = 0
+
+    # Parse numstat output: "added\tremoved\tfilename" per line
+    for output in [unstaged_diff.stdout, staged_diff.stdout]:
+        for line in output.strip().split("\n"):
+            if line:
+                parts = line.split("\t")
+                if len(parts) >= 2:
+                    # Binary files show "-" for added/removed
+                    if parts[0] != "-":
+                        lines_added += int(parts[0])
+                    if parts[1] != "-":
+                        lines_removed += int(parts[1])
+
+    if lines_added > 0 or lines_removed > 0:
+        lines_info = f" | {GREEN}+{lines_added}{RESET}/{RED}-{lines_removed}{RESET}"
+
+except (subprocess.CalledProcessError, FileNotFoundError, ValueError):
+    # Not a git repo or git not installed - skip lines info
+    pass
 
 
 # =============================================================================
