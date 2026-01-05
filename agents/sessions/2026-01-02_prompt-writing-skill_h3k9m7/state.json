@@ -1,0 +1,96 @@
+{
+  "session_id": "2026-01-02_prompt-writing-skill_h3k9m7",
+  "topic": "adding a prompt writing skill",
+  "description": null,
+  "granularity": "feature",
+  "parent_session": null,
+  "prior_session": null,
+  "created_at": "2026-01-02T00:00:00Z",
+  "updated_at": "2026-01-02T00:00:00Z",
+  "current_phase": "spec",
+  "phases": {
+    "spec": {
+      "status": "finalized",
+      "started_at": "2026-01-02T00:00:00Z",
+      "finalized_at": "2026-01-04T00:00:00Z"
+    },
+    "plan": {
+      "status": "pending",
+      "started_at": null,
+      "finalized_at": null
+    },
+    "build": {
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null
+    }
+  },
+  "open_questions": [],
+  "key_decisions": [
+    {
+      "decision": "Skill targets AI agents as consumers, not humans",
+      "rationale": "User wants to generate artifacts that AI will execute, not human-readable documentation"
+    },
+    {
+      "decision": "Skill codifies user's opinionated approach",
+      "rationale": "User has specific preferences for how AI artifacts should be structured"
+    },
+    {
+      "decision": "Core philosophy identified: Story-driven, Purpose-over-Role, Background-as-differentiator, Explicit-steps, Localized-constraints",
+      "rationale": "Analysis of user's existing artifacts (blog posts, skills, commands) reveals consistent patterns"
+    },
+    {
+      "decision": "Full coverage across three areas: Single-task prompts, Iterative loops, User prompt formatting",
+      "rationale": "User confirmed all three areas are needed, not prioritized depth in one"
+    },
+    {
+      "decision": "System prompt = static; User prompt = dynamic context assembly",
+      "rationale": "User clarified the key pattern: static system prompt paired with dynamically formatted user prompt"
+    },
+    {
+      "decision": "User prompt uses modular formatters with semantic XML tags",
+      "rationale": "Observed in production code: format_*_context() functions, sliding window, directive injection"
+    },
+    {
+      "decision": "Automatic invocation: triggers when writing any AI-consumable artifact",
+      "rationale": "User wants this to apply to prompts, workflows, subcommands—anything sent to an AI"
+    },
+    {
+      "decision": "Dual output format: Python for user prompts, Markdown+XML for system prompts/workflows",
+      "rationale": "User does LLM work in Python; user prompts are functions (state→string), system prompts are Markdown"
+    },
+    {
+      "decision": "Templates with principles + real examples, NOT fill-in-the-blank TODOs",
+      "rationale": "User prefers generic templates that explain principles and link to real examples"
+    },
+    {
+      "decision": "Three areas: Single-task, Workflow (agentic), Iterative loop (user-in-loop)",
+      "rationale": "User refined the distinction: single-task is one-off, workflow is multi-step agentic, iterative is interactive with user input each cycle"
+    },
+    {
+      "decision": "Link to examples, don't duplicate",
+      "rationale": "User wants single source of truth - reference real examples in their existing locations"
+    },
+    {
+      "decision": "Progressive disclosure within skill for area routing",
+      "rationale": "Top-level skill triggers on prompt writing, then model decides which area based on context"
+    },
+    {
+      "decision": "Anti-patterns section with explicit warnings",
+      "rationale": "User confirmed 'don't use generic roles' as first anti-pattern, more to be added"
+    }
+  ],
+  "goals": {
+    "high_level": [
+      "Enable Claude to generate production-quality AI artifacts in user's opinionated style",
+      "Codify methodology so it's reproducible without manual enforcement",
+      "Cover full spectrum of artifact types for AI system development"
+    ],
+    "mid_level": [
+      "Area 1: Single-task prompts (one-off, programmatic, single completion)",
+      "Area 2: Workflow prompts (multi-step agentic, agent drives itself)",
+      "Area 3: Iterative loop prompts (user-in-the-loop, interview style)",
+      "Cross-cutting: User prompt formatting (Python functions for dynamic context)"
+    ]
+  }
+}

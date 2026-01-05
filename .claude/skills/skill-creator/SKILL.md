@@ -295,6 +295,7 @@ Consult these helpful guides based on your skill's needs:
 
 - **Multi-step processes**: See references/workflows.md for sequential workflows and conditional logic
 - **Specific output formats or quality standards**: See references/output-patterns.md for template and example patterns
+- **Routing/dispatch workflows**: See references/cookbook-pattern.md for the Cookbook pattern (or use `--template cookbook` when initializing)
 
 These files contain established best practices for effective skill design.
 
@@ -304,6 +305,7 @@ These files contain established best practices for effective skill design.
 - **Conditional workflows**: Guide through decision points explicitly: "Creating new document?" → see Section A; "Editing existing?" → see Section B
 - **Template patterns**: Provide output templates—strict schemas for APIs/data, flexible formats for analysis
 - **Examples pattern**: Include input/output pairs like few-shot prompting to demonstrate expected behavior
+- **Cookbook pattern (routing skills)**: For skills with 3+ operation modes that dispatch to sub-workflows. Uses IF/THEN/EXAMPLES format. See references/cookbook-pattern.md for complete documentation, or use `--template cookbook` when initializing
 
 #### Start with Reusable Skill Contents
 

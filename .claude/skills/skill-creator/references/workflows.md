@@ -26,3 +26,29 @@ For tasks with branching logic, guide Claude through decision points:
 2. Creation workflow: [steps]
 3. Editing workflow: [steps]
 ```
+
+## Cookbook Pattern (Routing Workflows)
+
+For skills that route user requests to different sub-workflows based on intent, use the structured Cookbook pattern. This pattern provides explicit decision logic through IF/THEN/EXAMPLES syntax.
+
+**When to use:**
+- Skill supports 3+ distinct operation modes
+- User intent needs to be matched to the appropriate mode
+- Each mode has its own detailed workflow in a reference file
+
+**Structure overview:**
+```markdown
+## Cookbook
+
+### Operation Name
+
+- IF: [condition that triggers this operation]
+- THEN: Read and execute: `references/operation-workflow.md`
+- EXAMPLES:
+  - "Example user request that would trigger this"
+  - "Another example request"
+```
+
+**Production example:** See `docs-framework/SKILL.md` for Navigate/Produce/Maintain routing.
+
+**Full documentation:** See [cookbook-pattern.md](cookbook-pattern.md) for complete template and guidelines.

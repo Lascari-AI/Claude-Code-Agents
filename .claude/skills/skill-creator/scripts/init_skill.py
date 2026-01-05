@@ -3,17 +3,20 @@
 Skill Initializer - Creates a new skill from template
 
 Usage:
-    init_skill.py <skill-name> --path <path>
+    init_skill.py <skill-name> --path <path> [--template basic|cookbook]
+
+Options:
+    --template basic     Standard template with Variables and Workflow sections (default)
+    --template cookbook  Structured template for routing skills with IF/THEN/EXAMPLES
 
 Examples:
     init_skill.py my-new-skill --path skills/public
     init_skill.py my-api-helper --path skills/private
-    init_skill.py custom-skill --path /custom/location
+    init_skill.py routing-skill --path skills/public --template cookbook
 """
 
 import sys
 from pathlib import Path
-
 
 SKILL_TEMPLATE = """---
 name: {skill_name}
@@ -25,6 +28,21 @@ description: [TODO: Complete and informative explanation of what the skill does 
 ## Overview
 
 [TODO: 1-2 sentences explaining what this skill enables]
+
+## Variables
+
+[TODO: Define reusable paths and configuration values. Delete if not needed.]
+
+SKILL_ROOT: .claude/skills/{skill_name}/
+
+## Workflow
+
+[TODO: Define the high-level execution flow. Adjust steps as needed.]
+
+1. Understand the user's request
+2. Determine the appropriate approach
+3. Execute using bundled resources as needed
+4. Verify output meets requirements
 
 ## Structuring This Skill
 
@@ -49,6 +67,12 @@ description: [TODO: Complete and informative explanation of what the skill does 
 - Works well when the skill provides multiple interrelated features
 - Example: Product Management with "Core Capabilities" → numbered capability list
 - Structure: ## Overview → ## Core Capabilities → ### 1. Feature → ### 2. Feature...
+
+**5. Cookbook** (best for routing skills with multiple operations)
+- Works well when user intent drives which sub-workflow executes
+- Example: docs-framework with Navigate/Produce/Maintain routing via IF/THEN/EXAMPLES
+- Use `--template cookbook` flag for full Cookbook structure
+- See skill-creator's references/cookbook-pattern.md for complete documentation
 
 Patterns can be mixed and matched as needed. Most skills combine patterns (e.g., start with task-based, add workflow for complex operations).
 
@@ -98,6 +122,75 @@ Files not intended to be loaded into context, but rather used within the output 
 **Appropriate for:** Templates, boilerplate code, document templates, images, icons, fonts, or any files meant to be copied or used in the final output.
 
 ---
+
+**Any unneeded directories can be deleted.** Not every skill requires all three types of resources.
+"""
+
+COOKBOOK_TEMPLATE = """---
+name: {skill_name}
+description: [TODO: Complete and informative explanation of what the skill does and when to use it. Include WHEN to use this skill - specific scenarios, file types, or tasks that trigger it.]
+---
+
+# Purpose
+
+[TODO: One-sentence description of what this skill does]
+Follow the `Instructions`, execute the `Workflow`, based on the `Cookbook`.
+
+## Variables
+
+SKILL_ROOT: .claude/skills/{skill_name}/
+[TODO: Add other variables as needed, e.g., OUTPUT_ROOT, CONFIG_PATH]
+
+## Instructions
+
+- Based on the user's request, follow the `Cookbook` to determine which action to take.
+
+### [TODO: Optional Special Instructions Section Name]
+
+[TODO: Add any cross-cutting instructions that apply to all cookbook entries. Delete this section if not needed.]
+
+- IF: [condition]
+- THEN:
+  - [action step 1]
+  - [action step 2]
+- EXAMPLES:
+  - "[example trigger phrase]"
+
+## Workflow
+
+1. Understand the user's request.
+2. Match intent to the appropriate Cookbook entry.
+3. Read and execute the referenced workflow file.
+
+## Cookbook
+
+### [TODO: First Entry Name]
+
+- IF: [TODO: Describe the condition/intent that triggers this entry]
+- THEN: Read and execute: `references/[TODO: workflow-name].md`
+- EXAMPLES:
+  - "[TODO: Example user request 1]"
+  - "[TODO: Example user request 2]"
+  - "[TODO: Example user request 3]"
+
+### [TODO: Second Entry Name]
+
+- IF: [TODO: Describe another condition/intent]
+- THEN: Read and execute: `references/[TODO: another-workflow].md`
+- EXAMPLES:
+  - "[TODO: Example user request 1]"
+  - "[TODO: Example user request 2]"
+  - "[TODO: Example user request 3]"
+
+[TODO: Add more cookbook entries as needed. Each should have its own reference file.]
+
+---
+
+## Resources
+
+See `references/` for workflow files referenced by the Cookbook.
+See `scripts/` for executable tools.
+See `assets/` for output templates and resources.
 
 **Any unneeded directories can be deleted.** Not every skill requires all three types of resources.
 """
@@ -188,16 +281,17 @@ Note: This is a text placeholder. Actual assets can be any file type.
 
 def title_case_skill_name(skill_name):
     """Convert hyphenated skill name to Title Case for display."""
-    return ' '.join(word.capitalize() for word in skill_name.split('-'))
+    return " ".join(word.capitalize() for word in skill_name.split("-"))
 
 
-def init_skill(skill_name, path):
+def init_skill(skill_name, path, template_type="basic"):
     """
     Initialize a new skill directory with template SKILL.md.
 
     Args:
         skill_name: Name of the skill
         path: Path where the skill directory should be created
+        template_type: Template to use ("basic" or "cookbook")
 
     Returns:
         Path to created skill directory, or None if error
@@ -218,14 +312,19 @@ def init_skill(skill_name, path):
         print(f"❌ Error creating directory: {e}")
         return None
 
+    # Select template based on type
+    if template_type == "cookbook":
+        template = COOKBOOK_TEMPLATE
+        print("📖 Using Cookbook template")
+    else:
+        template = SKILL_TEMPLATE
+        print("📄 Using basic template")
+
     # Create SKILL.md from template
     skill_title = title_case_skill_name(skill_name)
-    skill_content = SKILL_TEMPLATE.format(
-        skill_name=skill_name,
-        skill_title=skill_title
-    )
+    skill_content = template.format(skill_name=skill_name, skill_title=skill_title)
 
-    skill_md_path = skill_dir / 'SKILL.md'
+    skill_md_path = skill_dir / "SKILL.md"
     try:
         skill_md_path.write_text(skill_content)
         print("✅ Created SKILL.md")
@@ -236,24 +335,24 @@ def init_skill(skill_name, path):
     # Create resource directories with example files
     try:
         # Create scripts/ directory with example script
-        scripts_dir = skill_dir / 'scripts'
+        scripts_dir = skill_dir / "scripts"
         scripts_dir.mkdir(exist_ok=True)
-        example_script = scripts_dir / 'example.py'
+        example_script = scripts_dir / "example.py"
         example_script.write_text(EXAMPLE_SCRIPT.format(skill_name=skill_name))
         example_script.chmod(0o755)
         print("✅ Created scripts/example.py")
 
         # Create references/ directory with example reference doc
-        references_dir = skill_dir / 'references'
+        references_dir = skill_dir / "references"
         references_dir.mkdir(exist_ok=True)
-        example_reference = references_dir / 'api_reference.md'
+        example_reference = references_dir / "api_reference.md"
         example_reference.write_text(EXAMPLE_REFERENCE.format(skill_title=skill_title))
         print("✅ Created references/api_reference.md")
 
         # Create assets/ directory with example asset placeholder
-        assets_dir = skill_dir / 'assets'
+        assets_dir = skill_dir / "assets"
         assets_dir.mkdir(exist_ok=True)
-        example_asset = assets_dir / 'example_asset.txt'
+        example_asset = assets_dir / "example_asset.txt"
         example_asset.write_text(EXAMPLE_ASSET)
         print("✅ Created assets/example_asset.txt")
     except Exception as e:
@@ -264,34 +363,58 @@ def init_skill(skill_name, path):
     print(f"\n✅ Skill '{skill_name}' initialized successfully at {skill_dir}")
     print("\nNext steps:")
     print("1. Edit SKILL.md to complete the TODO items and update the description")
-    print("2. Customize or delete the example files in scripts/, references/, and assets/")
+    print(
+        "2. Customize or delete the example files in scripts/, references/, and assets/"
+    )
     print("3. Run the validator when ready to check the skill structure")
 
     return skill_dir
 
 
 def main():
-    if len(sys.argv) < 4 or sys.argv[2] != '--path':
-        print("Usage: init_skill.py <skill-name> --path <path>")
+    if len(sys.argv) < 4 or sys.argv[2] != "--path":
+        print(
+            "Usage: init_skill.py <skill-name> --path <path> [--template basic|cookbook]"
+        )
         print("\nSkill name requirements:")
         print("  - Hyphen-case identifier (e.g., 'data-analyzer')")
         print("  - Lowercase letters, digits, and hyphens only")
         print("  - Max 40 characters")
         print("  - Must match directory name exactly")
+        print("\nTemplate options:")
+        print(
+            "  - basic (default): Standard template with Variables, Workflow, and pattern guidance"
+        )
+        print(
+            "  - cookbook: Structured template for routing skills with IF/THEN/EXAMPLES format"
+        )
         print("\nExamples:")
         print("  init_skill.py my-new-skill --path skills/public")
         print("  init_skill.py my-api-helper --path skills/private")
-        print("  init_skill.py custom-skill --path /custom/location")
+        print("  init_skill.py routing-skill --path skills/public --template cookbook")
         sys.exit(1)
 
     skill_name = sys.argv[1]
     path = sys.argv[3]
 
+    # Parse optional --template flag
+    template_type = "basic"
+    if "--template" in sys.argv:
+        idx = sys.argv.index("--template")
+        if idx + 1 < len(sys.argv):
+            template_type = sys.argv[idx + 1]
+            if template_type not in ("basic", "cookbook"):
+                print(
+                    f"❌ Error: Unknown template type '{template_type}'. Use 'basic' or 'cookbook'."
+                )
+                sys.exit(1)
+
     print(f"🚀 Initializing skill: {skill_name}")
     print(f"   Location: {path}")
+    print(f"   Template: {template_type}")
     print()
 
-    result = init_skill(skill_name, path)
+    result = init_skill(skill_name, path, template_type)
 
     if result:
         sys.exit(0)

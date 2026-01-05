@@ -6,7 +6,7 @@ Lascari AI Default Statusline
 A custom statusline for Claude Code that displays key session information.
 
 Output Format:
-    {model} | {git_status} {branch} ({files}) | 📁 {directory} | {lines} | Ctx: {percent} ({tokens})
+    {model} | {git_status} {branch} ({files}) | 📁 {directory} | Ctx: {percent} ({tokens})
 
 Sections:
 ---------
@@ -24,14 +24,7 @@ Sections:
 3. DIRECTORY
    - Shows the current working directory basename with 📁 icon
 
-4. LINES CHANGED (UNCOMMITTED)
-   - Shows lines added (green) and removed (red) that are NOT YET COMMITTED
-   - Combines staged and unstaged changes from git diff
-   - Format: +{added}/-{removed}
-   - Resets automatically when you commit
-   - Only displayed when there are uncommitted changes
-
-5. CONTEXT WINDOW
+4. CONTEXT WINDOW
    - Shows percentage of context window used with color coding:
      Green  = <25% used
      Yellow = 25-50% used
@@ -40,7 +33,7 @@ Sections:
    - Displays token count in thousands (e.g., 24.0k)
 
 Example Output:
-    opus | 🔴 main (4) | 📁 my-project | +42/-15 | Ctx: 12% (24.0k)
+    opus | 🔴 main (4) | 📁 my-project | Ctx: 12% (24.0k)
 """
 
 import json
@@ -167,54 +160,7 @@ current_dir = os.path.basename(data["workspace"]["current_dir"])
 
 
 # =============================================================================
-# SECTION 4: LINES CHANGED (UNCOMMITTED)
-# Show lines added/removed that are NOT YET COMMITTED with color coding:
-# - Green for additions (+)
-# - Red for removals (-)
-# Combines both staged and unstaged changes
-# Resets automatically when you commit
-# =============================================================================
-lines_info = ""
-try:
-    # Get unstaged changes (working directory vs index)
-    unstaged_diff = subprocess.run(
-        ["git", "diff", "--numstat"],
-        capture_output=True,
-        text=True,
-    )
-
-    # Get staged changes (index vs HEAD)
-    staged_diff = subprocess.run(
-        ["git", "diff", "--cached", "--numstat"],
-        capture_output=True,
-        text=True,
-    )
-
-    lines_added = 0
-    lines_removed = 0
-
-    # Parse numstat output: "added\tremoved\tfilename" per line
-    for output in [unstaged_diff.stdout, staged_diff.stdout]:
-        for line in output.strip().split("\n"):
-            if line:
-                parts = line.split("\t")
-                if len(parts) >= 2:
-                    # Binary files show "-" for added/removed
-                    if parts[0] != "-":
-                        lines_added += int(parts[0])
-                    if parts[1] != "-":
-                        lines_removed += int(parts[1])
-
-    if lines_added > 0 or lines_removed > 0:
-        lines_info = f" | {GREEN}+{lines_added}{RESET}/{RED}-{lines_removed}{RESET}"
-
-except (subprocess.CalledProcessError, FileNotFoundError, ValueError):
-    # Not a git repo or git not installed - skip lines info
-    pass
-
-
-# =============================================================================
-# SECTION 5: CONTEXT WINDOW USAGE
+# SECTION 4: CONTEXT WINDOW USAGE
 # Calculate and display what percentage of the context window is used.
 # Color coded by usage level:
 # - Green:  <25% (plenty of room)
@@ -258,4 +204,4 @@ else:
 # =============================================================================
 # OUTPUT: Compose and print the final statusline
 # =============================================================================
-print(f"{model}{git_info} | 📁 {current_dir}{lines_info}{context_info}")
+print(f"{model}{git_info} | 📁 {current_dir}{context_info}")
