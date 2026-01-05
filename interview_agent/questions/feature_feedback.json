@@ -1,0 +1,40 @@
+{
+  "title": "Feature Deep Dive",
+  "context": "Focused exploration of a specific feature - understanding usage patterns, satisfaction, and improvement opportunities.",
+  "config": {
+    "max_follow_ups_per_question": 2,
+    "allow_user_skip": true
+  },
+  "questions": [
+    {
+      "id": "feat1",
+      "order": 1,
+      "base_question_text": "How often do you use this feature, and in what situations?",
+      "research_objective": "Understand usage frequency and triggering contexts"
+    },
+    {
+      "id": "feat2",
+      "order": 2,
+      "base_question_text": "Walk me through how you typically use this feature from start to finish.",
+      "research_objective": "Map the user's actual workflow and identify any workarounds"
+    },
+    {
+      "id": "feat3",
+      "order": 3,
+      "base_question_text": "What do you like most about how this feature works?",
+      "research_objective": "Identify strengths and aspects to preserve or amplify"
+    },
+    {
+      "id": "feat4",
+      "order": 4,
+      "base_question_text": "What's the most frustrating part of using this feature?",
+      "research_objective": "Uncover pain points and areas for improvement"
+    },
+    {
+      "id": "feat5",
+      "order": 5,
+      "base_question_text": "How does this feature compare to similar features you've used in other products?",
+      "research_objective": "Understand competitive context and user expectations"
+    }
+  ]
+}
