@@ -1,0 +1,433 @@
+{
+  "$schema": "Plan schema for agent-session checkpoint-based planning (v2)",
+  "session_id": "2026-01-05_prompt-writing-skill_59607b",
+  "spec_reference": "./spec.md",
+  "created_at": "2026-01-05T12:00:00Z",
+  "updated_at": "2026-01-05T14:00:00Z",
+  "status": "complete",
+
+  "checkpoints": [
+    {
+      "id": 1,
+      "title": "Foundation: Overview + Base Template",
+      "goal": "Create the entry point (00-overview.md) and canonical base template (10-base-template.md) as the foundational layer. This is the minimal end-to-end structure—a user can read overview, understand routing, and access the base template.",
+      "prerequisites": [],
+      "status": "pending",
+      "file_context": {
+        "beginning": {
+          "files": [
+            { "path": "system_prompt/00-overview.md", "status": "exists", "description": "Entry point with routing + embedded template" },
+            { "path": "system_prompt/10-single-completion.md", "status": "exists", "description": "Single-completion pattern" },
+            { "path": "system_prompt/20-multiturn/00-base.md", "status": "exists", "description": "Multi-turn base" },
+            { "path": "system_prompt/20-multiturn/10-iterative-loop.md", "status": "exists", "description": "Iterative loop" }
+          ],
+          "tree": "system_prompt/\n├── 00-overview.md\n├── 10-single-completion.md\n└── 20-multiturn/\n    ├── 00-base.md\n    └── 10-iterative-loop.md"
+        },
+        "ending": {
+          "files": [
+            { "path": "system_prompt/00-overview.md", "status": "modified", "description": "Entry point + routing only (template extracted)" },
+            { "path": "system_prompt/10-base-template.md", "status": "new", "description": "Canonical XML structure" }
+          ],
+          "tree": "system_prompt/\n├── 00-overview.md (refactored)\n├── 10-base-template.md (new)\n├── 10-single-completion.md\n└── 20-multiturn/\n    ├── 00-base.md\n    └── 10-iterative-loop.md"
+        }
+      },
+      "testing_strategy": {
+        "approach": "Manual navigation test",
+        "verification_steps": [
+          "Read 00-overview.md and verify it routes to base-template and workflow-design",
+          "Read 10-base-template.md and verify it contains the canonical XML template"
+        ]
+      },
+      "task_groups": [
+        {
+          "id": "1.1",
+          "title": "Create Base Template File",
+          "objective": "Extract the canonical XML structure from 00-overview.md into a dedicated 10-base-template.md file that serves as the copy-and-adapt reference.",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "1.1.1",
+              "title": "Create base-template.md file",
+              "file_path": "system_prompt/10-base-template.md",
+              "description": "Create the canonical base template file with YAML frontmatter, title, intro, canonical structure tree, reference XML template, and quick reference section.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  {
+                    "file": "system_prompt/00-overview.md",
+                    "lines": "79-293",
+                    "purpose": "Source for canonical structure and reference template"
+                  }
+                ],
+                "related_files": []
+              },
+              "depends_on": [],
+              "actions": [
+                {
+                  "id": "1.1.1.1",
+                  "command": "CREATE FILE system_prompt/10-base-template.md: ADD YAML frontmatter (covers: 'Canonical XML structure for all instruction artifacts', type: 'template', concepts: [base-template, xml-structure, purpose, knowledge, goal, workflow], depends-on: [system_prompt/00-overview.md]). ADD Title '# Base Template'. ADD intro paragraph: standalone canonical structure reference. ADD Section '## Canonical Structure': MIRROR tree diagram from 00-overview.md. ADD Section '## Reference Template': EXTRACT XML code block from 00-overview.md (preserve inline documentation). ADD Section '## Quick Reference': ADD table summarizing key sections.",
+                  "file": "system_prompt/10-base-template.md",
+                  "status": "pending"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "1.2",
+          "title": "Refactor Overview File",
+          "objective": "Transform 00-overview.md into a focused entry point that routes to base-template and workflow-design sections. Remove the embedded canonical template (now in 10-base-template.md).",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "1.2.1",
+              "title": "Refactor overview to entry point",
+              "file_path": "system_prompt/00-overview.md",
+              "description": "Transform overview into focused entry point: keep What This Covers, Key Distinction, Choosing Your Pattern; remove Canonical Structure and Reference Template (now in 10-base-template.md); update Instruction Types routing table; add reference to base-template.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  {
+                    "file": "system_prompt/00-overview.md",
+                    "purpose": "Full file - identify sections to keep vs remove"
+                  }
+                ],
+                "related_files": ["system_prompt/10-base-template.md"]
+              },
+              "depends_on": ["1.1.1"],
+              "actions": [
+                {
+                  "id": "1.2.1.1",
+                  "command": "UPDATE system_prompt/00-overview.md: REMOVE Section '## Canonical Structure' (the tree diagram). REMOVE Section '## Reference Template' (the entire XML code block). ADD reference link after 'Key Distinction' section: 'For the canonical XML structure, see [Base Template](10-base-template.md)'. UPDATE Section '## Instruction Types' table: keep routing to single-completion and multiturn, add row for base-template reference.",
+                  "file": "system_prompt/00-overview.md",
+                  "status": "pending"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Workflow Design Core: Overview + Base Principles",
+      "goal": "Create the 20-workflow-design/ folder with its overview and base principles file. Establishes workflow design as the central discipline with core theory that applies to all patterns.",
+      "prerequisites": [1],
+      "status": "pending",
+      "file_context": {
+        "beginning": {
+          "files": [
+            { "path": "system_prompt/00-overview.md", "status": "exists", "description": "Refactored entry point" },
+            { "path": "system_prompt/10-base-template.md", "status": "exists", "description": "Canonical XML structure" }
+          ],
+          "tree": "system_prompt/\n├── 00-overview.md\n├── 10-base-template.md\n├── 10-single-completion.md\n└── 20-multiturn/"
+        },
+        "ending": {
+          "files": [
+            { "path": "system_prompt/20-workflow-design/00-overview.md", "status": "new", "description": "Introduces workflow design discipline" },
+            { "path": "system_prompt/20-workflow-design/10-base.md", "status": "new", "description": "Core principles for all workflows" }
+          ],
+          "tree": "system_prompt/\n├── 00-overview.md\n├── 10-base-template.md\n└── 20-workflow-design/\n    ├── 00-overview.md (new)\n    └── 10-base.md (new)"
+        }
+      },
+      "testing_strategy": {
+        "approach": "Manual navigation test",
+        "verification_steps": [
+          "Navigate from 00-overview.md to 20-workflow-design/00-overview.md",
+          "Verify 00-overview.md explains patterns and routes correctly",
+          "Verify 10-base.md contains core principles applicable to all patterns"
+        ]
+      },
+      "task_groups": [
+        {
+          "id": "2.1",
+          "title": "Create Workflow Design Overview",
+          "objective": "Create 20-workflow-design/00-overview.md introducing workflow design as the central discipline. Explain the single-completion vs multi-turn split and how to navigate the pattern files.",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "2.1.1",
+              "title": "Create workflow-design overview file",
+              "file_path": "system_prompt/20-workflow-design/00-overview.md",
+              "description": "Create overview file with core insight ('workflow IS the product'), fundamental split table (single-completion vs multi-turn), pattern navigation guide, and choosing your pattern section.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": "spec.md", "lines": "30-50", "purpose": "Core insight and key distinction" },
+                  { "file": "system_prompt/00-overview.md", "lines": "40-75", "purpose": "Existing key distinction content" }
+                ],
+                "related_files": []
+              },
+              "depends_on": [],
+              "actions": [
+                {
+                  "id": "2.1.1.1",
+                  "command": "CREATE FILE system_prompt/20-workflow-design/00-overview.md: ADD YAML frontmatter (covers: 'Workflow design as the central discipline', type: 'overview', concepts: [workflow-design, steps, phases, single-completion, multi-turn]). ADD Title '# Workflow Design'. ADD Section '## Core Insight': 'The workflow IS the product'. ADD Section '## The Fundamental Split': table comparing single-completion vs multi-turn (structure, execution, state, output). ADD Section '## Pattern Navigation': guide to 20-single-completion.md and 30-multi-turn/. ADD Section '## Choosing Your Pattern': decision guidance.",
+                  "file": "system_prompt/20-workflow-design/00-overview.md",
+                  "status": "pending"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "2.2",
+          "title": "Create Base Principles File",
+          "objective": "Create 20-workflow-design/10-base.md as the dense reference for core workflow principles that apply to ALL patterns (XML structure, steps vs phases, constraint localization, critical tags, etc.).",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "2.2.1",
+              "title": "Create base principles file",
+              "file_path": "system_prompt/20-workflow-design/10-base.md",
+              "description": "Create dense reference file with: steps vs phases distinction, constraint localization, output format vs protocol, critical tags usage, error handling patterns, principles sections, general rules.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": "spec.md", "lines": "106-132", "purpose": "Steps vs Phases, workflow design principles" },
+                  { "file": "system_prompt/10-single-completion.md", "purpose": "Existing patterns for steps and constraints" },
+                  { "file": "system_prompt/20-multiturn/00-base.md", "purpose": "Existing patterns for phases, state, critical tags" }
+                ],
+                "related_files": ["system_prompt/20-workflow-design/00-overview.md"]
+              },
+              "depends_on": ["2.1.1"],
+              "actions": [
+                {
+                  "id": "2.2.1.1",
+                  "command": "CREATE FILE system_prompt/20-workflow-design/10-base.md: ADD YAML frontmatter (covers: 'Core workflow design principles', type: 'reference'). ADD Title '# Workflow Design: Base Principles'. ADD Section '## Steps vs Phases': internal vs external execution. ADD Section '## Constraint Localization': global vs step-specific. ADD Section '## Output Format vs Protocol': structure vs delivery. ADD Section '## Using <critical> Tags': must-not-violate constraints. ADD Section '## Error Handling Patterns': scenario-based. ADD Section '## Principles Sections': named principles. ADD Section '## General Rules': numbered emphasis rules.",
+                  "file": "system_prompt/20-workflow-design/10-base.md",
+                  "status": "pending"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Single-Completion Pattern",
+      "goal": "Create 20-workflow-design/20-single-completion.md covering thinking-window execution pattern with <steps> structure. Validates the pattern documentation approach.",
+      "prerequisites": [2],
+      "status": "pending",
+      "file_context": {
+        "beginning": {
+          "files": [
+            { "path": "system_prompt/20-workflow-design/00-overview.md", "status": "exists", "description": "Workflow design overview" },
+            { "path": "system_prompt/20-workflow-design/10-base.md", "status": "exists", "description": "Base principles" },
+            { "path": "system_prompt/10-single-completion.md", "status": "exists", "description": "Existing full template" }
+          ],
+          "tree": "system_prompt/20-workflow-design/\n├── 00-overview.md\n└── 10-base.md"
+        },
+        "ending": {
+          "files": [
+            { "path": "system_prompt/20-workflow-design/20-single-completion.md", "status": "new", "description": "Single-completion workflow pattern" }
+          ],
+          "tree": "system_prompt/20-workflow-design/\n├── 00-overview.md\n├── 10-base.md\n└── 20-single-completion.md (new)"
+        }
+      },
+      "testing_strategy": {
+        "approach": "Manual navigation and content verification",
+        "verification_steps": [
+          "Navigate from 20-workflow-design/00-overview.md to 20-single-completion.md",
+          "Verify file covers <steps> structure, internal reasoning, no external state",
+          "Verify examples are appropriate for thinking-window execution"
+        ]
+      },
+      "task_groups": [
+        {
+          "id": "3.1",
+          "title": "Create Single-Completion Pattern File",
+          "objective": "Create 20-workflow-design/20-single-completion.md documenting the thinking-window execution pattern using <steps> structure. Focuses on workflow design for internal reasoning without external state.",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "3.1.1",
+              "title": "Create single-completion workflow pattern file",
+              "file_path": "system_prompt/20-workflow-design/20-single-completion.md",
+              "description": "Create single-completion pattern doc: when to use, <steps> structure, internal reasoning scaffold, no external state, step anatomy (name, description, constraints), examples (classification, extraction, generation).",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": "system_prompt/10-single-completion.md", "purpose": "Existing template content to draw from" },
+                  { "file": "spec.md", "lines": "106-120", "purpose": "Steps definition and characteristics" }
+                ],
+                "related_files": ["system_prompt/20-workflow-design/10-base.md"]
+              },
+              "depends_on": [],
+              "actions": [
+                {
+                  "id": "3.1.1.1",
+                  "command": "CREATE FILE system_prompt/20-workflow-design/20-single-completion.md: ADD YAML frontmatter (covers: 'Thinking-window workflow pattern', type: 'pattern'). ADD Title '# Single-Completion Workflows'. ADD Section '## When to Use': your code controls execution. ADD Section '## The <steps> Structure': internal reasoning scaffold. ADD Section '## Step Anatomy': name, description, constraints. ADD Section '## No External State': single response output. ADD Section '## Examples': classification, extraction, generation. ADD Section '## Template Reference': link to 10-base-template.md.",
+                  "file": "system_prompt/20-workflow-design/20-single-completion.md",
+                  "status": "pending"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Multi-Turn Base Pattern",
+      "goal": "Create 30-multi-turn/00-base.md covering external state execution with <phases> structure, state schemas, and output protocols. Core multi-turn pattern.",
+      "prerequisites": [2],
+      "status": "pending",
+      "file_context": {
+        "beginning": {
+          "files": [
+            { "path": "system_prompt/20-workflow-design/00-overview.md", "status": "exists", "description": "Workflow design overview" },
+            { "path": "system_prompt/20-workflow-design/20-single-completion.md", "status": "exists", "description": "Single-completion pattern" },
+            { "path": "system_prompt/20-multiturn/00-base.md", "status": "exists", "description": "Existing multi-turn base" }
+          ],
+          "tree": "system_prompt/20-workflow-design/\n├── 00-overview.md\n├── 10-base.md\n└── 20-single-completion.md"
+        },
+        "ending": {
+          "files": [
+            { "path": "system_prompt/20-workflow-design/30-multi-turn/00-base.md", "status": "new", "description": "Multi-turn base workflow pattern" }
+          ],
+          "tree": "system_prompt/20-workflow-design/\n├── 00-overview.md\n├── 10-base.md\n├── 20-single-completion.md\n└── 30-multi-turn/\n    └── 00-base.md (new)"
+        }
+      },
+      "testing_strategy": {
+        "approach": "Manual navigation and content verification",
+        "verification_steps": [
+          "Navigate from 20-workflow-design/00-overview.md to 30-multi-turn/00-base.md",
+          "Verify file covers <phases> structure, state schemas, output protocols",
+          "Verify examples reference research agents or similar autonomous systems"
+        ]
+      },
+      "task_groups": [
+        {
+          "id": "4.1",
+          "title": "Create Multi-Turn Base Pattern File",
+          "objective": "Create 20-workflow-design/30-multi-turn/00-base.md documenting the external state execution pattern using <phases> structure. Covers state schema design, output protocols, and autonomous execution.",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "4.1.1",
+              "title": "Create multi-turn base workflow pattern file",
+              "file_path": "system_prompt/20-workflow-design/30-multi-turn/00-base.md",
+              "description": "Create multi-turn base pattern doc: when to use (autonomous execution), <phases> structure, state schema design, output protocol, phase anatomy (id, name, actions, critical), examples (research agents, report writers).",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": "system_prompt/20-multiturn/00-base.md", "purpose": "Existing template content" },
+                  { "file": ".claude/agents/research/report-writer.md", "purpose": "Real multi-turn agent example" },
+                  { "file": "spec.md", "lines": "106-132", "purpose": "Phases definition" }
+                ],
+                "related_files": ["system_prompt/20-workflow-design/10-base.md"]
+              },
+              "depends_on": [],
+              "actions": [
+                {
+                  "id": "4.1.1.1",
+                  "command": "CREATE FILE system_prompt/20-workflow-design/30-multi-turn/00-base.md: ADD YAML frontmatter (covers: 'External state workflow pattern', type: 'pattern'). ADD Title '# Multi-Turn Workflows'. ADD Section '## When to Use': autonomous system execution. ADD Section '## The <phases> Structure': external execution flow. ADD Section '## State Schema Design': explicit JSON state. ADD Section '## Output Protocol': where to write, incremental updates. ADD Section '## Phase Anatomy': id, name, actions, critical tags. ADD Section '## Examples': research-subagent, report-writer. ADD Section '## Template Reference': link to 20-multiturn/00-base.md.",
+                  "file": "system_prompt/20-workflow-design/30-multi-turn/00-base.md",
+                  "status": "pending"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Multi-Turn Techniques: Iterative Loop + Parallel Agents",
+      "goal": "Complete the multi-turn section with technique files: 10-iterative-loop.md (user-in-the-loop) and 20-parallel-agents.md (subagent spawning). Full documentation set complete.",
+      "prerequisites": [4],
+      "status": "pending",
+      "file_context": {
+        "beginning": {
+          "files": [
+            { "path": "system_prompt/20-workflow-design/30-multi-turn/00-base.md", "status": "exists", "description": "Multi-turn base pattern" },
+            { "path": "system_prompt/20-multiturn/10-iterative-loop.md", "status": "exists", "description": "Existing iterative loop template" }
+          ],
+          "tree": "system_prompt/20-workflow-design/30-multi-turn/\n└── 00-base.md"
+        },
+        "ending": {
+          "files": [
+            { "path": "system_prompt/20-workflow-design/30-multi-turn/10-iterative-loop.md", "status": "new", "description": "Iterative loop technique" },
+            { "path": "system_prompt/20-workflow-design/30-multi-turn/20-parallel-agents.md", "status": "new", "description": "Parallel agents technique" }
+          ],
+          "tree": "system_prompt/20-workflow-design/30-multi-turn/\n├── 00-base.md\n├── 10-iterative-loop.md (new)\n└── 20-parallel-agents.md (new)"
+        }
+      },
+      "testing_strategy": {
+        "approach": "Manual navigation and content verification",
+        "verification_steps": [
+          "Navigate from 30-multi-turn/00-base.md to both technique files",
+          "Verify iterative-loop covers state machine, per-turn output, memory handling",
+          "Verify parallel-agents covers orchestrator pattern, subagent state, coordination"
+        ]
+      },
+      "task_groups": [
+        {
+          "id": "5.1",
+          "title": "Create Iterative Loop Technique File",
+          "objective": "Create 20-workflow-design/30-multi-turn/10-iterative-loop.md documenting the user-in-the-loop technique. State machine stages, per-turn output, memory handling, max rounds failsafe.",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "5.1.1",
+              "title": "Create iterative loop technique file",
+              "file_path": "system_prompt/20-workflow-design/30-multi-turn/10-iterative-loop.md",
+              "description": "Create iterative loop technique doc: when to use (user input each cycle), state machine stages (PREP→Q→REFLECT→END), per-turn and final output formats, memory handling rules, max rounds failsafe, examples (spec interviews, requirements).",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": "system_prompt/20-multiturn/10-iterative-loop.md", "purpose": "Existing template content" },
+                  { "file": "spec.md", "lines": "186-198", "purpose": "Iterative loop characteristics" }
+                ],
+                "related_files": ["system_prompt/20-workflow-design/30-multi-turn/00-base.md"]
+              },
+              "depends_on": [],
+              "actions": [
+                {
+                  "id": "5.1.1.1",
+                  "command": "CREATE FILE system_prompt/20-workflow-design/30-multi-turn/10-iterative-loop.md: ADD YAML frontmatter (covers: 'User-in-the-loop technique', type: 'technique'). ADD Title '# Iterative Loop Technique'. ADD Section '## When to Use': user provides input each cycle. ADD Section '## State Machine Stages': PREP→Q→REFLECT→END. ADD Section '## Output Formats': per-turn format + final report format. ADD Section '## Memory Handling': retain confirmed facts, discard speculation. ADD Section '## Max Rounds Failsafe': prevent infinite loops. ADD Section '## Examples': spec interviews, requirements gathering.",
+                  "file": "system_prompt/20-workflow-design/30-multi-turn/10-iterative-loop.md",
+                  "status": "pending"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "5.2",
+          "title": "Create Parallel Agents Technique File",
+          "objective": "Create 20-workflow-design/30-multi-turn/20-parallel-agents.md documenting the subagent spawning technique. Orchestrator pattern, subagent state files, coordination, synthesis.",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "5.2.1",
+              "title": "Create parallel agents technique file",
+              "file_path": "system_prompt/20-workflow-design/30-multi-turn/20-parallel-agents.md",
+              "description": "Create parallel agents technique doc: when to use (spawn subagents), orchestrator pattern, subagent state files, coordination (spawn, wait, collect), synthesis/report writing, examples (research system).",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": ".claude/agents/research/report-writer.md", "purpose": "Real orchestrator example" },
+                  { "file": ".claude/agents/research/research-subagent.md", "purpose": "Real subagent example" },
+                  { "file": "spec.md", "lines": "199-204", "purpose": "Parallel agents characteristics" }
+                ],
+                "related_files": ["system_prompt/20-workflow-design/30-multi-turn/00-base.md"]
+              },
+              "depends_on": [],
+              "actions": [
+                {
+                  "id": "5.2.1.1",
+                  "command": "CREATE FILE system_prompt/20-workflow-design/30-multi-turn/20-parallel-agents.md: ADD YAML frontmatter (covers: 'Subagent spawning technique', type: 'technique'). ADD Title '# Parallel Agents Technique'. ADD Section '## When to Use': spawn subagents with own state. ADD Section '## Orchestrator Pattern': coordinate multiple subagents. ADD Section '## Subagent State Files': each subagent maintains state. ADD Section '## Coordination': spawn, wait, collect results. ADD Section '## Synthesis': report writing from collected results. ADD Section '## Examples': research system orchestrator.",
+                  "file": "system_prompt/20-workflow-design/30-multi-turn/20-parallel-agents.md",
+                  "status": "pending"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

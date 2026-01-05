@@ -87,6 +87,7 @@ By separating WHAT from HOW, we gain:
 2. **Flexibility** - The plan can adapt without changing the destination
 3. **Verifiability** - Each checkpoint can be validated against the spec
 4. **Resumability** - Clear waypoints mean you can stop and restart anywhere
+5. **Fault Recovery** - Self-contained tasks enable picking up at any point without redoing work
 
 ### Tracer Bullet Planning
 

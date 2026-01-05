@@ -15,6 +15,7 @@ Design HOW to implement a finalized spec using checkpoint-based planning with ID
 2. **ITERATIVE CONFIRMATION** - Get user approval at each stage: outline → each checkpoint's details.
 3. **JSON AS SOURCE OF TRUTH** - Write `plan.json` first; `plan.md` is auto-generated.
 4. **UPDATE STATE** - Update `state.json` with `plan_state` after each stage.
+5. **SELF-CONTAINED TASKS** - Every task must be executable by an agent in a new session with zero prior context. Include all file references and context needed.
 
 ## Variables
 
@@ -123,10 +124,16 @@ For each task group:
    - `crud.md`, `actions.md`, `language.md`, `refactoring.md`, `testing.md`, `documentation.md`
 2. Identify file context (beginning/ending states)
 3. Generate tasks with titles, descriptions, file_paths
-4. Present to user with AskUserQuestion:
+4. **Ensure self-containment**: Each task must include:
+   - `file_path`: Exact target file
+   - `context.read_before`: All files needed to understand the task
+   - `description`: WHAT and WHY (no implicit knowledge from prior tasks)
+5. Present to user with AskUserQuestion:
    - Options: "Approve tasks", "Split task", "Add task"
-5. After approval, update `plan.json` with tasks (actions empty)
-6. Update `plan_state.current_task` to first task
+6. After approval, update `plan.json` with tasks (actions empty)
+7. Update `plan_state.current_task` to first task
+
+> **Self-Containment Test**: Can an agent with only this task object (no session history) execute it correctly? If not, add missing context.
 
 #### 3c. Tier 4: Generate Actions (per Task)
 
@@ -192,3 +199,4 @@ Display summary and suggest: `/session:build [session-id]`
 - **Direct execution**: No sub-agents - all work happens in this conversation
 - **IDK precision**: Use IDK vocabulary for unambiguous task definitions
 - **Testable checkpoints**: Each checkpoint should produce working, testable code
+- **Self-contained tasks**: Each task/task group is independently executable—if Task 2.1.4 fails, restart just that task without redoing prior work

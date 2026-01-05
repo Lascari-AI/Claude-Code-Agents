@@ -1,75 +1,225 @@
 ---
-covers: Core workflow design principles that apply to ALL patterns
+covers: What workflows are, how they work, and reference for workflow tags
 type: reference
 concepts:
-  - steps
+  - workflow
   - phases
+  - steps
+  - actions
+  - ultrathink
+  - parallel
+  - critical
   - constraints
-  - critical-tags
-  - output-format
-  - error-handling
-  - principles
 depends-on:
   - system_prompt/20-workflow-design/00-overview.md
 ---
 
-# Workflow Design: Base Principles
+# Workflow Design: Fundamentals
 
-This is the dense reference for workflow design theory. These principles apply regardless of whether you're building single-completion or multi-turn workflows.
+A workflow is structured XML that guides an agent through step-by-step execution. It's the core of any instruction artifact—the part that directs what the model actually does.
 
 ---
 
-## Steps vs Phases
+## What is a Workflow?
 
-The fundamental structural choice in workflow design.
+A workflow breaks down a task into discrete, ordered units of work. Each unit has:
 
-### Steps (Single-Completion)
+- **Identity** — A name and/or ID for reference
+- **Instructions** — What to do in this unit
+- **Constraints** — Rules that apply to this unit (optional)
+
+The XML structure makes boundaries explicit. The model knows exactly where each unit begins, ends, and what's expected.
+
+```xml
+<workflow>
+    <!-- Units of work, ordered and named -->
+</workflow>
+```
+
+**Why XML?** Clear boundaries. Hierarchical nesting. Attributes for metadata. The model parses structure, not just content.
+
+---
+
+## Structural Elements
+
+### Phases
+
+Top-level execution units. Use for multi-turn workflows where each phase involves external actions (tool calls, state updates, waiting).
+
+```xml
+<phase id="1" name="Initialize">
+    <action>Validate input parameters</action>
+    <action>Create session directory</action>
+    <action>Write initial state file</action>
+</phase>
+
+<phase id="2" name="Execute">
+    <action>Process each item in queue</action>
+    <action>Update state after each completion</action>
+</phase>
+
+<phase id="3" name="Finalize">
+    <action>Synthesize results</action>
+    <action>Write final output</action>
+</phase>
+```
+
+| Attribute | Required | Purpose |
+|-----------|----------|---------|
+| `id` | Yes | Numeric ordering (1, 2, 3...) |
+| `name` | Yes | Human-readable phase name |
+
+### Steps
+
+Internal reasoning units. Use for single-completion workflows where the model processes everything in its thinking window.
 
 ```xml
 <steps>
-    <step name="analyze">
-        <description>What to do and how</description>
-        <constraints>Rules for THIS step only</constraints>
+    <step id="1" name="parse_input">
+        <description>Extract key entities and relationships from the input</description>
+    </step>
+
+    <step id="2" name="analyze">
+        <description>Apply domain rules to evaluate the extracted data</description>
+        <constraints>
+        - Only use explicitly stated facts
+        - Flag assumptions clearly
+        </constraints>
+    </step>
+
+    <step id="3" name="synthesize">
+        <description>Combine analysis into structured output</description>
     </step>
 </steps>
 ```
 
-**Characteristics:**
-- Internal reasoning scaffold
-- Model processes all steps in thinking window
-- No external feedback between steps
-- Output is result of processing entire sequence
-- Your code controls execution
+| Attribute | Required | Purpose |
+|-----------|----------|---------|
+| `id` | Optional | Numeric ordering for reference |
+| `name` | Yes | Action verb identifier (snake_case) |
 
-### Phases (Multi-Turn)
+### Actions
+
+Discrete tasks within a phase. Each action is one thing to do.
 
 ```xml
-<workflow>
-    <phase id="1" name="Initialize">
-        <action>First action</action>
-        <action>Second action</action>
-    </phase>
-    <phase id="2" name="Execute">
-        <critical>Must-not-violate constraint</critical>
-        <action>Main work</action>
-    </phase>
-</workflow>
+<phase id="2" name="Research">
+    <action>Search for relevant files using Glob</action>
+    <action>Read each file and extract key patterns</action>
+    <action>Update state with findings</action>
+</phase>
 ```
 
-**Characteristics:**
-- External execution flow
-- Each phase involves tool calls, state updates
-- Feedback between phases (tool results, state reads)
-- Incremental output across multiple completions
-- Autonomous system controls execution
+Actions are implicit children of phases—no special attributes needed.
 
 ---
 
-## Constraint Localization
+## Execution Modifier Tags
 
-Where you place constraints matters.
+Tags that change HOW a unit executes.
 
-### Step-Specific Constraints
+### `<ultrathink>`
+
+Signals the model to spend extra reasoning cycles on this unit. Use for complex decomposition, multi-factor analysis, or critical decisions.
+
+```xml
+<step id="1" name="decompose_query">
+    <ultrathink>
+    This is the most critical step. Spend significant effort here.
+    Break the query into orthogonal subqueries that cover all aspects.
+    Consider: scope, specificity, searchability, independence.
+    </ultrathink>
+    <description>
+    Decompose the research request into 3-5 focused subqueries.
+    Each subquery should be independently investigable.
+    </description>
+</step>
+```
+
+```xml
+<phase id="1" name="Understand Request">
+    <ultrathink>
+    Parse the user's intent carefully. What do they ACTUALLY need?
+    Consider unstated assumptions and implicit requirements.
+    </ultrathink>
+    <action>Analyze the request for explicit and implicit requirements</action>
+    <action>Identify ambiguities that need clarification</action>
+</phase>
+```
+
+**When to use:**
+- Query decomposition (research, analysis)
+- Architectural decisions
+- Ambiguity resolution
+- Any step where shallow thinking leads to poor outcomes
+
+### `<actions parallel="true">`
+
+Signals that contained actions should execute concurrently, not sequentially.
+
+```xml
+<phase id="2" name="Spawn Subagents">
+    <critical>Execute these in a SINGLE message with multiple tool calls</critical>
+    <actions parallel="true">
+        <action>Spawn subagent for query 1</action>
+        <action>Spawn subagent for query 2</action>
+        <action>Spawn subagent for query 3</action>
+    </actions>
+</phase>
+```
+
+```xml
+<phase id="3" name="Gather Context">
+    <actions parallel="true">
+        <action>Read configuration file</action>
+        <action>Read environment variables</action>
+        <action>Fetch remote schema</action>
+    </actions>
+    <action>Merge all context sources</action>  <!-- This runs after parallel actions -->
+</phase>
+```
+
+**When to use:**
+- Spawning multiple subagents
+- Reading multiple independent files
+- Fetching data from multiple sources
+- Any independent operations that don't depend on each other
+
+### `<critical>`
+
+Marks constraints that must not be violated. The model prioritizes these above other instructions.
+
+```xml
+<critical>
+NEVER modify files outside the designated output directory.
+</critical>
+
+<phase id="2" name="Execute">
+    <critical>
+    Update state after EACH item processed.
+    Do NOT batch updates—enables resume on failure.
+    </critical>
+    <action>Process items from queue</action>
+</phase>
+```
+
+**When to use:**
+- Safety constraints (file access, data handling)
+- Execution order requirements
+- Parallel vs sequential mandates
+- Mandatory state updates
+
+**Use sparingly**—overuse dilutes impact.
+
+---
+
+## Constraint Placement
+
+Where you place constraints determines their scope.
+
+### Step/Phase-Local
+
+Rules that apply ONLY to one unit:
 
 ```xml
 <step name="extract_entities">
@@ -81,9 +231,9 @@ Where you place constraints matters.
 </step>
 ```
 
-Use for rules that apply ONLY to one step. Keeps the step self-contained.
-
 ### Global Constraints
+
+Rules that apply EVERYWHERE in the workflow:
 
 ```xml
 <global_constraints>
@@ -93,33 +243,15 @@ Use for rules that apply ONLY to one step. Keeps the step self-contained.
 </global_constraints>
 ```
 
-Use for rules that apply EVERYWHERE. Avoids repetition across steps.
-
-### Phase-Level Critical
-
-```xml
-<phase id="2" name="Execute">
-    <critical>
-    Spawn ALL tasks in a SINGLE message with multiple parallel calls.
-    Do NOT spawn them sequentially.
-    </critical>
-    <action>For each query, spawn subagent</action>
-</phase>
-```
-
-Use for must-not-violate constraints within a specific phase.
-
-**Principle**: Localize constraints to smallest applicable scope. Global only when truly global.
+**Principle**: Localize to smallest applicable scope. Global only when truly global.
 
 ---
 
-## Output Format vs Output Protocol
-
-These serve different purposes.
+## Output Specification
 
 ### Output Format (Single-Completion)
 
-Defines the **structure** of the response.
+Defines the **structure** of the response:
 
 ```xml
 <output_format>
@@ -131,158 +263,53 @@ Defines the **structure** of the response.
 </output_format>
 ```
 
-Your code receives this structure directly.
-
 ### Output Protocol (Multi-Turn)
 
-Defines **where and how** to write output, not just structure.
+Defines **where and how** to write output:
 
 ```xml
 <output_protocol>
-  <critical>
-  Write findings incrementally to state file.
-  After EACH file examined, update the findings array.
-  </critical>
-
-  <final_output>
-  Summarize to user only after all phases complete.
-  </final_output>
+    <critical>
+    Write findings to: {session}/findings.md
+    Update state after EACH file processed.
+    </critical>
+    <final_output>
+    Return ONLY: "Complete. Results at: {path}"
+    Do NOT include full results in response message.
+    </final_output>
 </output_protocol>
 ```
 
-The system persists state between completions.
+---
+
+## Quick Reference
+
+| Tag | Purpose | Context |
+|-----|---------|---------|
+| `<workflow>` | Container for all execution units | Top-level |
+| `<phase>` | External execution unit with tool calls | Multi-turn |
+| `<step>` | Internal reasoning unit | Single-completion |
+| `<action>` | Discrete task within a phase | Inside `<phase>` |
+| `<ultrathink>` | Signal for deep reasoning | Inside any unit |
+| `<actions parallel="true">` | Concurrent execution | Inside `<phase>` |
+| `<critical>` | Must-not-violate constraint | Anywhere |
+| `<constraints>` | Rules for a specific unit | Inside `<step>` |
+| `<global_constraints>` | Rules for entire workflow | Top-level |
+| `<output_format>` | Response structure | Single-completion |
+| `<output_protocol>` | Where/how to write output | Multi-turn |
 
 ---
 
-## Using `<critical>` Tags
-
-Mark constraints that must not be violated.
-
-```xml
-<critical>
-NEVER modify files outside the designated output directory.
-</critical>
-```
-
-**When to use:**
-- Safety constraints (file access, data handling)
-- Execution order that must not change
-- Parallel vs sequential requirements
-- Mandatory state updates
-
-**Characteristics:**
-- Visually distinct in prompt
-- Models prioritize these constraints
-- Should be rare—overuse dilutes impact
-
----
-
-## Error Handling Patterns
-
-### Scenario-Based (Multi-Turn)
-
-```xml
-<error_handling>
-    <scenario name="Empty Request">
-        Ask user for required input with usage example.
-    </scenario>
-    <scenario name="File Not Found">
-        - Log warning to state
-        - Skip and continue with remaining files
-        - Note in final summary
-    </scenario>
-    <scenario name="Subagent Failure">
-        - Mark subagent as failed in state
-        - Continue with successful subagents
-        - Include partial results in report
-    </scenario>
-</error_handling>
-```
-
-### Inline Handling (Single-Completion)
-
-```xml
-<step name="validate_input">
-    <description>
-    Check input meets requirements.
-
-    If invalid:
-    - Return error structure with specific message
-    - Do not proceed to subsequent steps
-    </description>
-</step>
-```
-
----
-
-## Principles Sections
-
-Named principles guide behavior across the workflow.
-
-```xml
-<principles>
-  <principle name="Incremental Updates">
-      Update state file after EACH significant action.
-      Never batch updates—immediate persistence.
-  </principle>
-
-  <principle name="Focused Investigation">
-      Stay laser-focused on assigned objective.
-      Note tangential findings but don't pursue.
-  </principle>
-
-  <principle name="Evidence Over Assertion">
-      Support every claim with specific evidence.
-      Quote relevant code or documentation.
-  </principle>
-</principles>
-```
-
-**When to use:**
-- Behavioral guidance that spans multiple phases
-- Quality standards for output
-- Decision-making frameworks
-
----
-
-## Important Rules / Notes
-
-For top-level constraints that need visibility.
-
-### Numbered Rules (Strong Emphasis)
-
-```xml
-<important_rules>
-1. NEVER modify production data
-2. ALWAYS validate input before processing
-3. Include reasoning with every classification
-</important_rules>
-```
-
-### Important Notes (General Reminders)
-
-```xml
-<important_notes>
-- Token budget is constrained—be concise
-- User expects YAML output format
-- This runs in CI/CD context
-</important_notes>
-```
-
----
-
-## General Design Guidelines
+## Design Guidelines
 
 1. **Be specific, not generic** — "Analyze sentiment using VADER methodology" beats "Analyze sentiment"
 
-2. **Inject expert methodology** — The description is where your domain expertise goes
+2. **Actions, not intentions** — "Extract the date field" not "Try to find dates"
 
-3. **Actions, not intentions** — "Extract the date field" not "Try to find dates"
+3. **One responsibility per unit** — If a step does two things, split it
 
-4. **One responsibility per step/phase** — If a step does two things, split it
+4. **Use `<ultrathink>` for critical decisions** — Don't let the model rush through important reasoning
 
-5. **Explicit state transitions** — Make phase boundaries clear
+5. **Parallelize when possible** — Independent operations should use `<actions parallel="true">`
 
-6. **Fail gracefully** — Define behavior for edge cases
-
-7. **Test the boundaries** — Your prompt should handle malformed input, empty data, and edge cases
+6. **Localize constraints** — Put rules where they apply, not everywhere

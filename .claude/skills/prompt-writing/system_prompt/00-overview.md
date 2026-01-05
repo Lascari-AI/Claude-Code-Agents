@@ -59,16 +59,16 @@ Tool use is fine in single-completion—you can use structured outputs, function
 
 ```
 Is YOUR code calling the LLM API and processing responses?
-├─ YES → Single-Completion (10-single-completion.md)
+├─ YES → Single-Completion (20-workflow-design/20-single-completion.md)
 │         Your code orchestrates, LLM completes tasks
 │
 └─ NO → Multiturn (you hand off to an autonomous system)
          │
          Does the user provide input each cycle?
-         ├─ YES → Iterative Loop (20-multiturn/10-iterative-loop.md)
+         ├─ YES → Iterative Loop (20-workflow-design/30-multi-turn/10-iterative-loop.md)
          │         Interviews, spec refinement, requirements
          │
-         └─ NO → Autonomous (20-multiturn/00-base.md)
+         └─ NO → Autonomous (20-workflow-design/30-multi-turn/00-base.md)
                   Skills, background agents, pipelines
 ```
 
@@ -83,6 +83,6 @@ Templates for each pattern. See [Key Distinction](#key-distinction) for when to 
 | Resource | File | Purpose |
 |----------|------|---------|
 | **Base Template** | `10-base-template.md` | Canonical XML structure to copy and adapt |
-| **Single-Completion** | `10-single-completion.md` | Your code controls execution |
-| **Multiturn Autonomous** | `20-multiturn/00-base.md` | System runs on its own |
-| **Multiturn Iterative** | `20-multiturn/10-iterative-loop.md` | User provides input each cycle |
+| **Single-Completion** | `20-workflow-design/20-single-completion.md` | Your code controls execution |
+| **Multiturn Autonomous** | `20-workflow-design/30-multi-turn/00-base.md` | System runs on its own |
+| **Multiturn Iterative** | `20-workflow-design/30-multi-turn/10-iterative-loop.md` | User provides input each cycle |

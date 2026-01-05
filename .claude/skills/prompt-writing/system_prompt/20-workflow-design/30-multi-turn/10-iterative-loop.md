@@ -1,15 +1,15 @@
 ---
 covers: User-in-the-loop technique for multi-turn workflows with cyclical input
 type: technique
-concepts: [iterative-loop, state-machine, user-in-loop, interview, socratic, requirements]
+concepts: [iterative-loop, state-machine, user-in-loop, interview, spec-mode, atomic-updates]
 depends-on: [system_prompt/20-workflow-design/30-multi-turn/00-base.md]
 ---
 
 # Iterative Loop Technique
 
-A multi-turn technique where the user provides input each cycle. The system runs autonomously between user inputs.
+A multi-turn technique where the user provides input each cycle. The system runs autonomously between user inputs, updating state after each exchange.
 
-Design principle: Deterministic multi-stage interrogation loop. No pleasantries, no randomness, no hidden steps.
+**Canonical implementation**: Spec mode (`/spec`) — see `.claude/commands/agent-session/spec.md`
 
 ---
 
@@ -20,11 +20,142 @@ Iterative loops apply when:
 - **User input each cycle**: System asks, user responds, repeat
 - **Progressive refinement**: Each round builds on previous
 - **Structured extraction**: Gathering information systematically
-- **Validation required**: User confirms accuracy before proceeding
+- **Artifact construction**: Building a document incrementally
 
-Examples: spec interviews, requirements gathering, Socratic dialogue, knowledge extraction.
+Examples: spec interviews, requirements gathering, knowledge extraction, guided configuration.
 
 **Key distinction**: Unlike autonomous multi-turn (system runs alone), iterative loops require user participation each round.
+
+---
+
+## The State + Artifact Pattern
+
+Iterative loops manage TWO files that update together:
+
+1. **state.json** — Progress tracking, metadata, structured data
+2. **{artifact}.md** — The document being built incrementally
+
+```
+User answers question
+        ↓
+┌───────────────────────────────┐
+│  ATOMIC UPDATE (both files)   │
+│                               │
+│  1. Update {artifact}.md      │
+│  2. Update state.json         │
+│                               │
+│  THEN ask next question       │
+└───────────────────────────────┘
+```
+
+### Why Both Files?
+
+| state.json | {artifact}.md |
+|------------|---------------|
+| Machine-readable progress | Human-readable output |
+| Enables resume on restart | The deliverable being built |
+| Tracks open_questions, decisions | Captures full context, nuance |
+| Structured data for logic | Prose, diagrams, details |
+
+---
+
+## Real Implementation: Spec Mode
+
+The spec mode is the canonical iterative loop. Here's how it works:
+
+### State Tracking (state.json)
+
+```json
+{
+  "session_id": "2025-12-24_auth-system_k7m3x9",
+  "created_at": "2025-12-24T10:00:00Z",
+  "updated_at": "2025-12-24T10:45:00Z",
+  "topic": "auth-system",
+
+  "current_phase": "spec",
+  "phases": {
+    "spec": {
+      "status": "draft",
+      "started_at": "2025-12-24T10:00:00Z",
+      "finalized_at": null
+    }
+  },
+
+  "goals": {
+    "high_level": ["Secure user authentication"],
+    "mid_level": ["JWT-based sessions", "OAuth integration"]
+  },
+
+  "open_questions": [
+    "Token expiry policy?",
+    "Refresh token strategy?"
+  ],
+
+  "key_decisions": [
+    {
+      "decision": "Use JWT over session cookies",
+      "rationale": "Stateless, works with mobile clients",
+      "made_at": "2025-12-24T10:30:00Z"
+    }
+  ]
+}
+```
+
+### Artifact Building (spec.md)
+
+The spec document grows with each exchange:
+
+```markdown
+# Auth System
+
+> **Session**: `2025-12-24_auth-system_k7m3x9`
+> **Status**: Draft
+
+## Overview
+
+User authentication system for the web and mobile applications...
+
+## Goals
+
+### High-Level Goals
+- Secure user authentication that works across all platforms
+
+### Mid-Level Goals
+- JWT-based sessions for stateless auth
+- OAuth integration for social login
+
+## Key Decisions
+
+| Decision | Rationale | Date |
+|----------|-----------|------|
+| Use JWT over session cookies | Stateless, works with mobile | 2025-12-24 |
+
+## Open Questions
+
+- [ ] Token expiry policy?
+- [ ] Refresh token strategy?
+```
+
+### The Atomic Update Cycle
+
+From spec mode's workflow:
+
+```xml
+<after_each_answer>
+    <critical>Each answer triggers an ATOMIC save cycle - NEVER batch updates</critical>
+
+    1. Acknowledge understanding (capture user's exact phrasing for nuance)
+    2. Update spec.md IMMEDIATELY:
+       - Add/update relevant section
+       - Capture the WHY behind user's answer, not just the WHAT
+    3. Update state.json IMMEDIATELY:
+       - Sync open_questions (add new, remove answered)
+       - Update key_decisions with rationale if decisions emerged
+       - Update goals arrays if goals emerged
+       - Set updated_at timestamp
+    4. THEN ask next question OR summarize progress
+</after_each_answer>
+```
 
 ---
 
@@ -34,7 +165,7 @@ Iterative loops follow a deterministic state machine:
 
 ```
 ┌──────┐
-│ PREP │ → Inspect context, populate memory
+│ INIT │ → Create session, initialize files
 └──┬───┘
    │
    ▼
@@ -44,257 +175,142 @@ Iterative loops follow a deterministic state machine:
    │ (await user reply)
    ▼
 ┌────────┐
-│REFLECT │ → Parse reply, update memory
+│ UPDATE │ → Parse reply, update BOTH files
 └──┬─────┘
    │
-   ├─── (conditions met OR max rounds) ──→ END
+   ├─── (complete OR max rounds) ──→ FINALIZE
    │
-   └─── (else) ──→ Q (increment index)
+   └─── (more questions) ──→ Q
 ```
 
 ### Stage Definitions
 
 ```xml
 <stages>
-    <stage name="PREP">
-        Initial setup:
-        - Inspect initial context
-        - Populate `memory` with known facts
-        - Set `question_index = 1`
+    <stage name="INIT">
+        - Create session directory
+        - Initialize state.json with status: "draft"
+        - Create {artifact}.md from template
         - Transition → Q
     </stage>
 
     <stage name="Q">
-        Question emission:
         - Select highest-priority gap
-        - Emit exactly ONE question
+        - Emit exactly ONE focused question
+        - Explain WHY you're asking
         - Await user reply
-        - Transition → REFLECT
+        - Transition → UPDATE
     </stage>
 
-    <stage name="REFLECT">
-        Process response:
+    <stage name="UPDATE">
+        <critical>Atomic update - both files, every time</critical>
         - Parse user reply
-        - Update `memory`; prune `unresolved`
-        - If done OR max rounds → END
-        - Else increment → Q
+        - Update {artifact}.md with new content
+        - Update state.json (questions, decisions, goals)
+        - Set updated_at timestamp
+        - If done → FINALIZE, else → Q
     </stage>
 
-    <stage name="END">
-        Finalization:
-        - Output FINAL_REPORT
-        - No more questions
+    <stage name="FINALIZE">
+        - Confirm with user
+        - Set status: "finalized"
+        - Add finalization header to artifact
+        - Report completion
     </stage>
 </stages>
 ```
 
-### Loop State Variables
+---
 
-Track these across turns:
+## Question Design
+
+### One Question Per Turn
+
+Ask ONE focused question. Multiple questions diffuse attention and complicate state updates.
 
 ```xml
-<loop_state_variables>
-    - `stage`: PREP | Q | REFLECT | END
-    - `question_index`: int
-    - `memory`: obj (key facts extracted so far)
-    - `unresolved`: list (open issues)
-    - `max_rounds`: int (hard stop)
-</loop_state_variables>
+<!-- Bad -->
+"What authentication method do you want? Also, what about token expiry?
+And should we support OAuth?"
+
+<!-- Good -->
+"What authentication method should we use—JWT tokens, session cookies,
+or something else? I'm asking because this affects our session management
+architecture."
 ```
+
+### Explain the Why
+
+Each question includes rationale:
+
+```xml
+<question_format>
+    [Question]
+
+    I'm asking because [why this matters / how it affects the design]
+</question_format>
+```
+
+### Question Categories
+
+From spec mode's question categories:
+
+| Category | Example Questions |
+|----------|-------------------|
+| Problem Space | What problem are we solving? What's the current workaround? |
+| Goals | What does success look like? What's the minimum viable version? |
+| Constraints | What can't change? What dependencies exist? |
+| Scope | What's explicitly NOT included? What's the priority order? |
+| Deeper Exploration | What concerns you? What tradeoffs are acceptable? |
 
 ---
 
-## Output Formats
-
-Iterative loops require two output formats: per-turn and final.
-
-### Per-Turn Output
-
-Every message except END:
-
-```json
-{
-  "question": "<string>",
-  "loop_state": {
-    "question_index": 3,
-    "unresolved": ["deployment strategy", "auth method"]
-  }
-}
-```
-
-Or in natural language with structured internal tracking.
-
-### Final Report
-
-Once, at END stage:
-
-```json
-{
-  "summary": "<concise synthesis>",
-  "validated_facts": { ... },
-  "open_items": [...]
-}
-```
-
-### XML Definition
-
-```xml
-<output_formats>
-    <turn_output>
-        Every message except END:
-        - Single focused question
-        - Internal state tracking (hidden from user)
-    </turn_output>
-
-    <final_report>
-        Once, at END stage:
-        - Summary of all gathered information
-        - Validated facts (confirmed by user)
-        - Open items (unresolved questions)
-    </final_report>
-</output_formats>
-```
-
----
-
-## Memory Handling
-
-Rules for what to retain across turns:
-
-```xml
-<memory_handling_rules>
-    - Retain only facts CONFIRMED by user
-    - Discard speculation or unconfirmed inferences
-    - Never reveal raw loop_state to user
-    - Update memory immediately after each reply
-    - Prune contradictions when new info supersedes old
-</memory_handling_rules>
-```
-
-### Memory Principles
-
-| Do | Don't |
-|----|-------|
-| Store user-confirmed facts | Store your own inferences |
-| Update immediately | Batch updates |
-| Prune contradictions | Keep conflicting info |
-| Track source (which question) | Assume accuracy |
-
----
-
-## Max Rounds Failsafe
-
-Prevent infinite loops with a hard limit:
-
-```xml
-<global_constraints>
-    - Max rounds: 10 (configurable)
-    - At max rounds, transition to END regardless of completion
-    - Final report notes any unresolved items
-</global_constraints>
-```
-
-### Graceful Termination
+## Termination Conditions
 
 ```xml
 <termination_conditions>
     <condition name="Success">
-        All success criteria met + user confirms accuracy
+        All required sections complete + user confirms finalization
     </condition>
+
     <condition name="Max Rounds">
-        Hit max_rounds limit, report incomplete status
+        Hit max_rounds limit (e.g., 15), report incomplete status
     </condition>
+
     <condition name="User Exit">
-        User explicitly requests to end
+        User explicitly requests to end early
     </condition>
 </termination_conditions>
 ```
 
----
+### Graceful Incomplete
 
-## Examples
-
-### Spec Interview Pattern
-
-```xml
-<stages>
-    <stage name="PREP">
-        - Read initial context from user
-        - Identify what's already known
-        - List required spec fields: goals, constraints, scope
-    </stage>
-
-    <stage name="Q">
-        - Select highest-priority missing field
-        - Ask ONE focused question
-        - Example: "What is the primary goal of this feature?"
-    </stage>
-
-    <stage name="REFLECT">
-        - Parse answer, extract key facts
-        - Update spec draft
-        - Check: all required fields populated?
-    </stage>
-
-    <stage name="END">
-        - Present complete spec
-        - Ask for final confirmation
-        - Output spec document
-    </stage>
-</stages>
-```
-
-### Requirements Gathering Pattern
-
-```xml
-<success_criteria>
-    - All user stories have acceptance criteria
-    - Dependencies identified
-    - Scope boundaries clear
-    - User confirms completeness
-</success_criteria>
-
-<stages>
-    <stage name="PREP">
-        - List known requirements from initial input
-        - Identify gaps in user stories
-    </stage>
-
-    <stage name="Q">
-        - For each incomplete user story:
-            - Ask for acceptance criteria
-            - Ask for edge cases
-        - For dependencies:
-            - Ask what must exist first
-    </stage>
-
-    <stage name="REFLECT">
-        - Update requirements document
-        - Mark items as complete/incomplete
-    </stage>
-
-    <stage name="END">
-        - Output complete requirements doc
-        - List any items marked for future discussion
-    </stage>
-</stages>
-```
+If terminated early, state and artifact preserve all progress:
+- State shows what was answered vs. still open
+- Artifact contains all gathered information
+- Can resume later by loading the session
 
 ---
 
 ## Template Reference
 
-For the full canonical template with all sections:
+For implementing iterative loops, spec mode provides a reference implementation. These templates illustrate the pattern—your iterative loop may have different state fields and artifact structures based on your specific workflow.
 
-→ See [20-multiturn/10-iterative-loop.md](../../20-multiturn/10-iterative-loop.md)
+**Spec Mode Implementation**: `.claude/commands/agent-session/spec.md`
+- Complete workflow with all stages
+- Question categories
+- State schema
+- Atomic update pattern
 
-The template includes:
-- Purpose and persona
-- Domain scope
-- Success criteria
-- Complete interview protocol
-- Memory handling rules
-- Termination notice
+**Example State Template**: `.claude/skills/agent-session/spec/templates/state.json`
+- Session metadata, phase tracking, goals/decisions/questions
+- *Your workflow's state schema will differ based on what you're tracking*
+
+**Example Artifact Template**: `.claude/skills/agent-session/spec/templates/spec.md`
+- Document structure with section placeholders
+- *Your artifact structure depends on what you're building (spec, config, report, etc.)*
+
+**Key takeaway**: Study spec mode for the *pattern* (atomic updates, state + artifact, question-driven), then design state and artifact schemas appropriate to your workflow's domain.
 
 ---
 
@@ -302,11 +318,10 @@ The template includes:
 
 When designing iterative loops:
 
-- [ ] State machine stages defined with clear transitions
-- [ ] Loop state variables specified
-- [ ] Both per-turn AND final output formats defined
-- [ ] Memory handling rules explicit (retain confirmed only)
-- [ ] Max rounds failsafe included
-- [ ] Success criteria are measurable
+- [ ] Both state.json AND artifact file defined
+- [ ] Atomic update after EVERY exchange (never batch)
+- [ ] One question per turn
+- [ ] Questions include "why I'm asking"
 - [ ] Termination conditions cover all exit paths
-- [ ] One-question-per-turn principle enforced
+- [ ] State enables resume from any point
+- [ ] Finalization requires user confirmation

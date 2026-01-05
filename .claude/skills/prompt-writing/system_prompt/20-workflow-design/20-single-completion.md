@@ -265,9 +265,9 @@ Place constraints at the right scope:
 
 ## Template Reference
 
-For the complete single-completion template with all sections:
+For the canonical XML structure with Purpose, Knowledge, Goal, Background, Workflow sections:
 
-→ **[10-single-completion.md](../10-single-completion.md)** - Full template with Purpose, Knowledge, Goal, Background, Workflow structure
+→ **[Base Template](../10-base-template.md)** - Full template with all sections to copy and adapt
 
 For base workflow principles that apply to all patterns:
 

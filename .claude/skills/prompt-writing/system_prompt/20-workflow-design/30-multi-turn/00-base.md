@@ -1,13 +1,39 @@
 ---
 covers: External state workflow pattern for autonomous multi-turn execution
 type: pattern
-concepts: [multi-turn, phases, state-schema, output-protocol, autonomous, external-state]
+concepts: [multi-turn, phases, state-file, external-state, restartability, session-directory, autonomous]
 depends-on: [system_prompt/20-workflow-design/10-base.md]
 ---
 
 # Multi-Turn Workflows
 
-Design workflows where an autonomous system executes multiple turns on its own—you submit instructions, the system runs.
+Multi-turn workflows are defined by **external state management**. The agent writes to a state file after each action, enabling restartability, visibility, and recovery.
+
+---
+
+## The Core Concept
+
+Unlike single-completion (all reasoning in one response), multi-turn agents persist their progress externally. This is the defining characteristic—everything else follows from it.
+
+```
+Single-Completion              Multi-Turn
+─────────────────              ──────────
+Input → Thinking → Output      Input → Action → Write State
+                                        ↓
+                               Action → Write State
+                                        ↓
+                               Action → Write State → Output
+```
+
+**What this enables:**
+
+| Without State | With State |
+|---------------|------------|
+| Failure loses all work | Partial progress preserved |
+| Can't see what happened | Full audit trail |
+| Must complete in one run | Can pause and resume |
+| No recovery path | Pick up exactly where left off |
+| Black box execution | Observable progress |
 
 ---
 
@@ -15,14 +41,80 @@ Design workflows where an autonomous system executes multiple turns on its own�
 
 Multi-turn workflows apply when:
 
-- **Autonomous execution**: System decides what LLM calls to make
-- **External state**: Progress persists across completions
+- **Long-running execution**: Task requires many steps before completion
+- **Failure recovery matters**: Partial progress should survive crashes
+- **Visibility required**: Need to see what's happening during execution
+- **Resumability needed**: May need to pause and continue later
 - **Tool orchestration**: Workflow involves Read, Write, Task, Bash calls
-- **Incremental output**: Results build up over multiple turns
 
-Examples: research agents, report writers, code migration tools, background processing.
+Examples: spec interviews, research agents, report generation, code migration, background processing.
 
-**Key insight**: You're directing an autonomous system, not orchestrating LLM calls yourself.
+**Key insight**: You're directing an autonomous system that manages its own progress through external state.
+
+---
+
+## The State File Pattern
+
+External state is what makes multi-turn special. The state file is the source of truth for progress.
+
+### Why State Files Matter
+
+1. **Restartability**: If the agent fails mid-execution, read state and resume
+2. **Visibility**: Monitor progress without waiting for completion
+3. **Auditability**: Full record of what happened and when
+4. **Composability**: Other agents can read state and continue work
+
+### State Update Rule
+
+```xml
+<critical>
+Update state after EACH action, not in batches.
+
+Anti-pattern: Do work → Do more work → Update state at end
+Correct: Do work → Update state → Do more work → Update state
+
+This ensures partial progress survives failures.
+</critical>
+```
+
+### Minimal State Schema
+
+Every multi-turn workflow needs at minimum:
+
+```json
+{
+  "session_id": "unique-identifier",
+  "status": "initializing|processing|complete|failed",
+  "created_at": "ISO_8601_timestamp",
+  "updated_at": "ISO_8601_timestamp"
+}
+```
+
+Extend based on workflow needs:
+- Progress tracking (`completed`, `total`, `current`)
+- Results accumulation (`examined[]`, `findings[]`)
+- Phase tracking (`current_phase`, `phases: {}`)
+
+---
+
+## Session Directory Structure
+
+Multi-turn workflows operate within a session directory that contains all artifacts:
+
+```
+sessions/{session_id}/
+├── state.json           # Progress tracking, metadata
+├── {artifact}.md        # Primary output being built
+├── subagents/           # Subagent state files (parallel patterns)
+├── research/            # Research artifacts
+└── context/             # Supporting files, diagrams
+```
+
+### Directory Design Principles
+
+1. **Self-contained**: Everything needed to understand/resume lives in the directory
+2. **Discoverable**: Standard naming conventions (state.json, not progress.json)
+3. **Composable**: Subagents write to known locations within parent session
 
 ---
 
@@ -34,22 +126,21 @@ Phases define external execution flow—each phase involves tool calls and state
 <workflow>
     <phase id="1" name="Initialize">
         <action>Validate input</action>
-        <action>Create output directory</action>
+        <action>Create session directory</action>
         <action>Write initial state file</action>
     </phase>
 
     <phase id="2" name="Execute">
-        <critical>
-            Spawn ALL tasks in a SINGLE message with parallel calls.
-        </critical>
-        <action>For each item, perform operation</action>
-        <action>Update state after each completion</action>
+        <critical>Update state after EACH action</critical>
+        <action>Perform operation</action>
+        <action>Update state with result</action>
+        <action>Repeat until complete</action>
     </phase>
 
     <phase id="3" name="Finalize">
         <action>Synthesize results</action>
         <action>Write final output</action>
-        <action>Return summary to user</action>
+        <action>Update status to "complete"</action>
     </phase>
 </workflow>
 ```
@@ -62,48 +153,20 @@ Phases define external execution flow—each phase involves tool calls and state
 | State | Explicit JSON files | Implicit in reasoning |
 | Feedback | Between phases (tool results) | None between steps |
 | Output | Incremental across turns | Single response |
-
----
-
-## State Schema Design
-
-Multi-turn workflows require explicit state for progress tracking.
-
-```xml
-<state_schema>
-{
-  "id": "session_id",
-  "status": "initializing|processing|complete|failed",
-  "created_at": "ISO_8601_timestamp",
-  "progress": {
-    "total": 10,
-    "completed": 3,
-    "current": "item_004"
-  },
-  "results": []
-}
-</state_schema>
-```
-
-### State Design Principles
-
-1. **Status field**: Always include for progress visibility
-2. **Timestamps**: Track when phases started/completed
-3. **Progress tracking**: Enable resume if interrupted
-4. **Results accumulation**: Store incrementally, not just at end
+| Recovery | Read state, resume | Not applicable |
 
 ---
 
 ## Output Protocol
 
-Define where and how output is written—not just format.
+Multi-turn workflows write output to files, not response messages.
 
 ```xml
 <output_protocol>
     <critical>
     You MUST:
-    1. Write findings to: {session}/findings.md
-    2. Update state after EACH file processed
+    1. Write results to: {session}/output.md
+    2. Update state after EACH item processed
     3. Return ONLY: "Complete. Results at: {path}"
 
     Do NOT include full results in response message.
@@ -111,154 +174,70 @@ Define where and how output is written—not just format.
 </output_protocol>
 ```
 
-### Output Protocol Elements
+### Why Files Over Responses
 
-| Element | Purpose |
-|---------|---------|
-| Target file | Where to write results |
-| Update frequency | When to write (each item, each phase, at end) |
-| Response format | What to return to user/orchestrator |
-| Constraints | What NOT to include in response |
+1. **Size**: Results may exceed response limits
+2. **Persistence**: Files survive context truncation
+3. **Composability**: Other agents read files, not message history
+4. **Clarity**: Response confirms completion, files contain content
 
 ---
 
-## Phase Anatomy
+## Multi-Turn Techniques
 
-Each phase contains:
+Two specialized patterns build on this foundation:
 
-```xml
-<phase id="2" name="Process Items">
-    <!-- Critical constraints for this phase -->
-    <critical>
-        Update state after EACH item, not in batches.
-    </critical>
+### Iterative Loop
 
-    <!-- Sequential actions within the phase -->
-    <action>Read next item from queue</action>
-    <action>Process item</action>
-    <action>Write result to output file</action>
-    <action>Update state with completion</action>
+User provides input each cycle. System asks → user answers → state updates → repeat.
 
-    <!-- Optional: phase-specific notes -->
-    <note>Skip items that have already been processed</note>
-</phase>
-```
+**Canonical example**: Spec mode (`/spec`)
+- Builds spec.md incrementally through user interview
+- state.json tracks open_questions, key_decisions, phase status
+- Each exchange triggers atomic update to both files
 
-### Phase Attributes
+→ See: [Iterative Loop](10-iterative-loop.md)
+→ Real implementation: `.claude/commands/agent-session/spec.md`
 
-- **id**: Numeric identifier for ordering
-- **name**: Human-readable phase name
-- **actions**: Sequential steps within the phase
-- **critical**: Must-not-violate constraints for this phase
+### Parallel Agents
 
----
+Orchestrator spawns multiple subagents, each with their own state file.
 
-## Using `<critical>` Tags
+**Canonical example**: Research system
+- Each subagent writes subagent_{id}.json
+- State updated after each file examined
+- Report writer synthesizes all state files
 
-Mark constraints that must not be violated:
-
-```xml
-<critical>
-Spawn ALL subagents in a SINGLE message.
-Do NOT spawn sequentially—this wastes time.
-</critical>
-
-<critical>
-Write to state file after EACH item processed.
-Do NOT batch updates—enables resume on failure.
-</critical>
-
-<critical>
-Response must be ONLY: "Complete. Report at: {path}"
-Do NOT include report content in response.
-</critical>
-```
-
-Place `<critical>` tags:
-- Inside `<output_protocol>` for output constraints
-- Inside `<phase>` for phase-specific constraints
-- At top level for global constraints
+→ See: [Parallel Agents](20-parallel-agents.md)
+→ Real implementation: `.claude/agents/research/research-subagent.md`
 
 ---
 
-## Examples
+## Error Handling
 
-### Research Subagent Pattern
-
-```xml
-<workflow>
-    <phase id="1" name="Initialize">
-        <action>Read assigned objective from orchestrator</action>
-        <action>Initialize state file with status: "researching"</action>
-    </phase>
-
-    <phase id="2" name="Investigate">
-        <critical>Update state after EACH file examined</critical>
-        <action>Search for relevant files</action>
-        <action>Read and analyze each file</action>
-        <action>Record learnings in state</action>
-    </phase>
-
-    <phase id="3" name="Complete">
-        <action>Write summary of findings</action>
-        <action>Set status to "complete"</action>
-    </phase>
-</workflow>
-```
-
-### Report Writer Pattern
+State files enable graceful failure handling:
 
 ```xml
-<workflow>
-    <phase id="1" name="Load Template">
-        <action>Read template for specified style</action>
-        <action>Understand required sections</action>
-    </phase>
+<error_handling>
+    <scenario name="Agent Crashes">
+        - Read state.json to find last known position
+        - Resume from that point
+        - Partial results preserved in state
+    </scenario>
 
-    <phase id="2" name="Read Findings">
-        <action>Read all subagent state files</action>
-        <action>Extract examined files and learnings</action>
-    </phase>
+    <scenario name="Partial Completion">
+        - status field indicates incomplete
+        - Accumulated results still available
+        - Can continue or report partial findings
+    </scenario>
 
-    <phase id="3" name="Read Actual Code">
-        <critical>This is what makes your report valuable</critical>
-        <action>Read code files referenced by subagents</action>
-        <action>Select most illustrative snippets</action>
-    </phase>
-
-    <phase id="4" name="Synthesize">
-        <action>Identify themes across findings</action>
-        <action>Group related learnings</action>
-        <action>Organize by template structure</action>
-    </phase>
-
-    <phase id="5" name="Write Report">
-        <action>Write report following template</action>
-        <action>Include real code snippets</action>
-    </phase>
-
-    <phase id="6" name="Complete">
-        <critical>Return ONLY: "Report written to: {path}"</critical>
-    </phase>
-</workflow>
+    <scenario name="Unrecoverable Error">
+        - Set status: "failed"
+        - Write error details to state
+        - Preserve partial work for debugging
+    </scenario>
+</error_handling>
 ```
-
----
-
-## Template Reference
-
-For the full canonical template with all sections:
-
-→ See [20-multiturn/00-base.md](../../20-multiturn/00-base.md)
-
-The template includes:
-- YAML frontmatter structure
-- Variables section
-- Input/output format
-- State schema
-- Workflow with phases
-- Principles
-- Error handling
 
 ---
 
@@ -266,10 +245,10 @@ The template includes:
 
 When designing multi-turn workflows:
 
-- [ ] State schema enables progress tracking and resume
-- [ ] Output protocol specifies where to write, not just format
-- [ ] Phases represent external execution boundaries
-- [ ] `<critical>` tags mark must-not-violate constraints
-- [ ] Each phase has clear actions
-- [ ] Error scenarios have recovery paths
-- [ ] Response format is minimal (paths only, not full content)
+- [ ] State file initialized FIRST before any work
+- [ ] State updated after EACH action (not batched)
+- [ ] Session directory structure is self-contained
+- [ ] Status field enables progress visibility
+- [ ] Output written to files, not response messages
+- [ ] Recovery path documented for failure scenarios
+- [ ] Timestamps track when things happened

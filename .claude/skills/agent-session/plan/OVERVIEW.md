@@ -182,6 +182,46 @@ Units of work containing one or more actions. Uses IDK format for precise comman
 }
 ```
 
+### Self-Contained Task Design
+
+> **Core Principle**: Every task and task group must be executable by an agent in a completely new session with zero prior context.
+
+The task object itself should contain everything needed to execute it:
+- **File references**: All paths to read, modify, or create
+- **Context**: `read_before` specifies what to understand first
+- **Actions**: Precise IDK commands that are unambiguous
+- **Dependencies**: Explicit `depends_on` if ordering matters
+
+**Why This Matters - Fault Recovery**:
+
+If execution breaks at Checkpoint 2, Task Group 1, Task 4:
+```
+❌ Without self-contained tasks:
+   → Restart entire session
+   → Re-read all context
+   → Redo completed work
+
+✅ With self-contained tasks:
+   → Load task 2.1.4 directly
+   → Task has all file refs and context
+   → Execute just that task
+   → Continue from 2.1.5
+```
+
+**Design Test**: Can an agent with only the task object (no session history) execute this task correctly? If yes, the task is properly designed.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  SELF-CONTAINED TASK CHECKLIST                                  │
+├─────────────────────────────────────────────────────────────────┤
+│  ✓ file_path specifies exact target file                        │
+│  ✓ read_before lists all files needed for context               │
+│  ✓ actions use precise IDK commands (no ambiguity)              │
+│  ✓ description explains WHAT and WHY                            │
+│  ✓ No implicit knowledge required from prior tasks              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ## IDK Reference
 
 Information-Dense Keywords for precise task definitions:

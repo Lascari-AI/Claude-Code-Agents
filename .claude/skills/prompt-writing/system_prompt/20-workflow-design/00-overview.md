@@ -85,7 +85,7 @@ Does YOUR code call the LLM API and process each response?
 
 Before designing workflows, ensure you understand:
 
-1. **Base Template** (`10-base-template.md`) — Canonical XML structure
+1. **Base Template** (`../10-base-template.md`) — Canonical XML structure
 2. **Base Principles** (`10-base.md`) — Core workflow design theory
 
 Then proceed to the pattern that matches your execution model.
