@@ -7,18 +7,9 @@ model: "sonnet"
 
 additional instructions = $ARGUMENTS
 
-type = "feat", "fix", "docs", "style", "refactor", "perf", "test", "chore"
+> Conventions and guardrails are defined in the git skill (.claude/skills/git/SKILL.md)
 
 # Smart Git Commit
-
-## Guardrails
-
-- Never force push
-- Never hard reset
-- Never skip pre-commit hooks
-  - If they fail, stop and report the error
-- Warn when committing on `main` or `master` branch
-- If no changes exist, report "no local changes" and stop
 
 ## Workflow
 
@@ -76,21 +67,10 @@ Recommendation logic:
 
 ### 4. Generate Message(s)
 
-For each commit:
-
-- Use the appropriate commit type
-  - feat / fix / docs / style / refactor / perf / test / chore
-- Follow conventional commits format
-  - `type: description`
-- For complex changes, include a body
-  - Explain what changed
-  - Explain why it changed
-
-<RULE>
-NEVER include any AI attribution:
-- No "Generated with Claude Code"
-- No "Co-Authored-By: Claude"
-</RULE>
+For each commit, follow the conventions from the git skill:
+- Use appropriate commit type (feat/fix/docs/style/refactor/perf/test/chore)
+- Follow conventional commits format: `type: description`
+- For complex changes, include a body explaining WHY
 
 ### 5. Execute
 
@@ -148,8 +128,6 @@ If on `main`/`master` branch, warn before pushing and confirm.
 ## Success Criteria
 
 - Commit(s) created with conventional format
-  - `type: description`
-- No AI attribution in commit messages
 - All pre-commit hooks passed
 - Working tree in expected state
   - Clean, or only intentionally unstaged files remain
