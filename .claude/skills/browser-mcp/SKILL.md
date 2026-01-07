@@ -110,6 +110,11 @@ For full evaluation criteria and guidelines, see: `references/design-principles.
   - "Review the visual design of my app"
   - "Give me feedback on this interface"
 
+## References
+
+- **[Browser MCP Tools](references/tools.md)** — Detailed reference for all Browser MCP tools with usage examples
+- **[Design Principles](references/design-principles.md)** — Jony Ive aesthetic guidelines for design critique
+
 ## Commands
 
 | Command | Description |

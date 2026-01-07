@@ -22,9 +22,9 @@
       "finalized_at": "2026-01-07T00:05:00Z"
     },
     "build": {
-      "status": "in_progress",
+      "status": "complete",
       "started_at": "2026-01-07T00:10:00Z",
-      "completed_at": null
+      "completed_at": "2026-01-07T01:30:00Z"
     }
   },
 
@@ -100,13 +100,13 @@
   ],
 
   "plan_state": {
-    "status": "in_progress",
+    "status": "complete",
     "checkpoints_total": 4,
     "checkpoints_detailed": 4,
-    "checkpoints_completed": [1, 2, 3],
-    "current_checkpoint": 4,
+    "checkpoints_completed": [1, 2, 3, 4],
+    "current_checkpoint": null,
     "current_task_group": null,
     "current_task": null,
-    "last_updated": "2026-01-07T01:00:00Z"
+    "last_updated": "2026-01-07T01:30:00Z"
   }
 }
