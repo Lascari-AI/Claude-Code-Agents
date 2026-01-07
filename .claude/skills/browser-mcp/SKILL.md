@@ -69,6 +69,25 @@ console.log('[DEBUG-AGENT]', '[ComponentName.functionName]', { relevantData });
 - Event handlers and callbacks
 - State updates
 
+## Design Principles
+
+For design critique, apply the **Jony Ive lens**:
+
+> "Really think. Really, really think."
+
+The bar: **"Would Steve Jobs smile at this?"**
+
+Target aesthetic: sleek, premium, minimalist — like a spa in Switzerland.
+
+**Quick checks:**
+- Icons over emojis
+- Intentional padding/spacing
+- Cohesive color palette
+- Responsive design (desktop AND mobile)
+- Nothing redundant, nothing unclear
+
+For full evaluation criteria and guidelines, see: `references/design-principles.md`
+
 ## Cookbook
 
 ### Front-End Debugging
