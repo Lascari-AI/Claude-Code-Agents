@@ -1,0 +1,112 @@
+{
+  "session_id": "2026-01-06_browser-mcp-skill_b7k2m9",
+  "created_at": "2026-01-06T00:00:00Z",
+  "updated_at": "2026-01-06T00:13:00Z",
+  "topic": "Browser MCP Skill",
+  "description": "A skill for using browser MCP in general, with specific workflows for design critique and front-end debugging",
+
+  "granularity": "feature",
+  "parent_session": null,
+  "prior_session": null,
+
+  "current_phase": "build",
+  "phases": {
+    "spec": {
+      "status": "finalized",
+      "started_at": "2026-01-06T00:00:00Z",
+      "finalized_at": "2026-01-06T00:13:00Z"
+    },
+    "plan": {
+      "status": "finalized",
+      "started_at": "2026-01-06T00:15:00Z",
+      "finalized_at": "2026-01-07T00:05:00Z"
+    },
+    "build": {
+      "status": "in_progress",
+      "started_at": "2026-01-07T00:10:00Z",
+      "completed_at": null
+    }
+  },
+
+  "goals": {
+    "high_level": [
+      "Collaborative debugging workflow — agent handles mechanical back-and-forth while user stays in loop for judgment calls"
+    ],
+    "mid_level": [
+      "Setup: Observe current URL, confirm with user",
+      "Observe: Capture current state (console logs + screenshot)",
+      "Instrument: Add strategic console.logs to source code",
+      "Verify: Refresh and capture new logs + screenshots",
+      "Iterate: Repeat until root cause identified",
+      "Propose & Confirm: Explain root cause, propose fix, get user approval",
+      "Fix & Verify: Implement fix, refresh, confirm with user it works",
+      "Cleanup: Remove all temporary debug instrumentation"
+    ]
+  },
+
+  "open_questions": [],
+
+  "key_decisions": [
+    {
+      "decision": "Debugging workflow includes code instrumentation with cleanup",
+      "rationale": "Agent observes existing logs first, then surgically adds console.logs when needed for deeper visibility. All temporary instrumentation is removed at the end so codebase returns to clean state.",
+      "made_at": "2026-01-06T00:02:00Z"
+    },
+    {
+      "decision": "Use browser_navigate to same URL for refresh (not just hot reload)",
+      "rationale": "Even with hot reload, explicit navigation clears console logs and ensures truly fresh page state. Gives clean slate for each observation cycle.",
+      "made_at": "2026-01-06T00:03:00Z"
+    },
+    {
+      "decision": "Setup phase: observe current URL first, then confirm with user",
+      "rationale": "Agent takes browser_snapshot to see current page, confirms with user if that's the right place. User can confirm or redirect. Collaborative approach - not fully autonomous guessing, not fully manual.",
+      "made_at": "2026-01-06T00:04:00Z"
+    },
+    {
+      "decision": "Collaborative workflow with user confirmations, not fully autonomous",
+      "rationale": "Agent handles mechanical tedium (screenshots, logs, instrumentation, refreshes). User stays in loop for judgment calls: confirming URL, approving fixes, verifying resolution. Reduces friction without removing human oversight.",
+      "made_at": "2026-01-06T00:05:00Z"
+    },
+    {
+      "decision": "Debug log convention: single console.log with [DEBUG-AGENT] marker, context, and data",
+      "rationale": "Browser console groups arguments from one console.log() as single expandable entry. Format: console.log('[DEBUG-AGENT]', '[Context.location]', { data }). Cleanup via grep for marker, git diff as fallback.",
+      "made_at": "2026-01-06T00:06:00Z"
+    },
+    {
+      "decision": "General-purpose debugging workflow, not category-specific",
+      "rationale": "No consistent pain points yet that warrant specialization. Build foundation first, iterate and specialize later based on real usage patterns.",
+      "made_at": "2026-01-06T00:07:00Z"
+    },
+    {
+      "decision": "Log placement: agent judgment with light guidance on common patterns",
+      "rationale": "Trust agent to decide contextually. Include common patterns (component boundaries, async ops, data transforms, event handlers, state updates) as reference, not prescription.",
+      "made_at": "2026-01-06T00:08:00Z"
+    },
+    {
+      "decision": "Design critique is analysis-focused, not implementation",
+      "rationale": "Critique workflow gathers info, produces report, supports iterative refinement. Output feeds into plan mode for actual implementation. Keeps critique scope clean.",
+      "made_at": "2026-01-06T00:10:00Z"
+    },
+    {
+      "decision": "Context gathering: infer first, then confirm with user (required)",
+      "rationale": "Agent infers app/page purpose from visual + code, presents understanding for user confirmation. Must have confirmed context before critique proceeds. Ensures clear shared understanding.",
+      "made_at": "2026-01-06T00:11:00Z"
+    },
+    {
+      "decision": "Critique output saved to agents/design-sessions/{id}/",
+      "rationale": "Save critique.md, context.md, and screenshots/ to agents directory. Structure may evolve as session system matures. For now, keeps critiques organized and accessible for plan handoff.",
+      "made_at": "2026-01-06T00:12:00Z"
+    }
+  ],
+
+  "plan_state": {
+    "status": "in_progress",
+    "checkpoints_total": 4,
+    "checkpoints_detailed": 4,
+    "checkpoints_completed": [],
+    "current_checkpoint": 1,
+    "current_task_group": "1.4",
+    "current_task": "1.4.1",
+    "last_updated": "2026-01-07T00:14:00Z"
+  }
+}

@@ -1,0 +1,613 @@
+{
+  "$schema": "Plan schema for agent-session checkpoint-based planning (v2)",
+
+  "session_id": "2026-01-06_browser-mcp-skill_b7k2m9",
+  "spec_reference": "./spec.md",
+  "created_at": "2026-01-06T00:15:00Z",
+  "updated_at": "2026-01-07T00:05:00Z",
+  "status": "complete",
+
+  "checkpoints": [
+    {
+      "id": 1,
+      "title": "Base Skill with Cookbook Structure",
+      "goal": "Create the browser-mcp skill entry point (SKILL.md) with cookbook routing pattern. Establishes how to use Browser MCP tools in general, and routes to specific workflows for debugging and design critique.",
+      "prerequisites": [],
+      "status": "pending",
+      "file_context": {
+        "beginning": {
+          "files": [
+            { "path": ".claude/skills/prompt-writing/SKILL.md", "status": "exists", "description": "Example cookbook-style skill to follow" },
+            { "path": ".claude/skills/git/SKILL.md", "status": "exists", "description": "Example simple skill structure" }
+          ],
+          "tree": ".claude/skills/\n├── prompt-writing/\n│   ├── SKILL.md\n│   └── system_prompt/\n│       └── ...\n└── git/\n    └── SKILL.md"
+        },
+        "ending": {
+          "files": [
+            { "path": ".claude/skills/browser-mcp/SKILL.md", "status": "new", "description": "Browser MCP skill with tools reference, general usage, and cookbook routing" }
+          ],
+          "tree": ".claude/skills/browser-mcp/\n└── SKILL.md"
+        }
+      },
+      "testing_strategy": {
+        "approach": "Structure validation",
+        "verification_steps": [
+          "Verify SKILL.md has proper frontmatter (name, description)",
+          "Verify tools reference table lists all Browser MCP tools",
+          "Verify cookbook section routes to workflow files (even if not yet created)",
+          "Verify general browser usage guidance is included"
+        ]
+      },
+      "task_groups": [
+        {
+          "id": "1.1",
+          "title": "Create skill directory and SKILL.md file",
+          "objective": "Create the browser-mcp skill directory and the main SKILL.md entry point file with proper frontmatter and structure",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "1.1.1",
+              "title": "Create SKILL.md with frontmatter and purpose section",
+              "file_path": ".claude/skills/browser-mcp/SKILL.md",
+              "description": "Create the browser-mcp skill entry point file. Include YAML frontmatter with name and description (following git/SKILL.md pattern), a Purpose section explaining this skill enables browser automation via MCP, and a Variables section for SKILL_ROOT.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": ".claude/skills/git/SKILL.md", "lines": "1-20", "purpose": "Example frontmatter and structure" },
+                  { "file": ".claude/skills/prompt-writing/SKILL.md", "lines": "1-40", "purpose": "Example cookbook-style skill with variables" }
+                ],
+                "related_files": []
+              },
+              "depends_on": [],
+              "actions": [
+                { "id": "1.1.1.1", "command": "CREATE FILE .claude/skills/browser-mcp/SKILL.md", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "1.1.1.2", "command": "ADD frontmatter with name: browser-mcp, description: Browser automation via MCP for debugging and design critique", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "1.1.1.3", "command": "ADD Purpose section explaining browser MCP enables direct access to user's Chrome browser", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "1.1.1.4", "command": "ADD Variables section with SKILL_ROOT: .claude/skills/browser-mcp/", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "1.2",
+          "title": "Add tools reference section",
+          "objective": "Document all Browser MCP tools in a reference table with their purposes",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "1.2.1",
+              "title": "Add Browser MCP tools reference table",
+              "file_path": ".claude/skills/browser-mcp/SKILL.md",
+              "description": "Add a Tools section with a markdown table listing all Browser MCP tools from the spec: browser_navigate, browser_go_back, browser_go_forward, browser_snapshot, browser_click, browser_hover, browser_type, browser_select_option, browser_press_key, browser_wait, browser_get_console_logs, browser_screenshot. Include purpose for each.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": "agents/sessions/2026-01-06_browser-mcp-skill_b7k2m9/spec.md", "lines": "275-295", "purpose": "Browser MCP tools table from spec" }
+                ],
+                "related_files": [".claude/skills/browser-mcp/SKILL.md"]
+              },
+              "depends_on": ["1.1.1"],
+              "actions": [
+                { "id": "1.2.1.1", "command": "ADD ## Tools section header", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "1.2.1.2", "command": "ADD markdown table with columns: Tool, Purpose", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "1.2.1.3", "command": "ADD all 12 Browser MCP tools with descriptions from spec", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "1.3",
+          "title": "Add general usage guidance",
+          "objective": "Explain how Browser MCP works (connects to real Chrome, auth handled) and when to use it",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "1.3.1",
+              "title": "Add key differentiator and usage guidance",
+              "file_path": ".claude/skills/browser-mcp/SKILL.md",
+              "description": "Add a section explaining the key differentiator: Browser MCP connects to user's ACTUAL Chrome browser (not Selenium/Puppeteer). Auth is already handled. Explain when to use: front-end debugging, design critique, any task needing visual reference to user's screen.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": "agents/sessions/2026-01-06_browser-mcp-skill_b7k2m9/spec.md", "lines": "275-280", "purpose": "Key differentiator explanation from spec" }
+                ],
+                "related_files": [".claude/skills/browser-mcp/SKILL.md"]
+              },
+              "depends_on": ["1.2.1"],
+              "actions": [
+                { "id": "1.3.1.1", "command": "ADD ## Key Differentiator section explaining real Chrome connection", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "1.3.1.2", "command": "ADD bullet points: no infrastructure needed, auth already handled, direct visual access", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "1.4",
+          "title": "Add cookbook routing",
+          "objective": "Create IF/THEN routing to workflow files for debugging and critique (files will be created in later checkpoints)",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "1.4.1",
+              "title": "Add cookbook section with workflow routing",
+              "file_path": ".claude/skills/browser-mcp/SKILL.md",
+              "description": "Add a Cookbook section following the prompt-writing SKILL.md pattern. Include IF/THEN routing for: (1) debugging front-end issues → read workflows/debug.md, (2) design critique → read workflows/critique.md. Files don't exist yet but routing should be in place.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": ".claude/skills/prompt-writing/SKILL.md", "lines": "35-65", "purpose": "Example cookbook IF/THEN pattern" }
+                ],
+                "related_files": [".claude/skills/browser-mcp/SKILL.md"]
+              },
+              "depends_on": ["1.3.1"],
+              "actions": [
+                { "id": "1.4.1.1", "command": "ADD ## Cookbook section header", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "1.4.1.2", "command": "ADD ### Front-End Debugging route: IF debugging front-end THEN read workflows/debug.md", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "1.4.1.3", "command": "ADD ### Design Critique route: IF design critique THEN read workflows/critique.md", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "1.4.1.4", "command": "ADD ## Commands section listing /browser-mcp:debug and /browser-mcp:critique", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Front-End Debugging Workflow",
+      "goal": "Create the debugging workflow following the multi-turn autonomous pattern from prompt-writing. Implements all 8 phases: setup, observe, analyze, instrument, refresh, iterate, propose, fix, cleanup.",
+      "prerequisites": [1],
+      "status": "pending",
+      "file_context": {
+        "beginning": {
+          "files": [
+            { "path": ".claude/skills/browser-mcp/SKILL.md", "status": "exists", "description": "Base skill with cookbook routing" },
+            { "path": ".claude/skills/prompt-writing/system_prompt/20-workflow-design/30-multi-turn/00-base.md", "status": "exists", "description": "Multi-turn workflow pattern to follow" }
+          ],
+          "tree": ".claude/skills/browser-mcp/\n└── SKILL.md"
+        },
+        "ending": {
+          "files": [
+            { "path": ".claude/skills/browser-mcp/SKILL.md", "status": "modified", "description": "Add debug log convention [DEBUG-AGENT]" },
+            { "path": ".claude/skills/browser-mcp/workflows/debug.md", "status": "new", "description": "Multi-turn debugging workflow with XML phases" },
+            { "path": ".claude/commands/browser-mcp/debug.md", "status": "new", "description": "Slash command that invokes the debugging workflow" }
+          ],
+          "tree": ".claude/skills/browser-mcp/\n├── SKILL.md\n└── workflows/\n    └── debug.md\n.claude/commands/browser-mcp/\n└── debug.md"
+        }
+      },
+      "testing_strategy": {
+        "approach": "Manual debugging session",
+        "verification_steps": [
+          "Run /browser-mcp:debug command",
+          "Verify URL confirmation phase works",
+          "Verify console log capture works",
+          "Verify [DEBUG-AGENT] instrumentation convention documented",
+          "Verify cleanup phase removes all markers"
+        ]
+      },
+      "task_groups": [
+        {
+          "id": "2.1",
+          "title": "Add debug log convention to SKILL.md",
+          "objective": "Document the [DEBUG-AGENT] marker convention and cleanup strategy in the base skill",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "2.1.1",
+              "title": "Add debug log convention section",
+              "file_path": ".claude/skills/browser-mcp/SKILL.md",
+              "description": "Add a section documenting the debug log convention: console.log('[DEBUG-AGENT]', '[Context.location]', { data }). Explain the format (single call for browser grouping), marker for cleanup, and common placement patterns.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": "agents/sessions/2026-01-06_browser-mcp-skill_b7k2m9/spec.md", "lines": "103-142", "purpose": "Debug log convention from spec" }
+                ],
+                "related_files": [".claude/skills/browser-mcp/SKILL.md"]
+              },
+              "depends_on": [],
+              "actions": [
+                { "id": "2.1.1.1", "command": "ADD ## Debug Log Convention section to SKILL.md", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "2.1.1.2", "command": "ADD code example: console.log('[DEBUG-AGENT]', '[ComponentName.functionName]', { data })", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "2.1.1.3", "command": "ADD cleanup strategy: grep for marker, git diff as fallback", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "2.2",
+          "title": "Create debugging workflow file",
+          "objective": "Create the multi-turn debugging workflow with XML phases following prompt-writing pattern",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "2.2.1",
+              "title": "Create workflows/debug.md with frontmatter",
+              "file_path": ".claude/skills/browser-mcp/workflows/debug.md",
+              "description": "Create the debugging workflow file. Add frontmatter covering what this workflow does. Add overview section explaining collaborative debugging approach.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": ".claude/skills/prompt-writing/system_prompt/20-workflow-design/30-multi-turn/00-base.md", "lines": "1-100", "purpose": "Multi-turn workflow pattern structure" },
+                  { "file": "agents/sessions/2026-01-06_browser-mcp-skill_b7k2m9/spec.md", "lines": "55-101", "purpose": "Debugging workflow phases from spec" }
+                ],
+                "related_files": []
+              },
+              "depends_on": [],
+              "actions": [
+                { "id": "2.2.1.1", "command": "CREATE FILE .claude/skills/browser-mcp/workflows/debug.md", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" },
+                { "id": "2.2.1.2", "command": "ADD frontmatter with covers, type, concepts", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" },
+                { "id": "2.2.1.3", "command": "ADD overview section explaining collaborative debugging approach", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" }
+              ]
+            },
+            {
+              "id": "2.2.2",
+              "title": "Add XML workflow with all 8 phases",
+              "file_path": ".claude/skills/browser-mcp/workflows/debug.md",
+              "description": "Add the XML workflow element with all 8 debugging phases: Setup (confirm URL), Observe (screenshot + logs), Analyze (determine if more visibility needed), Instrument (add [DEBUG-AGENT] logs), Refresh (browser_navigate), Iterate (repeat until understood), Propose (explain root cause), Fix & Cleanup (implement fix, remove markers).",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": ".claude/skills/prompt-writing/system_prompt/20-workflow-design/10-base.md", "lines": "40-90", "purpose": "Phase and action syntax" },
+                  { "file": "agents/sessions/2026-01-06_browser-mcp-skill_b7k2m9/spec.md", "lines": "55-101", "purpose": "Debugging workflow phases from spec" }
+                ],
+                "related_files": [".claude/skills/browser-mcp/workflows/debug.md"]
+              },
+              "depends_on": ["2.2.1"],
+              "actions": [
+                { "id": "2.2.2.1", "command": "ADD <workflow> element with global_constraints for collaborative debugging", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" },
+                { "id": "2.2.2.2", "command": "ADD <phase id=0 name=Setup>: browser_snapshot, confirm URL with user", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" },
+                { "id": "2.2.2.3", "command": "ADD <phase id=1 name=Observe>: browser_screenshot, browser_get_console_logs", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" },
+                { "id": "2.2.2.4", "command": "ADD <phase id=2 name=Analyze>: examine state, determine if instrumentation needed", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" },
+                { "id": "2.2.2.5", "command": "ADD <phase id=3 name=Instrument>: add console.log with [DEBUG-AGENT] markers", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" },
+                { "id": "2.2.2.6", "command": "ADD <phase id=4 name=Refresh>: browser_navigate to same URL for clean slate", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" },
+                { "id": "2.2.2.7", "command": "ADD <phase id=5 name=Iterate>: repeat phases 1-4 until root cause identified", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" },
+                { "id": "2.2.2.8", "command": "ADD <phase id=6 name=Propose>: explain root cause, propose fix, get user approval", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" },
+                { "id": "2.2.2.9", "command": "ADD <phase id=7 name=Fix_and_Cleanup>: implement fix, remove all [DEBUG-AGENT] markers, verify", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "2.3",
+          "title": "Create slash command",
+          "objective": "Create the /browser-mcp:debug command that invokes the workflow",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "2.3.1",
+              "title": "Create debug.md slash command",
+              "file_path": ".claude/commands/browser-mcp/debug.md",
+              "description": "Create the slash command file for debugging. Add frontmatter with allowed-tools (browser MCP tools, Read, Edit), description, and arguments. Add instruction to read and execute workflows/debug.md from the skill.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": ".claude/commands/git/commit.md", "lines": "1-30", "purpose": "Example command frontmatter and structure" }
+                ],
+                "related_files": [".claude/skills/browser-mcp/workflows/debug.md"]
+              },
+              "depends_on": ["2.2.2"],
+              "actions": [
+                { "id": "2.3.1.1", "command": "CREATE FILE .claude/commands/browser-mcp/debug.md", "file": ".claude/commands/browser-mcp/debug.md", "status": "pending" },
+                { "id": "2.3.1.2", "command": "ADD frontmatter: allowed-tools (browser_*, Read, Edit, Bash), description, arguments", "file": ".claude/commands/browser-mcp/debug.md", "status": "pending" },
+                { "id": "2.3.1.3", "command": "ADD instruction: Read and execute .claude/skills/browser-mcp/workflows/debug.md", "file": ".claude/commands/browser-mcp/debug.md", "status": "pending" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Design Critique Workflow",
+      "goal": "Create the design critique workflow following multi-turn pattern. Implements context gathering, Jony Ive analysis, principles check, report generation, and session storage.",
+      "prerequisites": [1],
+      "status": "pending",
+      "file_context": {
+        "beginning": {
+          "files": [
+            { "path": ".claude/skills/browser-mcp/SKILL.md", "status": "exists", "description": "Base skill with cookbook routing" },
+            { "path": ".claude/skills/prompt-writing/system_prompt/20-workflow-design/30-multi-turn/00-base.md", "status": "exists", "description": "Multi-turn workflow pattern to follow" }
+          ],
+          "tree": ".claude/skills/browser-mcp/\n├── SKILL.md\n└── workflows/\n    └── debug.md"
+        },
+        "ending": {
+          "files": [
+            { "path": ".claude/skills/browser-mcp/SKILL.md", "status": "modified", "description": "Add design principles summary" },
+            { "path": ".claude/skills/browser-mcp/workflows/critique.md", "status": "new", "description": "Multi-turn critique workflow with XML phases" },
+            { "path": ".claude/skills/browser-mcp/references/design-principles.md", "status": "new", "description": "Jony Ive aesthetic guidelines" },
+            { "path": ".claude/commands/browser-mcp/critique.md", "status": "new", "description": "Slash command that invokes the critique workflow" }
+          ],
+          "tree": ".claude/skills/browser-mcp/\n├── SKILL.md\n├── workflows/\n│   ├── debug.md\n│   └── critique.md\n└── references/\n    └── design-principles.md\n.claude/commands/browser-mcp/\n├── debug.md\n└── critique.md"
+        }
+      },
+      "testing_strategy": {
+        "approach": "Manual critique session",
+        "verification_steps": [
+          "Run /browser-mcp:critique command",
+          "Verify context inference and confirmation works",
+          "Verify Jony Ive principles are applied",
+          "Verify output saved to agents/design-sessions/{id}/"
+        ]
+      },
+      "task_groups": [
+        {
+          "id": "3.1",
+          "title": "Create design principles reference",
+          "objective": "Create a reference document with Jony Ive aesthetic guidelines and design principles",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "3.1.1",
+              "title": "Create design-principles.md reference file",
+              "file_path": ".claude/skills/browser-mcp/references/design-principles.md",
+              "description": "Create the design principles reference file. Include the Jony Ive lens ('Really think. Really, really think.'), target aesthetic (sleek, premium, minimalist, like a spa in Switzerland), and specific guidelines (icons over emojis, perfect padding, cohesive colors, responsive design).",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": "agents/sessions/2026-01-06_browser-mcp-skill_b7k2m9/spec.md", "lines": "208-227", "purpose": "Design principles from spec" }
+                ],
+                "related_files": []
+              },
+              "depends_on": [],
+              "actions": [
+                { "id": "3.1.1.1", "command": "CREATE FILE .claude/skills/browser-mcp/references/design-principles.md", "file": ".claude/skills/browser-mcp/references/design-principles.md", "status": "pending" },
+                { "id": "3.1.1.2", "command": "ADD frontmatter with covers, type", "file": ".claude/skills/browser-mcp/references/design-principles.md", "status": "pending" },
+                { "id": "3.1.1.3", "command": "ADD Jony Ive Lens section with key quote and mindset", "file": ".claude/skills/browser-mcp/references/design-principles.md", "status": "pending" },
+                { "id": "3.1.1.4", "command": "ADD Target Aesthetic section (sleek, premium, minimalist)", "file": ".claude/skills/browser-mcp/references/design-principles.md", "status": "pending" },
+                { "id": "3.1.1.5", "command": "ADD Specific Guidelines (icons, padding, colors, responsive)", "file": ".claude/skills/browser-mcp/references/design-principles.md", "status": "pending" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "3.2",
+          "title": "Create critique workflow file",
+          "objective": "Create the multi-turn critique workflow with XML phases following prompt-writing pattern",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "3.2.1",
+              "title": "Create workflows/critique.md with frontmatter",
+              "file_path": ".claude/skills/browser-mcp/workflows/critique.md",
+              "description": "Create the critique workflow file. Add frontmatter covering what this workflow does. Add overview section explaining the design critique approach and that it produces analysis, not implementation.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": ".claude/skills/prompt-writing/system_prompt/20-workflow-design/30-multi-turn/00-base.md", "lines": "1-100", "purpose": "Multi-turn workflow pattern structure" },
+                  { "file": "agents/sessions/2026-01-06_browser-mcp-skill_b7k2m9/spec.md", "lines": "145-206", "purpose": "Critique workflow from spec" }
+                ],
+                "related_files": []
+              },
+              "depends_on": ["3.1.1"],
+              "actions": [
+                { "id": "3.2.1.1", "command": "CREATE FILE .claude/skills/browser-mcp/workflows/critique.md", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" },
+                { "id": "3.2.1.2", "command": "ADD frontmatter with covers, type, concepts", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" },
+                { "id": "3.2.1.3", "command": "ADD overview section explaining analysis-focused (not implementation) approach", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" }
+              ]
+            },
+            {
+              "id": "3.2.2",
+              "title": "Add XML workflow with 7 critique phases",
+              "file_path": ".claude/skills/browser-mcp/workflows/critique.md",
+              "description": "Add the XML workflow element with 7 critique phases: Context Gathering (infer + confirm), Visual Capture (screenshots), Analysis (Jony Ive lens), Principles Check (guidelines), Report (structured output), Refinement (iterate with user), Save (agents/design-sessions/{id}/).",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": ".claude/skills/prompt-writing/system_prompt/20-workflow-design/10-base.md", "lines": "40-90", "purpose": "Phase and action syntax" },
+                  { "file": "agents/sessions/2026-01-06_browser-mcp-skill_b7k2m9/spec.md", "lines": "145-206", "purpose": "Critique workflow phases from spec" },
+                  { "file": ".claude/skills/browser-mcp/references/design-principles.md", "purpose": "Reference design principles in workflow" }
+                ],
+                "related_files": [".claude/skills/browser-mcp/workflows/critique.md"]
+              },
+              "depends_on": ["3.2.1"],
+              "actions": [
+                { "id": "3.2.2.1", "command": "ADD <workflow> element with global_constraints for critique approach", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" },
+                { "id": "3.2.2.2", "command": "ADD <phase id=1 name=Context_Gathering>: infer app/page purpose, present to user, require confirmation", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" },
+                { "id": "3.2.2.3", "command": "ADD <phase id=2 name=Visual_Capture>: screenshots across states/viewports", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" },
+                { "id": "3.2.2.4", "command": "ADD <phase id=3 name=Analysis>: apply Jony Ive lens (what works, what doesn't, confusing, redundant)", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" },
+                { "id": "3.2.2.5", "command": "ADD <phase id=4 name=Principles_Check>: evaluate against design principles from references/design-principles.md", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" },
+                { "id": "3.2.2.6", "command": "ADD <phase id=5 name=Report>: structured output with summary, issues, recommendations, priorities", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" },
+                { "id": "3.2.2.7", "command": "ADD <phase id=6 name=Refinement>: iterate with user questions until satisfied", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" },
+                { "id": "3.2.2.8", "command": "ADD <phase id=7 name=Save>: write to agents/design-sessions/{id}/ (critique.md, context.md, screenshots/)", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "3.3",
+          "title": "Create slash command",
+          "objective": "Create the /browser-mcp:critique command that invokes the workflow",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "3.3.1",
+              "title": "Create critique.md slash command",
+              "file_path": ".claude/commands/browser-mcp/critique.md",
+              "description": "Create the slash command file for design critique. Add frontmatter with allowed-tools (browser MCP tools, Read, Write), description, and arguments. Add instruction to read and execute workflows/critique.md from the skill.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": ".claude/commands/browser-mcp/debug.md", "purpose": "Example command structure from checkpoint 2" }
+                ],
+                "related_files": [".claude/skills/browser-mcp/workflows/critique.md"]
+              },
+              "depends_on": ["3.2.2"],
+              "actions": [
+                { "id": "3.3.1.1", "command": "CREATE FILE .claude/commands/browser-mcp/critique.md", "file": ".claude/commands/browser-mcp/critique.md", "status": "pending" },
+                { "id": "3.3.1.2", "command": "ADD frontmatter: allowed-tools (browser_*, Read, Write), description, arguments", "file": ".claude/commands/browser-mcp/critique.md", "status": "pending" },
+                { "id": "3.3.1.3", "command": "ADD instruction: Read and execute .claude/skills/browser-mcp/workflows/critique.md", "file": ".claude/commands/browser-mcp/critique.md", "status": "pending" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "3.4",
+          "title": "Update SKILL.md with design principles reference",
+          "objective": "Add a brief design principles section to SKILL.md that references the detailed principles file",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "3.4.1",
+              "title": "Add design principles summary to SKILL.md",
+              "file_path": ".claude/skills/browser-mcp/SKILL.md",
+              "description": "Add a brief Design Principles section to SKILL.md that summarizes the Jony Ive approach and links to the full references/design-principles.md file.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": ".claude/skills/browser-mcp/references/design-principles.md", "purpose": "Reference the detailed principles file" }
+                ],
+                "related_files": [".claude/skills/browser-mcp/SKILL.md"]
+              },
+              "depends_on": ["3.1.1"],
+              "actions": [
+                { "id": "3.4.1.1", "command": "ADD ## Design Principles section with brief Jony Ive summary", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "3.4.1.2", "command": "ADD link to references/design-principles.md for full guidelines", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Polish and Spec Validation",
+      "goal": "Refine cookbook routing, add tools quick reference, ensure cross-workflow consistency, validate all spec success criteria are met.",
+      "prerequisites": [2, 3],
+      "status": "pending",
+      "file_context": {
+        "beginning": {
+          "files": [
+            { "path": ".claude/skills/browser-mcp/SKILL.md", "status": "exists", "description": "Skill with both workflows referenced" }
+          ],
+          "tree": ".claude/skills/browser-mcp/\n├── SKILL.md\n├── workflows/\n│   ├── debug.md\n│   └── critique.md\n└── references/\n    └── design-principles.md"
+        },
+        "ending": {
+          "files": [
+            { "path": ".claude/skills/browser-mcp/SKILL.md", "status": "modified", "description": "Polished skill with complete cookbook and commands section" },
+            { "path": ".claude/skills/browser-mcp/references/tools.md", "status": "new", "description": "Browser MCP tools quick reference" }
+          ],
+          "tree": ".claude/skills/browser-mcp/\n├── SKILL.md\n├── workflows/\n│   ├── debug.md\n│   └── critique.md\n└── references/\n    ├── design-principles.md\n    └── tools.md"
+        }
+      },
+      "testing_strategy": {
+        "approach": "Spec success criteria validation",
+        "verification_steps": [
+          "Check all debugging workflow success criteria from spec",
+          "Check all design critique success criteria from spec",
+          "Verify cookbook routing works correctly",
+          "Verify skill structure matches project conventions"
+        ]
+      },
+      "task_groups": [
+        {
+          "id": "4.1",
+          "title": "Create tools quick reference",
+          "objective": "Create a standalone tools reference file with detailed Browser MCP tools documentation",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "4.1.1",
+              "title": "Create tools.md reference file",
+              "file_path": ".claude/skills/browser-mcp/references/tools.md",
+              "description": "Create a comprehensive tools reference file. Include all 12 Browser MCP tools with detailed usage examples, parameters, and when to use each. This is more detailed than the summary table in SKILL.md.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": "agents/sessions/2026-01-06_browser-mcp-skill_b7k2m9/spec.md", "lines": "275-295", "purpose": "Browser MCP tools from spec" },
+                  { "file": ".claude/skills/browser-mcp/SKILL.md", "purpose": "Reference existing tools table" }
+                ],
+                "related_files": []
+              },
+              "depends_on": [],
+              "actions": [
+                { "id": "4.1.1.1", "command": "CREATE FILE .claude/skills/browser-mcp/references/tools.md", "file": ".claude/skills/browser-mcp/references/tools.md", "status": "pending" },
+                { "id": "4.1.1.2", "command": "ADD frontmatter with covers, type", "file": ".claude/skills/browser-mcp/references/tools.md", "status": "pending" },
+                { "id": "4.1.1.3", "command": "ADD navigation tools section (browser_navigate, browser_go_back, browser_go_forward)", "file": ".claude/skills/browser-mcp/references/tools.md", "status": "pending" },
+                { "id": "4.1.1.4", "command": "ADD state capture tools section (browser_snapshot, browser_screenshot, browser_get_console_logs)", "file": ".claude/skills/browser-mcp/references/tools.md", "status": "pending" },
+                { "id": "4.1.1.5", "command": "ADD interaction tools section (browser_click, browser_hover, browser_type, browser_select_option, browser_press_key)", "file": ".claude/skills/browser-mcp/references/tools.md", "status": "pending" },
+                { "id": "4.1.1.6", "command": "ADD utility tools section (browser_wait)", "file": ".claude/skills/browser-mcp/references/tools.md", "status": "pending" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "4.2",
+          "title": "Polish SKILL.md",
+          "objective": "Review and polish SKILL.md for completeness, cross-links, and consistency",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "4.2.1",
+              "title": "Add References section to SKILL.md",
+              "file_path": ".claude/skills/browser-mcp/SKILL.md",
+              "description": "Add a References section that links to all reference files: tools.md and design-principles.md. This creates a clear navigation structure.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": ".claude/skills/browser-mcp/SKILL.md", "purpose": "Review current structure" },
+                  { "file": ".claude/skills/git/SKILL.md", "lines": "50-62", "purpose": "Example References section" }
+                ],
+                "related_files": [".claude/skills/browser-mcp/references/tools.md", ".claude/skills/browser-mcp/references/design-principles.md"]
+              },
+              "depends_on": ["4.1.1"],
+              "actions": [
+                { "id": "4.2.1.1", "command": "ADD ## References section to SKILL.md", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "4.2.1.2", "command": "ADD link to references/tools.md (Browser MCP tools quick reference)", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" },
+                { "id": "4.2.1.3", "command": "ADD link to references/design-principles.md (Jony Ive design guidelines)", "file": ".claude/skills/browser-mcp/SKILL.md", "status": "pending" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "4.3",
+          "title": "Validate spec success criteria",
+          "objective": "Review all files against spec success criteria and make any needed adjustments",
+          "status": "pending",
+          "tasks": [
+            {
+              "id": "4.3.1",
+              "title": "Validate debugging workflow criteria",
+              "file_path": ".claude/skills/browser-mcp/workflows/debug.md",
+              "description": "Review debugging workflow against spec success criteria: browser_snapshot for URL confirm, console logs + screenshots without copy/paste, [DEBUG-AGENT] instrumentation, browser_navigate refresh, cleanup of markers, user confirmations at key points.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": "agents/sessions/2026-01-06_browser-mcp-skill_b7k2m9/spec.md", "lines": "255-262", "purpose": "Debugging workflow success criteria" },
+                  { "file": ".claude/skills/browser-mcp/workflows/debug.md", "purpose": "Verify workflow meets criteria" }
+                ],
+                "related_files": []
+              },
+              "depends_on": [],
+              "actions": [
+                { "id": "4.3.1.1", "command": "VERIFY debug workflow has browser_snapshot for URL confirmation", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" },
+                { "id": "4.3.1.2", "command": "VERIFY debug workflow has console log + screenshot capture without manual copy/paste", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" },
+                { "id": "4.3.1.3", "command": "VERIFY debug workflow uses [DEBUG-AGENT] marker convention", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" },
+                { "id": "4.3.1.4", "command": "VERIFY debug workflow has cleanup phase for marker removal", "file": ".claude/skills/browser-mcp/workflows/debug.md", "status": "pending" }
+              ]
+            },
+            {
+              "id": "4.3.2",
+              "title": "Validate critique workflow criteria",
+              "file_path": ".claude/skills/browser-mcp/workflows/critique.md",
+              "description": "Review critique workflow against spec success criteria: context inference + user confirmation, screenshot capture across states/viewports, Jony Ive lens applied, output saved to agents/design-sessions/{id}/.",
+              "status": "pending",
+              "context": {
+                "read_before": [
+                  { "file": "agents/sessions/2026-01-06_browser-mcp-skill_b7k2m9/spec.md", "lines": "264-270", "purpose": "Critique workflow success criteria" },
+                  { "file": ".claude/skills/browser-mcp/workflows/critique.md", "purpose": "Verify workflow meets criteria" }
+                ],
+                "related_files": []
+              },
+              "depends_on": [],
+              "actions": [
+                { "id": "4.3.2.1", "command": "VERIFY critique workflow has context inference + user confirmation", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" },
+                { "id": "4.3.2.2", "command": "VERIFY critique workflow captures screenshots across states/viewports", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" },
+                { "id": "4.3.2.3", "command": "VERIFY critique workflow applies Jony Ive lens and design principles", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" },
+                { "id": "4.3.2.4", "command": "VERIFY critique workflow saves to agents/design-sessions/{id}/", "file": ".claude/skills/browser-mcp/workflows/critique.md", "status": "pending" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
