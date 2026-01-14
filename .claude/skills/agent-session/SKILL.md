@@ -124,6 +124,23 @@ Define WHAT to build and WHY.
 Design HOW to implement with checkpoints and IDK tasks.
 → **Read**: [plan/OVERVIEW.md](plan/OVERVIEW.md)
 
+**Two Planning Modes**:
+
+| Mode | Command | Use When |
+|------|---------|----------|
+| **Quick Plan** | `/session:quick-plan` | Chores, bug fixes, small changes (1-3 files) |
+| **Full Plan** | `/session:plan` | Features, refactoring, complex work (multiple checkpoints) |
+
+**Quick Plan**: Auto-generates complete plan (~1 checkpoint), user QAs result. Faster, less overhead.
+
+**Full Plan**: Interactive tier-by-tier planning with user confirmation at each stage. More control, thorough.
+
+**Mode Correlation**:
+- Light research → Quick plan → Fast build
+- Full research → Full plan → Careful build
+
+**Escalation**: If quick plan generates something too complex, user can escalate to full plan for interactive refinement within the same session.
+
 ### Build Phase
 Execute the plan checkpoint by checkpoint. Two modes available:
 - **Interactive** (`/session:build`) - Task-by-task with confirmation (default)
@@ -137,7 +154,8 @@ Execute the plan checkpoint by checkpoint. Two modes available:
 | `/session:spec [topic]` | Start new spec session |
 | `/session:spec [session-id]` | Resume existing session |
 | `/session:spec [session-id] finalize` | Finalize session spec |
-| `/session:plan [session-id]` | Start/resume planning |
+| `/session:quick-plan [session-id]` | Auto-generate plan for simple tasks (QA at end) |
+| `/session:plan [session-id]` | Interactive tier-by-tier planning |
 | `/session:plan [session-id] finalize` | Finalize the plan |
 | `/session:build [session-id]` | Interactive build - task-by-task with confirmation |
 | `/session:build-background [session-id]` | Autonomous build - execute checkpoint |
