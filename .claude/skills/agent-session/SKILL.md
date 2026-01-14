@@ -28,7 +28,13 @@ An **Agent Session** is a workspace that tracks a complete development journey:
 ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
 │   SPEC   │────▶│   PLAN   │────▶│  BUILD   │────▶│ COMPLETE │
 │  (WHAT)  │     │  (HOW)   │     │  (DO)    │     │          │
-└──────────┘     └──────────┘     └──────────┘     └──────────┘
+└────┬─────┘     └──────────┘     └──────────┘     └──────────┘
+     │
+     ▼ (optional)
+┌──────────┐
+│  DEBUG   │──── Ephemeral investigation
+│(sub-phase)│    (findings → debug/ artifacts)
+└──────────┘
 ```
 
 ## Mental Model: The Bridge
@@ -119,6 +125,24 @@ CURRENT STATE                              DESIRED STATE
 ### Spec Phase
 Define WHAT to build and WHY.
 → **Read**: [spec/OVERVIEW.md](spec/OVERVIEW.md)
+
+**Debug Sub-Phase** (optional): When investigating a bug during spec, enter the debug sub-phase:
+
+```
+SPEC ──▶ (need to understand bug) ──▶ DEBUG SUB-PHASE ──▶ SPEC (informed) ──▶ PLAN ──▶ BUILD
+                                            │
+                                            ├── Make ephemeral changes (logs, repro)
+                                            ├── Investigate and understand
+                                            ├── Capture findings in debug/ artifacts
+                                            └── Changes are NOT committed (revert or discard)
+```
+
+Key principles:
+- Debug changes are **ephemeral** - for understanding only, NOT committed
+- Understanding goes into `debug/{issue-slug}.md` artifacts
+- After debug completes, return to spec with new understanding
+- Plan phase implements the proper fix based on debug findings
+- Keeps plan/build clean and automatable - debug is exploratory, plan/build is deliberate
 
 ### Plan Phase
 Design HOW to implement with checkpoints and IDK tasks.
