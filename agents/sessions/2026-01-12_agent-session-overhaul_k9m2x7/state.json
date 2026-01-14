@@ -141,16 +141,22 @@
       "sha": "2a57982",
       "message": "checkpoint-2: Research integration - unified session-based research",
       "created_at": "2026-01-14T02:30:00Z"
+    },
+    {
+      "checkpoint_id": 3,
+      "sha": "cced62e",
+      "message": "checkpoint-3: Planning modes - quick and full plans",
+      "created_at": "2026-01-14T03:30:00Z"
     }
   ],
   "plan_state": {
     "status": "in_progress",
     "checkpoints_total": 6,
     "checkpoints_detailed": 6,
-    "checkpoints_completed": [1, 2],
-    "current_checkpoint": 3,
-    "current_task_group": "3.4",
-    "current_task": "3.4.1",
-    "last_updated": "2026-01-14T03:20:00Z"
+    "checkpoints_completed": [1, 2, 3],
+    "current_checkpoint": 4,
+    "current_task_group": "4.3",
+    "current_task": "4.3.1",
+    "last_updated": "2026-01-14T04:10:00Z"
   }
 }
