@@ -85,3 +85,9 @@ For interactive workflows, use the dedicated commands:
 
 - `/git:commit` - Full interactive commit workflow with options
 - `/git:sync-main` - Sync local main with remote
+- `/git:deslop` - Scan git diff/PR for AI slop patterns and clean them up
+
+## Related Skills
+
+- **[Changelog](../changelog/SKILL.md)** - Generate user-facing changelogs from git history
+  - Use `/changelog:update` after PRs merge or before releases
