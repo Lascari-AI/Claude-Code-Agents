@@ -34,6 +34,34 @@ Executes all tasks in a checkpoint directly, reports results at end.
 User invokes → Checkpoint executes → Results reported → User re-invokes for next
 ```
 
+### `/session:build-interactive` - Fix Mode
+
+Interactive troubleshooting when something isn't working during build.
+
+```
+Issue encountered → User invokes → "What's not working?" → Work on fix together → Resume with /session:build
+```
+
+**When to use**:
+- Build produced unexpected results
+- Tests are failing
+- Something needs debugging or adjustment
+
+**Workflow**:
+1. User invokes `/session:build-interactive [session-id]`
+2. Agent loads current build context (checkpoint, task position)
+3. Agent asks: "What's not working?"
+4. User describes the issue
+5. Agent and user work together to investigate and fix
+6. On resolution, agent logs fix note to `dev-notes.json` (category: `resolution`)
+7. User runs `/session:build` to continue from where they left off
+
+**Key principles**:
+- **User-driven**: No automatic analysis - wait for user to describe the problem
+- **Interactive**: Work WITH the user, not autonomously
+- **Context-aware**: Automatically loads current position from `plan_state`
+- **Documented**: Fix logged to dev-notes.json for traceability
+
 ## Purpose
 
 The build phase executes the planned transformation:

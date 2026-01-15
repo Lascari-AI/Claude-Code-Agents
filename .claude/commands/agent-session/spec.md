@@ -272,7 +272,7 @@ Spec mode is:
             <exit_condition>User confirms debug investigation is complete OR root cause identified</exit_condition>
         </phase>
         <phase name="5_finalize">
-            <description>Complete and lock the spec for planning phase</description>
+            <description>Complete and lock the spec - either for planning or as standalone documentation</description>
             <trigger>User approval (explicit request or confirmation prompt)</trigger>
             <steps>
                 <step id="1">Review spec.md for completeness</step>
@@ -281,13 +281,28 @@ Spec mode is:
                     - High-level goals
                     - Mid-level goals
                 </step>
-                <step id="3">Ask user to confirm finalization</step>
-                <step id="4">Update state.json:
+                <step id="3">Ask user about next steps using AskUserQuestion:
+                    - Header: "Next step"
+                    - Question: "What would you like to do with this spec?"
+                    - Options:
+                        1. "Proceed to plan" - Finalize and continue to implementation planning
+                        2. "Complete as-is" - Finalize without a plan (no changes needed, but spec is valuable documentation)
+                </step>
+                <step id="4a" condition="user chose 'Proceed to plan'">
+                    Update state.json:
                     - phases.spec.status: "finalized"
                     - phases.spec.finalized_at: now()
+                    Add finalization header to spec.md
+                    Report: "Spec finalized. Ready for `/plan` phase."
                 </step>
-                <step id="5">Add finalization header to spec.md</step>
-                <step id="6">Report: "Spec finalized. Ready for `/plan` phase."</step>
+                <step id="4b" condition="user chose 'Complete as-is'">
+                    Update state.json:
+                    - phases.spec.status: "finalized_complete"
+                    - phases.spec.finalized_at: now()
+                    - current_phase: "complete"
+                    Add completion header to spec.md indicating this is a standalone spec
+                    Report: "Spec completed as documentation. No implementation needed."
+                </step>
             </steps>
             <on_incomplete>List missing required sections and continue exploration</on_incomplete>
         </phase>
@@ -374,7 +389,7 @@ and continue until we've thoroughly captured your vision.
 ```
     </scenario>
 
-    <scenario name="finalize" trigger="User approves spec finalization">
+    <scenario name="finalize" trigger="User approves spec finalization with plan">
 ```markdown
 ## Spec Finalized
 
@@ -387,6 +402,28 @@ and continue until we've thoroughly captured your vision.
 ### Ready for Planning
 The spec is now ready for the planning phase. Use `/plan` to begin
 implementation planning, which will use this spec as its foundation.
+
+**Spec Location**: `agents/sessions/{session_id}/spec.md`
+```
+    </scenario>
+
+    <scenario name="finalize_complete" trigger="User completes spec without plan">
+```markdown
+## Spec Completed (No Plan Needed)
+
+**Session ID**: `{session_id}`
+**Topic**: {topic}
+**Status**: Complete - Documentation Only
+
+### Summary
+{High-level and mid-level goals}
+
+### Outcome
+This exploration determined that **no implementation changes are required**.
+The spec is preserved as valuable documentation for future reference.
+
+### Key Findings
+{Summary of what was learned during exploration}
 
 **Spec Location**: `agents/sessions/{session_id}/spec.md`
 ```

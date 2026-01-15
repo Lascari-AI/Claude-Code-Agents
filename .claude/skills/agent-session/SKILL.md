@@ -28,13 +28,16 @@ An **Agent Session** is a workspace that tracks a complete development journey:
 ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
 │   SPEC   │────▶│   PLAN   │────▶│  BUILD   │────▶│   DOCS   │────▶│ COMPLETE │
 │  (WHAT)  │     │  (HOW)   │     │  (DO)    │     │ (UPDATE) │     │          │
-└────┬─────┘     └──────────┘     └──────────┘     └────┬─────┘     └──────────┘
-     │                                                  │
-     ▼ (optional)                                       └── Agent determines if
-┌──────────┐                                               docs need updating
-│  DEBUG   │──── Ephemeral investigation                   (not all sessions do)
-│(sub-phase)│    (findings → debug/ artifacts)
-└──────────┘
+└────┬─────┘     └──────────┘     └────┬─────┘     └────┬─────┘     └──────────┘
+     │                                 │                │
+     ▼ (optional)                      ▼ (when issue)   └── Agent determines if
+┌──────────┐                      ┌──────────┐             docs need updating
+│  DEBUG   │                      │   FIX    │             (not all sessions do)
+│(sub-phase)│                     │(sub-phase)│
+└──────────┘                      └──────────┘
+     │                                 │
+     └── Ephemeral investigation       └── Interactive fix mode
+         (findings → debug/)               (build-interactive)
 ```
 
 ## Mental Model: The Bridge
@@ -210,6 +213,7 @@ Update documentation at the end of a session after build + tests pass.
 | `/session:plan [session-id] finalize` | Finalize the plan |
 | `/session:build [session-id]` | Interactive build - task-by-task with confirmation |
 | `/session:build-background [session-id]` | Autonomous build - execute checkpoint |
+| `/session:build-interactive [session-id]` | Interactive fix mode - work with user to resolve issues during build |
 | `/session:docs-update [session-id]` | Update documentation at end of session |
 
 ## Session Directory Structure

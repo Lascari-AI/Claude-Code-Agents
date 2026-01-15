@@ -16,6 +16,7 @@ Background theory and philosophy. This section explains the "why" behind the fra
 The manifesto. Why documentation is the only scalable way to collaborate with AI agents:
 - The problem of intelligence without context
 - Documentation as executable understanding
+- Domain-Driven Design and ubiquitous language
 - Progressive revelation (how engineers actually think)
 - Why structure beats brute force
 

@@ -80,7 +80,11 @@ Quick plan mode is:
             <description>Load session and verify preconditions</description>
             <steps>
                 <step id="1">Check if SESSIONS_DIR/$1/state.json exists (error if not)</step>
-                <step id="2">Load state.json and verify phases.spec.status === "finalized"</step>
+                <step id="2">Load state.json and check phases.spec.status:
+                    - If "finalized_complete": Session was completed without plan (exploration determined no changes needed). Inform user and exit gracefully.
+                    - If "finalized": Continue to planning
+                    - Otherwise: Error - spec not finalized
+                </step>
                 <step id="3">Read SESSIONS_DIR/$1/spec.md for requirements</step>
                 <step id="4">Read SKILL_DIR/plan/OVERVIEW.md for plan structure guidance</step>
                 <step id="5">Check if plan.json already exists:
@@ -91,6 +95,7 @@ Quick plan mode is:
             </steps>
             <on_failure>
                 - Session not found: "Session '{$1}' not found. Use /session:spec to create."
+                - Spec completed as documentation: "This session was completed as documentation only (no changes needed). No plan required."
                 - Spec not finalized: "Spec not finalized. Run /session:spec {$1} finalize first."
             </on_failure>
         </phase>

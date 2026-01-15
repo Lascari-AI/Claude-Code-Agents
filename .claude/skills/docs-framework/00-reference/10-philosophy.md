@@ -1,6 +1,6 @@
 ---
 covers: Why documentation is the source of truth — the philosophy behind docs-first development.
-concepts: [philosophy, lossy-projection, specs-as-source, progressive-revelation, overview-as-abstract, docs-first]
+concepts: [philosophy, lossy-projection, specs-as-source, progressive-revelation, overview-as-abstract, docs-first, domain-driven-design, ubiquitous-language, bounded-contexts]
 ---
 
 # Why This Framework
@@ -38,6 +38,24 @@ If specs are solid, you can rebuild correctly every time.
 Physical engineering knows this. A mechanic in Tokyo rebuilds a Detroit engine using only the manual. Boeing documents every component and tolerance — "the plane is the documentation" would be absurd. The US Constitution is a versioned specification: amendments update it, judicial review checks compliance, precedents test edge cases.
 
 Software abandoned this rigor. We're correcting it.
+
+---
+
+## Domain-Driven Design
+
+**The domain is the heart of software.**
+
+Domain-Driven Design (DDD) teaches that software should model the business domain — not technical concerns. The most valuable code isn't clever algorithms; it's code that accurately represents how the business actually works.
+
+This framework embraces DDD principles:
+
+- **Ubiquitous Language** — Documentation uses the same terms as domain experts. When code says `Order`, docs say `Order`, and stakeholders say `Order`. No translation layer.
+- **Bounded Contexts** — Each major section (L2) represents a distinct domain boundary. Dependencies and translations between contexts are explicit.
+- **Domain at the Center** — L3 concept docs capture domain logic and rules. Technical implementation details are secondary to domain understanding.
+
+Documentation becomes the **shared model** between humans and AI. When an agent reads your docs, it learns the domain language, understands the boundaries, and can reason about business rules — not just call functions.
+
+DDD and docs-first reinforce each other: documenting the domain forces clarity, and clear domain models make documentation straightforward.
 
 ---
 

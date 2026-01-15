@@ -13,6 +13,12 @@
   "current_phase": "spec",
   "phases": {
     "spec": {
+      "_status_values": ["draft", "finalized", "finalized_complete"],
+      "_status_notes": {
+        "draft": "Spec in progress, not yet complete",
+        "finalized": "Spec complete, ready for plan phase",
+        "finalized_complete": "Spec complete, no plan needed - session done (exploration revealed no changes required)"
+      },
       "status": "draft",
       "started_at": "{{CREATED_AT}}",
       "finalized_at": null

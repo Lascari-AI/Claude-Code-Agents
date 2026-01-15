@@ -44,6 +44,7 @@ Read `state.json` and detect current state:
 
 | State | Condition | Action |
 |-------|-----------|--------|
+| **Spec completed without plan** | `phases.spec.status === "finalized_complete"` | Inform user: session complete as documentation, no plan needed |
 | **Not in plan phase** | `current_phase !== "plan"` | Initialize plan phase |
 | **Escalated from quick plan** | `plan_state.status === "escalated_to_full"` | Resume from existing plan.json with tier-by-tier refinement |
 | **Outline pending** | Plan phase started, no checkpoints | Tier 1: Generate checkpoint outline |
@@ -76,7 +77,10 @@ Track per-checkpoint progress in `plan_state`:
 ### Step 1: Load Session
 
 1. Read `SESSIONS_DIR/$1/state.json`
-2. Verify `phases.spec.status === "finalized"` (error if not)
+2. Check spec status:
+   - If `phases.spec.status === "finalized_complete"`: Inform user this session was completed without a plan (exploration determined no changes needed). The spec is preserved as documentation. Exit gracefully.
+   - If `phases.spec.status !== "finalized"`: Error - spec not finalized
+   - If `phases.spec.status === "finalized"`: Continue to planning
 3. Read `SESSIONS_DIR/$1/spec.md`
 4. Read `SKILL_DIR/plan/OVERVIEW.md` for workflow guidance
 5. Determine current state from table above
