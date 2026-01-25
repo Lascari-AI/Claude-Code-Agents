@@ -1,106 +1,121 @@
 ---
-covers: The structural model — three zones, six layers, and separation of concerns.
-concepts: [architecture, zones, layers, foundation, codebase, appendix, L1-L6, vertical-slices, boundaries, domain-driven-design, progressive-revelation]
+covers: The structural model — progressive disclosure enabled by vertical slices, clear boundaries, and layered depth.
+concepts: [architecture, progressive-disclosure, vertical-slices, boundaries, zones, layers, L1-L6, shared-understanding]
 ---
 
 # Architecture
 
-The structural model that makes this framework work. Three zones organize documentation by semantic purpose; six layers provide progressive depth from overview to implementation.
+The philosophy establishes why documentation matters. Now the question becomes: how do we build it?
+
+The challenge is twofold:
+
+1. **Capture human intent** 
+   - The thoughts, decisions, and understanding that exist in your head need to be externalized in a structured way.
+
+2. **Enable agent self-navigation** 
+   - Once captured, agents must be able to find what they need on their own, without you pointing them to the right files every time.
+
+The result is a **shared communication bridge**.
+
+Documentation structured this way isn't just *for* agents—it benefits both parties equally:
+- For you: 
+  - A way to expand your own knowledge, thinking, and understanding. 
+  - The discipline of structuring thoughts clarifies them.
+- For agents: 
+  - Efficient navigation and comprehension. 
+  - They can find context autonomously.
+- Together: 
+  - A shared medium where both parties speak the same language and understand the same structure.
+
+You can provide intent, but the agent can also navigate, create, and update it. 
+
+This creates a living system that grows with your project.
 
 ---
 
-## Vertical Slices and Clear Boundaries
+# The Core Principle: Progressive Disclosure
 
-Like Factorio factories, each system owns its operation completely.
-
-Good codebases (and good documentation) follow a vertical slice architecture:
-
-- Each major system handles its functionality end-to-end
-- Boundaries are explicit
-  - Clear inputs, clear outputs
-- You can understand one system without understanding the internals of another
-- Systems connect at well-defined interfaces
-
-The transmission and engine are connected (power flows from one to the other) but they are completely different domains. You can rebuild the transmission without understanding combustion dynamics. You only need to know: "torque comes in here, gear ratio happens, power goes out there."
-
-### What This Means for Documentation
-
-Each L2 section should be self-contained enough to work within:
-
-- What does this system receive?
-  - Inputs, dependencies
-- What does this system produce?
-  - Outputs, side effects
-- Where are the boundaries?
-  - What's inside vs outside this domain
-
-When sections connect, the connection points should be explicit. If the Auth system produces a token that the API system consumes, both sections should document that interface, not the other system's internals.
-
-This enables the mechanic's workflow: "I'm working on the transmission. I don't need to read the engine docs. I just need to know what comes in on the input shaft."
-
-This principle shapes everything below: zones have clear purposes, layers have clear responsibilities, and each section documents one bounded context.
-
----
-
-## Domain-Driven Design
-
-The domain is the heart of software.
-
-Domain-Driven Design (DDD) provides the conceptual vocabulary for how we structure documentation:
-
-- Ubiquitous Language
-  - Documentation uses the same terms as domain experts
-  - When code says `Order`, docs say `Order`, and stakeholders say `Order`
-  - No translation layer
-- Bounded Contexts
-  - Each major section (L2) represents a distinct domain boundary
-  - The transmission is a bounded context; the engine is another
-  - Dependencies between contexts are explicit
-- Domain at the Center
-  - L3 concept docs capture domain logic and rules
-  - Technical implementation details are secondary to domain understanding
-
-Documentation becomes the shared model between humans and AI. When an agent reads your docs, it learns the domain language, understands the boundaries, and can reason about business rules—not just call functions.
-
----
-
-## Progressive Revelation
+The central organizing principle is **progressive disclosure**
+- The ability to navigate from high-level intent down to specific implementation, loading only what's needed for the task at hand.
 
 Engineers build understanding progressively, not randomly:
 
 1. What is this system? → L1 (the index)
-2. What are the major parts? → L2 (system overviews)
+2. What are the major parts? → L2 (domain overviews)
 3. How does this concept work? → L3 (specific topics)
 4. What does this file do? → L4 (file headers)
 5. What does this function promise? → L5 (docstrings)
 6. How is it implemented? → L6 (code)
 
-This mirrors the repair manual: index → system chapter → subsystem → component → procedure → the actual bolts.
+This mirrors the repair manual model from the philosophy: 
+- index → system chapter → subsystem → component → procedure → the actual bolts.
 
-Agents navigate from intent to implementation the way experienced engineers do—loading only what's needed for the task at hand. You don't read the entire engine chapter to replace a spark plug. You navigate to the right spot, get the context you need, and work.
+You don't read the entire engine chapter to replace a spark plug. 
 
-### What This Means for Overviews
+You navigate to the right spot, get the context you need, and work. 
 
-An overview's job is comprehension at that level, not navigation to the next level.
-
-After reading an L2 overview (a "system" section), you should be able to:
-
-- Explain how this system works to a colleague
-- Understand how the major pieces connect
-- Know what comes in, what goes out, and what this system is responsible for
-- Decide whether this is the right section for your task
-
-The table of contents is a side effect. The abstract is the goal.
-
-How you achieve this varies:
-
-- A service might need a request flow diagram
-- A domain module might need state transitions
-- A data layer might need an entity relationship overview
-
-Templates provide examples. The principle is what matters: give working understanding of the whole before drilling into parts.
+Agents do the same, loading only what's relevant to their current task.
 
 ---
+
+# What Makes Progressive Disclosure Work
+
+Progressive disclosure only works if the documentation structure supports it. 
+
+Three properties enable this:
+
+## Vertical Slices
+
+Each domain owns its operation completely.
+
+- Each major system handles its functionality end-to-end
+- You can understand one system without understanding the internals of another
+- Systems connect at well-defined interfaces, not tangled dependencies
+
+The transmission and engine are connected (power flows from one to the other) but they are completely different domains. 
+
+You can rebuild the transmission without understanding combustion dynamics. 
+- You only need to know: "torque comes in here, gear ratio happens, power goes out there."
+
+This is why you can skip sections. 
+
+If you're working on Service A, you don't need to read Service B's detailed documentation—because Service A is self-contained.
+
+## Clear Boundaries
+
+When systems connect, document the interface, not the internals.
+
+If the Auth system produces a token that the API system consumes:
+- Auth documents: "I produce tokens with this shape"
+- API documents: "I consume tokens with this shape"
+- Neither documents the other's implementation
+
+This contains the blast radius of change. 
+
+When Auth's internals change, only Auth's docs update—as long as the interface stays stable.
+
+Each documented section should answer:
+- What does this system receive? (inputs, dependencies)
+- What does this system produce? (outputs, side effects)
+- Where are the boundaries? (what's inside vs outside)
+
+## Overviews at Every Level
+
+You always know what exists without reading the details.
+
+- L1 tells you what domains exist in the system
+- L2 tells you what concepts exist within a domain
+- Each overview provides enough context to decide: "Is this relevant to my task?"
+
+This enables the mechanic's workflow: 
+
+"I'm working on the transmission. I can see the engine exists and generally what it does, but I don't need to read its docs. I just need to know what comes in on the input shaft."
+
+---
+
+# The Implementation
+
+The principles above are implemented through a specific structure: three zones organized by semantic purpose, and six layers organized by depth of detail.
 
 ## The Three Zones
 
@@ -151,45 +166,31 @@ Within the **Codebase** zone, documentation follows a six-layer depth hierarchy:
 | **L5** | Function docstrings | Function contracts | With code |
 | **L6** | Implementation | The code itself | Constantly |
 
-### Layer Purposes
+### Each Layer Answers a Different Question
 
-**L1-L3: The "Why" of Architecture**
-- Lives in `docs/10-codebase/`
-- Explains reasoning, mental models, design decisions
-- Human-maintained, AI-consumed
-
-**L4-L5: The "What" of Contracts**
-- Lives in source code files
-- Declares responsibilities and promises
-- Boundary between documentation and implementation
-
-**L6: The "How" of Implementation**
-- The actual code
-- Details that L4-L5 abstract away
-
----
-
-## Separation of Concerns
-
-| Zone/Layer | Answers | Example |
-|------------|---------|---------|
+| Zone/Layer | Question | Example |
+|------------|----------|---------|
 | Foundation | "Why does this project exist?" | "We build X to solve Y for Z" |
-| L1-L3 (Codebase docs) | "Why is it architected this way?" | "We use event sourcing because..." |
-| L4 (File headers) | "What does this file do?" | "Handles user session lifecycle" |
-| L5 (Docstrings) | "What does this function promise?" | "Returns validated token or throws" |
-| L6 (Code) | "How does it work?" | The implementation |
+| L1-L3 | "Why is it architected this way?" | "We use event sourcing because..." |
+| L4 | "What does this file do?" | "Handles user session lifecycle" |
+| L5 | "What does this function promise?" | "Returns validated token or throws" |
+| L6 | "How does it work?" | The implementation |
 
-**Key insight:** Each layer answers a different question. An agent working on authentication needs:
+This separation means an agent working on authentication loads:
 - L1-L3 for architectural context (don't duplicate the auth service)
 - L4-L5 for contracts (what functions exist, what they promise)
-- L6 for implementation details (the actual change)
+- L6 only for implementation details (the actual change)
+
+Each layer provides exactly what's needed at that depth—nothing more.
 
 ---
 
-## Navigation Pattern
+## The Navigation Pattern
+
+Putting it all together, the path from intent to implementation:
 
 ```
-Foundation (prime context)
+Foundation (prime context — understand the why)
     ↓
 L1 (find relevant section)
     ↓
@@ -204,4 +205,14 @@ L5 (identify target function)
 L6 (make the change)
 ```
 
-This mirrors how senior engineers naturally explore codebases—progressive depth based on need.
+The structure enables autonomous navigation. 
+
+Given a task, an agent can:
+  1. Start at Foundation to understand project intent
+  2. Use L1 to find which domain is relevant
+  3. Use L2 to understand that domain's architecture
+  4. Drill into L3-L6 only as deep as the task requires
+
+No human guidance needed. 
+
+The documentation structure itself provides the map.
