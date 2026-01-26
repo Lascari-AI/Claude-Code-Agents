@@ -1,47 +1,57 @@
 ---
-covers: Templates for the Foundation zone — overview, purpose, principles, and boundaries.
+covers: Templates for the Foundation zone — freeform structure with example patterns.
 type: overview
-concepts: [templates, foundation, purpose, principles, boundaries]
+concepts: [templates, foundation, patterns, understanding]
 ---
 
 # Foundation Templates
 
-Templates for the Foundation zone. Fixed structure templates for the overview, purpose, principles, and boundaries documents that capture system intent.
+Templates for the Foundation zone. Foundation is freeform—structure follows content. Only the entry point (`00-overview.md`) is required. Everything else depends on how you want to capture your understanding.
 
 ---
 
-## Archetypes
+## Required
 
 | Template | Use When |
 |----------|----------|
-| **10-foundation-overview.md** | Creating the Foundation zone entry point |
-| **20-purpose.md** | Documenting why the system exists |
-| **30-principles.md** | Capturing decision-making heuristics |
-| **40-boundaries.md** | Defining what the system won't do |
+| **10-entry-point.md** | Creating Foundation's `00-overview.md` (always required) |
 
-Foundation has a fixed structure. These four documents are always present and don't vary by project type.
+## Example Patterns
+
+These are patterns, not prescriptions. Pick one that fits how you think about your project, or invent your own.
+
+| Pattern | Files | Best For |
+|---------|-------|----------|
+| **20-pattern-problem.md** | problem, landscape, approach | Projects solving a clear pain point |
+| **30-pattern-vision.md** | vision, constraints, direction | Projects driven by a future state |
+| **40-pattern-thinking.md** | context, ideas, decisions | Projects that emerged through exploration |
+| **50-pattern-decisions.md** | purpose, principles, boundaries | Projects needing clear decision frameworks |
 
 ## File Tree
 
 ```
 10-foundation/
 ├── 00-overview.md              (this file)
-├── 10-foundation-overview.md   Foundation zone entry point
-├── 20-purpose.md               Why the system exists
-├── 30-principles.md            Decision-making heuristics
-└── 40-boundaries.md            What the system won't do
+├── 10-entry-point.md           Template for Foundation's 00-overview.md
+├── 20-pattern-problem.md       Problem-focused pattern example
+├── 30-pattern-vision.md        Vision-focused pattern example
+├── 40-pattern-thinking.md      Thinking-focused pattern example
+└── 50-pattern-decisions.md     Decision-focused pattern example
 ```
 
 ## Contents
 
-### [10-foundation-overview.md](10-foundation-overview.md)
-Template for `docs/00-foundation/00-overview.md`. Entry point for the Foundation zone with links to purpose, principles, and boundaries.
+### [10-entry-point.md](10-entry-point.md)
+Template for `docs/00-foundation/00-overview.md`. The only required file—introduces whatever structure you've chosen.
 
-### [20-purpose.md](20-purpose.md)
-Template for `docs/00-foundation/10-purpose.md`. Documents why the system exists, the problem it solves, and who benefits.
+### [20-pattern-problem.md](20-pattern-problem.md)
+Pattern: `10-problem.md`, `20-landscape.md`, `30-approach.md`. Works well when you're solving a clear, articulable problem.
 
-### [30-principles.md](30-principles.md)
-Template for `docs/00-foundation/20-principles.md`. Decision-making heuristics that apply everywhere in the codebase.
+### [30-pattern-vision.md](30-pattern-vision.md)
+Pattern: `10-vision.md`, `20-constraints.md`, `30-direction.md`. Works well when you're building toward a specific future state.
 
-### [40-boundaries.md](40-boundaries.md)
-Template for `docs/00-foundation/30-boundaries.md`. Explicit non-goals, accepted constraints, and out-of-scope features.
+### [40-pattern-thinking.md](40-pattern-thinking.md)
+Pattern: `10-context.md`, `20-ideas.md`, `30-decisions.md`. Works well when the project emerged through exploration and iteration.
+
+### [50-pattern-decisions.md](50-pattern-decisions.md)
+Pattern: `10-purpose.md`, `20-principles.md`, `30-boundaries.md`. Works well when you need clear frameworks for ongoing decision-making.
