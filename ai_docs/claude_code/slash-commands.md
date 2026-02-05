@@ -1,550 +1,513 @@
-# Slash commands
+# Extend Claude with Skills
 
-Control Claude's behavior during an interactive session with slash commands.
+Skills extend what Claude can do. Create a `SKILL.md` file with instructions, and Claude adds it to its toolkit. Claude uses skills when relevant, or you can invoke one directly with `/skill-name`.
 
-## Built-in slash commands
+For built-in commands like `/help` and `/compact`, see [interactive mode](https://code.claude.com/docs/en/interactive-mode#built-in-commands).
 
-| Command | Purpose |
-| --- | --- |
-| `/add-dir` | Add additional working directories |
-| `/agents` | Manage custom AI subagents for specialized tasks |
-| `/bashes` | List and manage background tasks |
-| `/bug` | Report bugs (sends conversation to Anthropic) |
-| `/clear` | Clear conversation history |
-| `/compact [instructions]` | Compact conversation with optional focus instructions |
-| `/config` | Open the Settings interface (Config tab) |
-| `/context` | Visualize current context usage as a colored grid |
-| `/cost` | Show token usage statistics. See [cost tracking guide](https://code.claude.com/docs/en/costs#using-the-cost-command) for subscription-specific details. |
-| `/doctor` | Checks the health of your Claude Code installation |
-| `/exit` | Exit the REPL |
-| `/export [filename]` | Export the current conversation to a file or clipboard |
-| `/help` | Get usage help |
-| `/hooks` | Manage hook configurations for tool events |
-| `/ide` | Manage IDE integrations and show status |
-| `/init` | Initialize project with `CLAUDE.md` guide |
-| `/install-github-app` | Set up Claude GitHub Actions for a repository |
-| `/login` | Switch Anthropic accounts |
-| `/logout` | Sign out from your Anthropic account |
-| `/mcp` | Manage MCP server connections and OAuth authentication |
-| `/memory` | Edit `CLAUDE.md` memory files |
-| `/model` | Select or change the AI model |
-| `/output-style [style]` | Set the output style directly or from a selection menu |
-| `/permissions` | View or update [permissions](https://code.claude.com/docs/en/iam#configuring-permissions) |
-| `/plan` | Enter plan mode directly from the prompt |
-| `/plugin` | Manage Claude Code plugins |
-| `/pr-comments` | View pull request comments |
-| `/privacy-settings` | View and update your privacy settings |
-| `/release-notes` | View release notes |
-| `/rename <name>` | Rename the current session for easier identification |
-| `/remote-env` | Configure remote session environment (claude.ai subscribers) |
-| `/resume [session]` | Resume a conversation by ID or name, or open the session picker |
-| `/review` | Request code review |
-| `/rewind` | Rewind the conversation and/or code |
-| `/sandbox` | Enable sandboxed bash tool with filesystem and network isolation for safer, more autonomous execution |
-| `/security-review` | Complete a security review of pending changes on the current branch |
-| `/stats` | Visualize daily usage, session history, streaks, and model preferences |
-| `/status` | Open the Settings interface (Status tab) showing version, model, account, and connectivity |
-| `/statusline` | Set up Claude Code's status line UI |
-| `/teleport` | Resume a remote session from claude.ai by session ID, or open a picker (claude.ai subscribers) |
-| `/terminal-setup` | Install Shift+Enter key binding for newlines (VS Code, Alacritty, Zed, Warp) |
-| `/theme` | Change the color theme |
-| `/todos` | List current TODO items |
-| `/usage` | For subscription plans only: show plan usage limits and rate limit status |
-| `/vim` | Enter vim mode for alternating insert and command modes |
+**Custom slash commands have been merged into skills.** A file at `.claude/commands/review.md` and a skill at `.claude/skills/review/SKILL.md` both create `/review` and work the same way. Your existing `.claude/commands/` files keep working. Skills add optional features: a directory for supporting files, frontmatter to [control whether you or Claude invokes them](#control-who-invokes-a-skill), and the ability for Claude to load them automatically when relevant.
 
-## Custom slash commands
+Claude Code skills follow the [Agent Skills](https://agentskills.io/) open standard, which works across multiple AI tools. Claude Code extends the standard with additional features like [invocation control](#control-who-invokes-a-skill), [subagent execution](#run-skills-in-a-subagent), and [dynamic context injection](#inject-dynamic-context).
 
-Custom slash commands allow you to define frequently used prompts as Markdown files that Claude Code can execute. Commands are organized by scope (project-specific or personal) and support namespacing through directory structures.
+## Getting Started
 
-Slash command autocomplete works anywhere in your input, not just at the beginning. Type `/` at any position to see available commands.
+### Create Your First Skill
 
-### Syntax
+This example creates a skill that teaches Claude to explain code using visual diagrams and analogies. Since it uses default frontmatter, Claude can load it automatically when you ask how something works, or you can invoke it directly with `/explain-code`.
 
-```
-/<command-name> [arguments]
-```
+**1. Create the skill directory**
 
-#### Parameters
-
-| Parameter | Description |
-| --- | --- |
-| `<command-name>` | Name derived from the Markdown filename (without `.md` extension) |
-| `[arguments]` | Optional arguments passed to the command |
-
-### Command types
-
-#### Project commands
-
-Commands stored in your repository and shared with your team. When listed in `/help`, these commands show "(project)" after their description.
-
-**Location**: `.claude/commands/`
-
-The following example creates the `/optimize` command:
+Create a directory for the skill in your personal skills folder. Personal skills are available across all your projects.
 
 ```bash
-# Create a project command
-mkdir -p .claude/commands
-echo "Analyze this code for performance issues and suggest optimizations:" > .claude/commands/optimize.md
+mkdir -p ~/.claude/skills/explain-code
 ```
 
-#### Personal commands
+**2. Write SKILL.md**
 
-Commands available across all your projects. When listed in `/help`, these commands show "(user)" after their description.
+Every skill needs a `SKILL.md` file with two parts: YAML frontmatter (between `---` markers) that tells Claude when to use the skill, and markdown content with instructions Claude follows when the skill is invoked. The `name` field becomes the `/slash-command`, and the `description` helps Claude decide when to load it automatically.
 
-**Location**: `~/.claude/commands/`
-
-The following example creates the `/security-review` command:
-
-```bash
-# Create a personal command
-mkdir -p ~/.claude/commands
-echo "Review this code for security vulnerabilities:" > ~/.claude/commands/security-review.md
-```
-
-### Features
-
-#### Namespacing
-
-Use subdirectories to group related commands. Subdirectories appear in the command description but don't affect the command name.
-
-For example:
-
-- `.claude/commands/frontend/component.md` creates `/component` with description "(project:frontend)"
-- `~/.claude/commands/component.md` creates `/component` with description "(user)"
-
-If a project command and user command share the same name, the project command takes precedence and the user command is silently ignored. For example, if both `.claude/commands/deploy.md` and `~/.claude/commands/deploy.md` exist, `/deploy` runs the project version.
-
-Commands in different subdirectories can share names since the subdirectory appears in the description to distinguish them. For example, `.claude/commands/frontend/test.md` and `.claude/commands/backend/test.md` both create `/test`, but show as "(project:frontend)" and "(project:backend)" respectively.
-
-#### Arguments
-
-Pass dynamic values to commands using argument placeholders:
-
-##### All arguments with `$ARGUMENTS`
-
-The `$ARGUMENTS` placeholder captures all arguments passed to the command:
-
-```bash
-# Command definition
-echo 'Fix issue #$ARGUMENTS following our coding standards' > .claude/commands/fix-issue.md
-
-# Usage
-> /fix-issue 123 high-priority
-# $ARGUMENTS becomes: "123 high-priority"
-```
-
-##### Individual arguments with `$1`, `$2`, etc.
-
-Access specific arguments individually using positional parameters (similar to shell scripts):
-
-```bash
-# Command definition
-echo 'Review PR #$1 with priority $2 and assign to $3' > .claude/commands/review-pr.md
-
-# Usage
-> /review-pr 456 high alice
-# $1 becomes "456", $2 becomes "high", $3 becomes "alice"
-```
-
-Use positional arguments when you need to:
-
-- Access arguments individually in different parts of your command
-- Provide defaults for missing arguments
-- Build more structured commands with specific parameter roles
-
-#### Bash command execution
-
-Execute bash commands before the slash command runs using the `!` prefix. The output is included in the command context. You _must_ include `allowed-tools` with the `Bash` tool, but you can choose the specific bash commands to allow.
-
-For example:
+Create `~/.claude/skills/explain-code/SKILL.md`:
 
 ```markdown
 ---
-allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*)
-description: Create a git commit
+name: explain-code
+description: Explains code with visual diagrams and analogies. Use when explaining how code works, teaching about a codebase, or when the user asks "how does this work?"
 ---
 
-## Context
+When explaining code, always include:
 
-- Current git status: !`git status`
-- Current git diff (staged and unstaged changes): !`git diff HEAD`
-- Current branch: !`git branch --show-current`
-- Recent commits: !`git log --oneline -10`
+1. **Start with an analogy**: Compare the code to something from everyday life
+2. **Draw a diagram**: Use ASCII art to show the flow, structure, or relationships
+3. **Walk through the code**: Explain step-by-step what happens
+4. **Highlight a gotcha**: What's a common mistake or misconception?
+
+Keep explanations conversational. For complex concepts, use multiple analogies.
+```
+
+**3. Test the skill**
+
+You can test it two ways:
+
+**Let Claude invoke it automatically** by asking something that matches the description:
+
+```
+How does this code work?
+```
+
+**Or invoke it directly** with the skill name:
+
+```
+/explain-code src/auth/login.ts
+```
+
+Either way, Claude should include an analogy and ASCII diagram in its explanation.
+
+### Where Skills Live
+
+Where you store a skill determines who can use it:
+
+| Location | Path | Applies to |
+|----------|------|------------|
+| Enterprise | See [managed settings](https://code.claude.com/docs/en/iam#managed-settings) | All users in your organization |
+| Personal | `~/.claude/skills/<skill-name>/SKILL.md` | All your projects |
+| Project | `.claude/skills/<skill-name>/SKILL.md` | This project only |
+| Plugin | `<plugin>/skills/<skill-name>/SKILL.md` | Where plugin is enabled |
+
+When skills share the same name across levels, higher-priority locations win: enterprise > personal > project. Plugin skills use a `plugin-name:skill-name` namespace, so they cannot conflict with other levels. If you have files in `.claude/commands/`, those work the same way, but if a skill and a command share the same name, the skill takes precedence.
+
+#### Automatic Discovery from Nested Directories
+
+When you work with files in subdirectories, Claude Code automatically discovers skills from nested `.claude/skills/` directories. For example, if you're editing a file in `packages/frontend/`, Claude Code also looks for skills in `packages/frontend/.claude/skills/`. This supports monorepo setups where packages have their own skills.
+
+Each skill is a directory with `SKILL.md` as the entrypoint:
+
+```
+my-skill/
+├── SKILL.md           # Main instructions (required)
+├── template.md        # Template for Claude to fill in
+├── examples/
+│   └── sample.md      # Example output showing expected format
+└── scripts/
+    └── validate.sh    # Script Claude can execute
+```
+
+The `SKILL.md` contains the main instructions and is required. Other files are optional and let you build more powerful skills: templates for Claude to fill in, example outputs showing the expected format, scripts Claude can execute, or detailed reference documentation. Reference these files from your `SKILL.md` so Claude knows what they contain and when to load them. See [Add supporting files](#add-supporting-files) for more details.
+
+Files in `.claude/commands/` still work and support the same [frontmatter](#frontmatter-reference). Skills are recommended since they support additional features like supporting files.
+
+## Configure Skills
+
+Skills are configured through YAML frontmatter at the top of `SKILL.md` and the markdown content that follows.
+
+### Types of Skill Content
+
+Skill files can contain any instructions, but thinking about how you want to invoke them helps guide what to include:
+
+**Reference content** adds knowledge Claude applies to your current work. Conventions, patterns, style guides, domain knowledge. This content runs inline so Claude can use it alongside your conversation context.
+
+```markdown
+---
+name: api-conventions
+description: API design patterns for this codebase
+---
+
+When writing API endpoints:
+- Use RESTful naming conventions
+- Return consistent error formats
+- Include request validation
+```
+
+**Task content** gives Claude step-by-step instructions for a specific action, like deployments, commits, or code generation. These are often actions you want to invoke directly with `/skill-name` rather than letting Claude decide when to run them. Add `disable-model-invocation: true` to prevent Claude from triggering it automatically.
+
+```markdown
+---
+name: deploy
+description: Deploy the application to production
+context: fork
+disable-model-invocation: true
+---
+
+Deploy the application:
+1. Run the test suite
+2. Build the application
+3. Push to the deployment target
+```
+
+Your `SKILL.md` can contain anything, but thinking through how you want the skill invoked (by you, by Claude, or both) and where you want it to run (inline or in a subagent) helps guide what to include. For complex skills, you can also [add supporting files](#add-supporting-files) to keep the main skill focused.
+
+### Frontmatter Reference
+
+Beyond the markdown content, you can configure skill behavior using YAML frontmatter fields between `---` markers at the top of your `SKILL.md` file:
+
+```yaml
+---
+name: my-skill
+description: What this skill does
+disable-model-invocation: true
+allowed-tools: Read, Grep
+---
+
+Your skill instructions here...
+```
+
+All fields are optional. Only `description` is recommended so Claude knows when to use the skill.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | No | Display name for the skill. If omitted, uses the directory name. Lowercase letters, numbers, and hyphens only (max 64 characters). |
+| `description` | Recommended | What the skill does and when to use it. Claude uses this to decide when to apply the skill. If omitted, uses the first paragraph of markdown content. |
+| `argument-hint` | No | Hint shown during autocomplete to indicate expected arguments. Example: `[issue-number]` or `[filename] [format]`. |
+| `disable-model-invocation` | No | Set to `true` to prevent Claude from automatically loading this skill. Use for workflows you want to trigger manually with `/name`. Default: `false`. |
+| `user-invocable` | No | Set to `false` to hide from the `/` menu. Use for background knowledge users shouldn't invoke directly. Default: `true`. |
+| `allowed-tools` | No | Tools Claude can use without asking permission when this skill is active. |
+| `model` | No | Model to use when this skill is active. |
+| `context` | No | Set to `fork` to run in a forked subagent context. |
+| `agent` | No | Which subagent type to use when `context: fork` is set. |
+| `hooks` | No | Hooks scoped to this skill's lifecycle. See [Hooks](https://code.claude.com/docs/en/hooks) for configuration format. |
+
+#### Available String Substitutions
+
+Skills support string substitution for dynamic values in the skill content:
+
+| Variable | Description |
+|----------|-------------|
+| `$ARGUMENTS` | All arguments passed when invoking the skill. If `$ARGUMENTS` is not present in the content, arguments are appended as `ARGUMENTS: <value>`. |
+| `$ARGUMENTS[N]` | Access a specific argument by 0-based index, such as `$ARGUMENTS[0]` for the first argument. |
+| `$N` | Shorthand for `$ARGUMENTS[N]`, such as `$0` for the first argument or `$1` for the second. |
+| `${CLAUDE_SESSION_ID}` | The current session ID. Useful for logging, creating session-specific files, or correlating skill output with sessions. |
+
+**Example using substitutions:**
+
+```markdown
+---
+name: session-logger
+description: Log activity for this session
+---
+
+Log the following to logs/${CLAUDE_SESSION_ID}.log:
+
+$ARGUMENTS
+```
+
+### Add Supporting Files
+
+Skills can include multiple files in their directory. This keeps `SKILL.md` focused on the essentials while letting Claude access detailed reference material only when needed. Large reference docs, API specifications, or example collections don't need to load into context every time the skill runs.
+
+```
+my-skill/
+├── SKILL.md (required - overview and navigation)
+├── reference.md (detailed API docs - loaded when needed)
+├── examples.md (usage examples - loaded when needed)
+└── scripts/
+    └── helper.py (utility script - executed, not loaded)
+```
+
+Reference supporting files from `SKILL.md` so Claude knows what each file contains and when to load it:
+
+```markdown
+## Additional resources
+
+- For complete API details, see [reference.md](reference.md)
+- For usage examples, see [examples.md](examples.md)
+```
+
+Keep `SKILL.md` under 500 lines. Move detailed reference material to separate files.
+
+### Control Who Invokes a Skill
+
+By default, both you and Claude can invoke any skill. You can type `/skill-name` to invoke it directly, and Claude can load it automatically when relevant to your conversation. Two frontmatter fields let you restrict this:
+
+- **`disable-model-invocation: true`**: Only you can invoke the skill. Use this for workflows with side effects or that you want to control timing, like `/commit`, `/deploy`, or `/send-slack-message`. You don't want Claude deciding to deploy because your code looks ready.
+- **`user-invocable: false`**: Only Claude can invoke the skill. Use this for background knowledge that isn't actionable as a command. A `legacy-system-context` skill explains how an old system works. Claude should know this when relevant, but `/legacy-system-context` isn't a meaningful action for users to take.
+
+This example creates a deploy skill that only you can trigger. The `disable-model-invocation: true` field prevents Claude from running it automatically:
+
+```markdown
+---
+name: deploy
+description: Deploy the application to production
+disable-model-invocation: true
+---
+
+Deploy $ARGUMENTS to production:
+
+1. Run the test suite
+2. Build the application
+3. Push to the deployment target
+4. Verify the deployment succeeded
+```
+
+Here's how the two fields affect invocation and context loading:
+
+| Frontmatter | You can invoke | Claude can invoke | When loaded into context |
+|-------------|----------------|-------------------|--------------------------|
+| (default) | Yes | Yes | Description always in context, full skill loads when invoked |
+| `disable-model-invocation: true` | Yes | No | Description not in context, full skill loads when you invoke |
+| `user-invocable: false` | No | Yes | Description always in context, full skill loads when invoked |
+
+In a regular session, skill descriptions are loaded into context so Claude knows what's available, but full skill content only loads when invoked. [Subagents with preloaded skills](https://code.claude.com/docs/en/sub-agents#preload-skills-into-subagents) work differently: the full skill content is injected at startup.
+
+### Restrict Tool Access
+
+Use the `allowed-tools` field to limit which tools Claude can use when a skill is active. This skill creates a read-only mode where Claude can explore files but not modify them:
+
+```markdown
+---
+name: safe-reader
+description: Read files without making changes
+allowed-tools: Read, Grep, Glob
+---
+```
+
+### Pass Arguments to Skills
+
+Both you and Claude can pass arguments when invoking a skill. Arguments are available via the `$ARGUMENTS` placeholder.
+
+This skill fixes a GitHub issue by number. The `$ARGUMENTS` placeholder gets replaced with whatever follows the skill name:
+
+```markdown
+---
+name: fix-issue
+description: Fix a GitHub issue
+disable-model-invocation: true
+---
+
+Fix GitHub issue $ARGUMENTS following our coding standards.
+
+1. Read the issue description
+2. Understand the requirements
+3. Implement the fix
+4. Write tests
+5. Create a commit
+```
+
+When you run `/fix-issue 123`, Claude receives "Fix GitHub issue 123 following our coding standards…"
+
+If you invoke a skill with arguments but the skill doesn't include `$ARGUMENTS`, Claude Code appends `ARGUMENTS: <your input>` to the end of the skill content so Claude still sees what you typed.
+
+To access individual arguments by position, use `$ARGUMENTS[N]` or the shorter `$N`:
+
+```markdown
+---
+name: migrate-component
+description: Migrate a component from one framework to another
+---
+
+Migrate the $ARGUMENTS[0] component from $ARGUMENTS[1] to $ARGUMENTS[2].
+Preserve all existing behavior and tests.
+```
+
+Running `/migrate-component SearchBar React Vue` replaces `$ARGUMENTS[0]` with `SearchBar`, `$ARGUMENTS[1]` with `React`, and `$ARGUMENTS[2]` with `Vue`. The same skill using the `$N` shorthand:
+
+```markdown
+---
+name: migrate-component
+description: Migrate a component from one framework to another
+---
+
+Migrate the $0 component from $1 to $2.
+Preserve all existing behavior and tests.
+```
+
+## Advanced Patterns
+
+### Inject Dynamic Context
+
+The `!`command` syntax runs shell commands before the skill content is sent to Claude. The command output replaces the placeholder, so Claude receives actual data, not the command itself.
+
+This skill summarizes a pull request by fetching live PR data with the GitHub CLI. The `!`gh pr diff` and other commands run first, and their output gets inserted into the prompt:
+
+```markdown
+---
+name: pr-summary
+description: Summarize changes in a pull request
+context: fork
+agent: Explore
+allowed-tools: Bash(gh:*)
+---
+
+## Pull request context
+- PR diff: !`gh pr diff`
+- PR comments: !`gh pr view --comments`
+- Changed files: !`gh pr diff --name-only`
 
 ## Your task
-
-Based on the above changes, create a single git commit.
+Summarize this pull request...
 ```
 
-#### File references
+When this skill runs:
 
-Include file contents in commands using the `@` prefix to [reference files](https://code.claude.com/docs/en/common-workflows#reference-files-and-directories).
+1. Each `!`command` executes immediately (before Claude sees anything)
+2. The output replaces the placeholder in the skill content
+3. Claude receives the fully-rendered prompt with actual PR data
 
-For example:
+This is preprocessing, not something Claude executes. Claude only sees the final result.
 
-```
-# Reference a specific file
+To enable [extended thinking](https://code.claude.com/docs/en/common-workflows#use-extended-thinking-thinking-mode) in a skill, include the word "ultrathink" anywhere in your skill content.
 
-Review the implementation in @src/utils/helpers.js
+### Run Skills in a Subagent
 
-# Reference multiple files
+Add `context: fork` to your frontmatter when you want a skill to run in isolation. The skill content becomes the prompt that drives the subagent. It won't have access to your conversation history.
 
-Compare @src/old-version.js with @src/new-version.js
-```
+`context: fork` only makes sense for skills with explicit instructions. If your skill contains guidelines like "use these API conventions" without a task, the subagent receives the guidelines but no actionable prompt, and returns without meaningful output.
 
-#### Thinking mode
+Skills and [subagents](https://code.claude.com/docs/en/sub-agents) work together in two directions:
 
-Slash commands can trigger extended thinking by including [extended thinking keywords](https://code.claude.com/docs/en/common-workflows#use-extended-thinking).
+| Approach | System prompt | Task | Also loads |
+|----------|---------------|------|------------|
+| Skill with `context: fork` | From agent type (`Explore`, `Plan`, etc.) | SKILL.md content | CLAUDE.md |
+| Subagent with `skills` field | Subagent's markdown body | Claude's delegation message | Preloaded skills + CLAUDE.md |
 
-### Frontmatter
+With `context: fork`, you write the task in your skill and pick an agent type to execute it. For the inverse (defining a custom subagent that uses skills as reference material), see [Subagents](https://code.claude.com/docs/en/sub-agents#preload-skills-into-subagents).
 
-Command files support frontmatter, useful for specifying metadata about the command:
+#### Example: Research Skill Using Explore Agent
 
-| Frontmatter | Purpose | Default |
-| --- | --- | --- |
-| `allowed-tools` | List of tools the command can use | Inherits from the conversation |
-| `argument-hint` | The arguments expected for the slash command. Example: `argument-hint: add [tagId] | remove [tagId] | list`. This hint is shown to the user when auto-completing the slash command. | None |
-| `description` | Brief description of the command | Uses the first line from the prompt |
-| `model` | Specific model string (see [Models overview](https://docs.claude.com/en/docs/about-claude/models/overview)) | Inherits from the conversation |
-| `disable-model-invocation` | Whether to prevent the `Skill` tool from calling this command | false |
-| `hooks` | Define hooks scoped to this command's execution. See [Define hooks for commands](#define-hooks-for-commands). | None |
-
-For example:
+This skill runs research in a forked Explore agent. The skill content becomes the task, and the agent provides read-only tools optimized for codebase exploration:
 
 ```markdown
 ---
-allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*)
-argument-hint: [message]
-description: Create a git commit
-model: claude-3-5-haiku-20241022
+name: deep-research
+description: Research a topic thoroughly
+context: fork
+agent: Explore
 ---
 
-Create a git commit with message: $ARGUMENTS
+Research $ARGUMENTS thoroughly:
+
+1. Find relevant files using Glob and Grep
+2. Read and analyze the code
+3. Summarize findings with specific file references
 ```
 
-Example using positional arguments:
+When this skill runs:
 
-```markdown
+1. A new isolated context is created
+2. The subagent receives the skill content as its prompt ("Research $ARGUMENTS thoroughly…")
+3. The `agent` field determines the execution environment (model, tools, and permissions)
+4. Results are summarized and returned to your main conversation
+
+The `agent` field specifies which subagent configuration to use. Options include built-in agents (`Explore`, `Plan`, `general-purpose`) or any custom subagent from `.claude/agents/`. If omitted, uses `general-purpose`.
+
+### Restrict Claude's Skill Access
+
+By default, Claude can invoke any skill that doesn't have `disable-model-invocation: true` set. Skills that define `allowed-tools` grant Claude access to those tools without per-use approval when the skill is active. Your [permission settings](https://code.claude.com/docs/en/iam) still govern baseline approval behavior for all other tools. Built-in commands like `/compact` and `/init` are not available through the Skill tool.
+
+Three ways to control which skills Claude can invoke:
+
+**Disable all skills** by denying the Skill tool in `/permissions`:
+
+```
+# Add to deny rules:
+Skill
+```
+
+**Allow or deny specific skills** using [permission rules](https://code.claude.com/docs/en/iam):
+
+```
+# Allow only specific skills
+Skill(commit)
+Skill(review-pr:*)
+
+# Deny specific skills
+Skill(deploy:*)
+```
+
+Permission syntax: `Skill(name)` for exact match, `Skill(name:*)` for prefix match with any arguments.
+
+**Hide individual skills** by adding `disable-model-invocation: true` to their frontmatter. This removes the skill from Claude's context entirely.
+
+The `user-invocable` field only controls menu visibility, not Skill tool access. Use `disable-model-invocation: true` to block programmatic invocation.
+
+## Share Skills
+
+Skills can be distributed at different scopes depending on your audience:
+
+- **Project skills**: Commit `.claude/skills/` to version control
+- **Plugins**: Create a `skills/` directory in your [plugin](https://code.claude.com/docs/en/plugins)
+- **Managed**: Deploy organization-wide through [managed settings](https://code.claude.com/docs/en/iam#managed-settings)
+
+### Generate Visual Output
+
+Skills can bundle and run scripts in any language, giving Claude capabilities beyond what's possible in a single prompt. One powerful pattern is generating visual output: interactive HTML files that open in your browser for exploring data, debugging, or creating reports.
+
+This example creates a codebase explorer: an interactive tree view where you can expand and collapse directories, see file sizes at a glance, and identify file types by color.
+
+Create the Skill directory:
+
+```bash
+mkdir -p ~/.claude/skills/codebase-visualizer/scripts
+```
+
+Create `~/.claude/skills/codebase-visualizer/SKILL.md`. The description tells Claude when to activate this Skill, and the instructions tell Claude to run the bundled script:
+
+````markdown
 ---
-argument-hint: [pr-number] [priority] [assignee]
-description: Review pull request
+name: codebase-visualizer
+description: Generate an interactive collapsible tree visualization of your codebase. Use when exploring a new repo, understanding project structure, or identifying large files.
+allowed-tools: Bash(python:*)
 ---
 
-Review PR #$1 with priority $2 and assign to $3.
-Focus on security, performance, and code style.
+# Codebase Visualizer
+
+Generate an interactive HTML tree view that shows your project's file structure with collapsible directories.
+
+## Usage
+
+Run the visualization script from your project root:
+
+```bash
+python ~/.claude/skills/codebase-visualizer/scripts/visualize.py .
 ```
 
-#### Define hooks for commands
+This creates `codebase-map.html` in the current directory and opens it in your default browser.
 
-Slash commands can define hooks that run during the command's execution. Use the `hooks` field to specify `PreToolUse`, `PostToolUse`, or `Stop` handlers:
+## What the visualization shows
 
-```markdown
----
-description: Deploy to staging with validation
-hooks:
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: "./scripts/validate-deploy.sh"
-          once: true
----
+- **Collapsible directories**: Click folders to expand/collapse
+- **File sizes**: Displayed next to each file
+- **Colors**: Different colors for different file types
+- **Directory totals**: Shows aggregate size of each folder
+````
 
-Deploy the current branch to staging environment.
-```
+Create `~/.claude/skills/codebase-visualizer/scripts/visualize.py`. This script scans a directory tree and generates a self-contained HTML file with:
 
-The `once: true` option runs the hook only once per session. After the first successful execution, the hook is removed.
+- A **summary sidebar** showing file count, directory count, total size, and number of file types
+- A **bar chart** breaking down the codebase by file type (top 8 by size)
+- A **collapsible tree** where you can expand and collapse directories, with color-coded file type indicators
 
-Hooks defined in a command are scoped to that command's execution and are automatically cleaned up when the command finishes.
+The script requires Python but uses only built-in libraries, so there are no packages to install.
 
-See [Hooks](https://code.claude.com/docs/en/hooks) for the complete hook configuration format.
+This pattern works for any visual output: dependency graphs, test coverage reports, API documentation, or database schema visualizations. The bundled script does the heavy lifting while Claude handles orchestration.
 
-## Plugin commands
+## Troubleshooting
 
-[Plugins](https://code.claude.com/docs/en/plugins) can provide custom slash commands that integrate seamlessly with Claude Code. Plugin commands work exactly like user-defined commands but are distributed through [plugin marketplaces](https://code.claude.com/docs/en/plugin-marketplaces).
+### Skill Not Triggering
 
-### How plugin commands work
+If Claude doesn't use your skill when expected:
 
-Plugin commands are:
+1. Check the description includes keywords users would naturally say
+2. Verify the skill appears in `What skills are available?`
+3. Try rephrasing your request to match the description more closely
+4. Invoke it directly with `/skill-name` if the skill is user-invocable
 
-- **Namespaced**: Commands can use the format `/plugin-name:command-name` to avoid conflicts (plugin prefix is optional unless there are name collisions)
-- **Automatically available**: Once a plugin is installed and enabled, its commands appear in `/help`
-- **Fully integrated**: Support all command features (arguments, frontmatter, bash execution, file references)
+### Skill Triggers Too Often
 
-### Plugin command structure
+If Claude uses your skill when you don't want it:
 
-**Location**: `commands/` directory in plugin root
+1. Make the description more specific
+2. Add `disable-model-invocation: true` if you only want manual invocation
 
-**File format**: Markdown files with frontmatter
+### Claude Doesn't See All My Skills
 
-**Basic command structure**:
+Skill descriptions are loaded into context so Claude knows what's available. If you have many skills, they may exceed the character budget (default 15,000 characters). Run `/context` to check for a warning about excluded skills.
 
-```markdown
----
-description: Brief description of what the command does
----
+To increase the limit, set the `SLASH_COMMAND_TOOL_CHAR_BUDGET` environment variable.
 
-# Command Name
+## Related Resources
 
-Detailed instructions for Claude on how to execute this command.
-Include specific guidance on parameters, expected outcomes, and any special considerations.
-```
-
-**Advanced command features**:
-
-- **Arguments**: Use placeholders like `{arg1}` in command descriptions
-- **Subdirectories**: Organize commands in subdirectories for namespacing
-- **Bash integration**: Commands can execute shell scripts and programs
-- **File references**: Commands can reference and modify project files
-
-### Invocation patterns
-
-Direct command (when no conflicts):
-
-```
-/command-name
-```
-
-Plugin-prefixed (when needed for disambiguation):
-
-```
-/plugin-name:command-name
-```
-
-With arguments (if command supports them):
-
-```
-/command-name arg1 arg2
-```
-
-## MCP slash commands
-
-MCP servers can expose prompts as slash commands that become available in Claude Code. These commands are dynamically discovered from connected MCP servers.
-
-### Command format
-
-MCP commands follow the pattern:
-
-```
-/mcp__<server-name>__<prompt-name> [arguments]
-```
-
-### Features
-
-#### Dynamic discovery
-
-MCP commands are automatically available when:
-
-- An MCP server is connected and active
-- The server exposes prompts through the MCP protocol
-- The prompts are successfully retrieved during connection
-
-#### Arguments
-
-MCP prompts can accept arguments defined by the server:
-
-```
-# Without arguments
-> /mcp__github__list_prs
-
-# With arguments
-> /mcp__github__pr_review 456
-> /mcp__jira__create_issue "Bug title" high
-```
-
-#### Naming conventions
-
-Server and prompt names are normalized:
-
-- Spaces and special characters become underscores
-- Names are lowercase for consistency
-
-### Managing MCP connections
-
-Use the `/mcp` command to:
-
-- View all configured MCP servers
-- Check connection status
-- Authenticate with OAuth-enabled servers
-- Clear authentication tokens
-- View available tools and prompts from each server
-
-### MCP permissions and wildcards
-
-To approve all tools from an MCP server, use either the server name alone or wildcard syntax:
-
-- `mcp__github` (approves all GitHub tools)
-- `mcp__github__*` (wildcard syntax, also approves all GitHub tools)
-
-To approve specific tools, list each one explicitly:
-
-- `mcp__github__get_issue`
-- `mcp__github__list_issues`
-
-See [MCP permission rules](https://code.claude.com/docs/en/iam#tool-specific-permission-rules) for more details.
-
-## `Skill` tool
-
-In earlier versions of Claude Code, slash command invocation was provided by a separate `SlashCommand` tool. This has been merged into the `Skill` tool. If you have existing permission rules using `SlashCommand`, update them to use `Skill`.
-
-The `Skill` tool allows Claude to programmatically invoke both [custom slash commands](#custom-slash-commands) and [Agent Skills](https://code.claude.com/docs/en/skills) during a conversation. This gives Claude the ability to use these capabilities on your behalf when appropriate.
-
-### What the `Skill` tool can invoke
-
-The `Skill` tool provides access to:
-
-| Type | Location | Requirements |
-| --- | --- | --- |
-| Custom slash commands | `.claude/commands/` or `~/.claude/commands/` | Must have `description` frontmatter |
-| Agent Skills | `.claude/skills/` or `~/.claude/skills/` | Must not have `disable-model-invocation: true` |
-
-Built-in commands like `/compact` and `/init` are _not_ available through this tool.
-
-### Encourage Claude to use specific commands
-
-To encourage Claude to use the `Skill` tool, reference the command by name, including the slash, in your prompts or `CLAUDE.md` file:
-
-```
-> Run /write-unit-test when you are about to start writing tests.
-```
-
-This tool puts each available command's metadata into context up to the character budget limit. Use `/context` to monitor token usage.
-
-To see which commands and Skills are available to the `Skill` tool, run `claude --debug` and trigger a query.
-
-### Disable the `Skill` tool
-
-To prevent Claude from programmatically invoking any commands or Skills:
-
-```
-/permissions
-# Add to deny rules: Skill
-```
-
-This removes the `Skill` tool and all command/Skill descriptions from context.
-
-### Disable specific commands or Skills
-
-To prevent a specific command or Skill from being invoked programmatically via the `Skill` tool, add `disable-model-invocation: true` to its frontmatter. This also removes the item's metadata from context.
-
-The `user-invocable` field in Skills only controls menu visibility, not `Skill` tool access. Use `disable-model-invocation: true` to block programmatic invocation. See [Control Skill visibility](https://code.claude.com/docs/en/skills#control-skill-visibility) for details.
-
-### `Skill` permission rules
-
-The permission rules support:
-
-- **Exact match**: `Skill(/commit)` (allows only `/commit` with no arguments)
-- **Prefix match**: `Skill(/review-pr:*)` (allows `/review-pr` with any arguments)
-
-### Character budget limit
-
-The `Skill` tool includes a character budget to limit context usage. This prevents token overflow when many commands and Skills are available.
-
-The budget includes each item's name, arguments, and description.
-
-- **Default limit**: 15,000 characters
-- **Custom limit**: Set via `SLASH_COMMAND_TOOL_CHAR_BUDGET` environment variable. The name is retained for backwards compatibility.
-
-When the budget is exceeded, Claude sees only a subset of available items. In `/context`, a warning shows how many are included.
-
-## Skills vs slash commands
-
-**Slash commands** and **Agent Skills** serve different purposes in Claude Code:
-
-### Use slash commands for
-
-**Quick, frequently used prompts**:
-
-- Simple prompt snippets you use often
-- Quick reminders or templates
-- Frequently used instructions that fit in one file
-
-**Examples**:
-
-- `/review` → "Review this code for bugs and suggest improvements"
-- `/explain` → "Explain this code in simple terms"
-- `/optimize` → "Analyze this code for performance issues"
-
-### Use Skills for
-
-**Comprehensive capabilities with structure**:
-
-- Complex workflows with multiple steps
-- Capabilities requiring scripts or utilities
-- Knowledge organized across multiple files
-- Team workflows you want to standardize
-
-**Examples**:
-
-- PDF processing Skill with form-filling scripts and validation
-- Data analysis Skill with reference docs for different data types
-- Documentation Skill with style guides and templates
-
-### Key differences
-
-| Aspect | Slash Commands | Agent Skills |
-| --- | --- | --- |
-| **Complexity** | Simple prompts | Complex capabilities |
-| **Structure** | Single .md file | Directory with SKILL.md + resources |
-| **Discovery** | Explicit invocation (`/command`) | Automatic (based on context) |
-| **Files** | One file only | Multiple files, scripts, templates |
-| **Scope** | Project or personal | Project or personal |
-| **Sharing** | Via git | Via git |
-
-### Example comparison
-
-**As a slash command**:
-
-```markdown
-# .claude/commands/review.md
-Review this code for:
-- Security vulnerabilities
-- Performance issues
-- Code style violations
-```
-
-Usage: `/review` (manual invocation)
-
-**As a Skill**:
-
-```
-.claude/skills/code-review/
-├── SKILL.md (overview and workflows)
-├── SECURITY.md (security checklist)
-├── PERFORMANCE.md (performance patterns)
-├── STYLE.md (style guide reference)
-└── scripts/
-    └── run-linters.sh
-```
-
-Usage: "Can you review this code?" (automatic discovery)
-
-The Skill provides richer context, validation scripts, and organized reference material.
-
-### When to use each
-
-**Use slash commands**:
-
-- You invoke the same prompt repeatedly
-- The prompt fits in a single file
-- You want explicit control over when it runs
-
-**Use Skills**:
-
-- Claude should discover the capability automatically
-- Multiple files or scripts are needed
-- Complex workflows with validation steps
-- Team needs standardized, detailed guidance
-
-Both slash commands and Skills can coexist. Use the approach that fits your needs.
-
-Learn more about [Agent Skills](https://code.claude.com/docs/en/skills).
-
-## See also
-
-- [Plugins](https://code.claude.com/docs/en/plugins) - Extend Claude Code with custom commands through plugins
-- [Identity and Access Management](https://code.claude.com/docs/en/iam) - Complete guide to permissions, including MCP tool permissions
-- [Interactive mode](https://code.claude.com/docs/en/interactive-mode) - Shortcuts, input modes, and interactive features
-- [CLI reference](https://code.claude.com/docs/en/cli-reference) - Command-line flags and options
-- [Settings](https://code.claude.com/docs/en/settings) - Configuration options
-- [Memory management](https://code.claude.com/docs/en/memory) - Managing Claude's memory across sessions
+- **[Subagents](https://code.claude.com/docs/en/sub-agents)**: delegate tasks to specialized agents
+- **[Plugins](https://code.claude.com/docs/en/plugins)**: package and distribute skills with other extensions
+- **[Hooks](https://code.claude.com/docs/en/hooks)**: automate workflows around tool events
+- **[Memory](https://code.claude.com/docs/en/memory)**: manage CLAUDE.md files for persistent context
+- **[Interactive mode](https://code.claude.com/docs/en/interactive-mode#built-in-commands)**: built-in commands and shortcuts
+- **[Permissions](https://code.claude.com/docs/en/iam)**: control tool and skill access

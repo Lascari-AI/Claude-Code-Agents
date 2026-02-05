@@ -1,280 +1,232 @@
 ---
-covers: Extract developer's vision, values, and boundaries through Socratic dialogue.
-concepts: [interview, foundation, purpose, principles, boundaries, socratic]
+covers: Extract developer's understanding through curious, exploratory dialogue.
+concepts: [interview, foundation, understanding, mental-model, socratic, exploration]
 ---
 
 # Docs Foundation Interview Workflow
 
-Extract understanding that doesn't live in code: why the project exists, who it serves, guiding principles, and explicit boundaries. Socratic extraction that helps developers articulate things they may not have explicitly stated before.
+Explore the developer's mental space to understand what they're building and why. Curious dialogue that helps them articulate understanding they may not have explicitly stated before. Structure emerges from the conversation—not forced into categories.
 
 ---
 
 ## What This Is
 
-The Foundation interview extracts understanding that doesn't live in code:
+The Foundation interview explores understanding that doesn't live in code:
 
-- Why the project exists at all
-- Who it serves and who it doesn't
-- The principles that guide decisions
-- What the project explicitly won't become
-- Trade-offs that have been consciously made
+- What this thing is trying to BE
+- What it should do extremely well
+- How the developer thinks about the problem
+- The shape of the solution in their head
+- What would feel right vs. wrong
 
-**This is Socratic extraction.** You're helping the developer articulate things they may not have explicitly stated before. Probe for clarity, push for specificity, crystallize vague ideas into concrete statements.
-
-## How This Differs from Codebase Interviews
-
-| Codebase Interview | Foundation Interview |
-|--------------------|---------------------|
-| Archaeological: read code, form questions | Generative: extract vision from developer |
-| "I see X in the code..." | "You mentioned X, tell me more..." |
-| Probes code/explanation mismatches | Probes vague statements for specificity |
-| Feeds L2/L3 docs (Sections, Nodes) | Feeds Foundation docs (Purpose, Principles, Boundaries) |
+**This is curious exploration.** You're helping the developer externalize their mental model. Follow threads that reveal understanding. Let the structure emerge from what matters to them—don't force categories.
 
 ## Your Role
 
-You are a Socratic interviewer helping crystallize thought.
+You are a curious explorer helping crystallize understanding.
 
 | Do | Don't |
 |----|-------|
-| Push for specificity on vague statements | Accept "we want to be good at everything" |
-| Ask "what would you sacrifice for X?" | Let trade-offs stay implicit |
-| Probe "who is this NOT for?" | Accept unbounded scope |
-| Challenge: "how do you decide between..." | Assume principles are obvious |
-| Synthesize: "So the core trade-off is..." | Put words in their mouth |
-| Follow threads that reveal values | Stick to a rigid script |
+| Follow threads that reveal how they think | Force answers into predefined boxes |
+| Ask "tell me more about..." when something sparks | Rush through a checklist |
+| Probe what "feels right" vs. "feels wrong" | Accept surface-level answers |
+| Explore the shape of the idea in their head | Put words in their mouth |
+| Let silence happen—they're thinking | Fill every pause |
+| Notice what they're excited about | Treat all topics as equally important |
 
 ## Before Starting
 
 Read available context (if it exists):
 
-- `README.md` — existing articulation of purpose
-- `docs/00-foundation/` — existing Foundation docs to refine
+- `README.md` — existing articulation
+- `docs/00-foundation/` — existing Foundation docs
 - Project metadata (`package.json`, `pyproject.toml`, etc.)
 
-This gives you something to react to, but expect most understanding to come from conversation.
+This gives you something to react to, but expect understanding to emerge from conversation.
+
+---
 
 ## The Interview
 
-No rigid phases, but ensure you cover all three Foundation areas: Purpose, Principles, Boundaries.
+No rigid phases. No required categories. Follow the understanding.
 
-### 1. Initial Context
+### 1. Open with Curiosity
 
-Read what exists, then open with your understanding:
-
-```
-I've looked at [what you read]. Here's my current understanding:
-
-[Your interpretation of what this project is and why it exists]
-
-Some things I'd like to understand better:
-- [Question about purpose or scope]
-- [Question about who this serves]
-- [Something that seems unclear or implicit]
-
-Let's start with: What problem are you really solving here?
-```
-
-### 2. Purpose Exploration
-
-Extract the "why" at the deepest level:
-
-**The Problem:**
-> "What's the pain point that made you build this?"
-> "Who experiences this problem most acutely?"
-> "What were people doing before this existed?"
-
-**Who We Serve:**
-> "Who is the primary user? Paint me a picture of them."
-> "Who is this explicitly NOT for?"
-> "What constraints do your users have that shaped your approach?"
-
-**Why This Approach:**
-> "You could have solved this other ways. Why this approach?"
-> "What did you give up by choosing this path?"
-> "What alternatives did you consider and reject?"
-
-**Success:**
-> "If this project completely succeeds, what changes in the world?"
-> "How would you know you've achieved your purpose?"
-
-### 3. Principles Exploration
-
-Extract the decision-making heuristics:
-
-**Finding Principles:**
-> "When you have two valid options, how do you decide?"
-> "What would you sacrifice for speed? What would you never sacrifice?"
-> "I noticed [pattern in decisions]. Is that a conscious principle?"
-
-**Making Trade-offs Explicit:**
-> "You mentioned valuing X. What do you trade away to get X?"
-> "If you had to choose between [A] and [B], which wins? Why?"
-
-**Testing Principles:**
-> "Give me an example where this principle guided a real decision."
-> "What would violating this principle look like in practice?"
-
-Aim for 3-7 principles. Push for specificity:
-- "Be user-friendly" → "Prioritize immediate usability over power-user features"
-- "Keep it simple" → "Accept fewer features to maintain fast iteration"
-
-### 4. Boundaries Exploration
-
-Extract what the project explicitly won't do:
-
-**Non-Goals:**
-> "What might someone expect this to do that it deliberately doesn't?"
-> "What feature requests would you refuse even if users begged?"
-> "What is this NOT trying to be?"
-
-**Accepted Constraints:**
-> "What limitations have you consciously accepted?"
-> "What trade-offs are baked into the design?"
-
-**Out of Scope:**
-> "What use cases are explicitly unsupported?"
-> "What adjacent problems are you NOT solving?"
-
-Push back on "we haven't gotten to that yet" — distinguish "not yet" from "not ever."
-
-### 5. Coverage Check
-
-Mentally track what you've covered:
-
-- [ ] The core problem and who experiences it
-- [ ] Primary users and their constraints
-- [ ] Why this approach over alternatives
-- [ ] What success looks like
-- [ ] 3-7 decision-making principles
-- [ ] Key trade-offs made
-- [ ] What this is NOT
-- [ ] Accepted constraints
-- [ ] Out-of-scope features/use cases
-
-If an area is thin, gently steer:
-> "We've talked a lot about what you're building. I want to make sure we also capture what you've decided NOT to build..."
-
-### 6. Synthesize Understanding
-
-When you feel you have the full picture:
+Start from what you've read, then invite them to correct/expand:
 
 ```
-Let me summarize what I've learned about [project]:
+I've looked at [what you read]. Here's what I think I understand:
 
-**Purpose**: [Why it exists, who it serves]
+[Your interpretation—what this seems to be trying to do]
 
-**Core Principles**:
-- [Principle 1]
-- [Principle 2]
-- [Principle 3]
+But I want to understand how YOU think about this.
 
-**Key Boundaries**:
-- This is NOT [what it's not]
-- We accept [constraint] for [benefit]
-
-Is there anything critical I'm missing or getting wrong?
+What is this thing trying to be? Not features—what's the core idea?
 ```
 
-Get confirmation before capturing.
+### 2. Explore the Mental Space
 
-### 7. Capture the Report
+Follow threads. Go where the energy is. Some starting points:
+
+**The Core Idea:**
+> "If you had to explain what this does in one breath, what would you say?"
+> "What's the one thing this should do extremely well?"
+> "When you imagine this working perfectly, what does that look like?"
+
+**How They Think About It:**
+> "Walk me through how you think about this problem..."
+> "What's the mental model you have for how this works?"
+> "When you're making decisions about this, what guides you?"
+
+**What Feels Right/Wrong:**
+> "What would feel 'off' even if it technically worked?"
+> "What would make you proud of this? What would make you cringe?"
+> "If someone used this wrong, what would that look like?"
+
+**The Shape of the Solution:**
+> "You could have built this many ways. Why this shape?"
+> "What did you give up? What did you protect?"
+> "What's the experience you're trying to create?"
+
+**Who This Is For:**
+> "Paint me a picture of someone using this well."
+> "Who would love this? Who would hate it?"
+> "What problem are they having right before they reach for this?"
+
+**What This Isn't:**
+> "What might someone expect that would be wrong?"
+> "What's adjacent but explicitly not this?"
+> "What would be scope creep vs. core mission?"
+
+### 3. Follow the Energy
+
+When they light up about something, dig deeper:
+
+> "You seem really clear about that. Tell me more..."
+> "Why does that matter so much?"
+> "What would violating that feel like?"
+
+When they hesitate or seem uncertain:
+
+> "It sounds like you're still figuring that out?"
+> "What are the options you're weighing?"
+> "What would help you decide?"
+
+When they say something that seems important:
+
+> "Let me make sure I understand: [reflect back]. Is that right?"
+> "That sounds like it might be central. Is it?"
+
+### 4. Let Structure Emerge
+
+As you talk, notice what patterns emerge:
+
+- Are they problem-focused? Vision-focused? Thinking through trade-offs?
+- What do they keep coming back to?
+- What seems foundational vs. tactical?
+
+Don't force it into Purpose/Principles/Boundaries. Let their natural way of thinking shape the structure.
+
+### 5. Synthesize Understanding
+
+When you feel you have a picture of their mental space:
+
+```
+Let me try to capture what I'm hearing:
+
+[Reflect back their understanding in whatever structure emerged]
+
+- The core idea seems to be: [...]
+- What matters most: [...]
+- What this isn't: [...]
+- The experience you're going for: [...]
+
+What am I missing? What did I get wrong?
+```
+
+Get confirmation. Iterate if needed.
+
+### 6. Capture the Report
 
 Save to `docs/.drafts/foundation.interview.md`:
 
 ```markdown
-# Foundation Interview Report: [Project Name]
+# Foundation Interview: [Project Name]
 
 **Date**: [timestamp]
 
 ---
 
-## Summary
+## The Core Understanding
 
-[2-3 sentences: What this project is and its core purpose]
+[2-4 paragraphs capturing their mental model. What is this trying to be? What should it do extremely well? How do they think about it?]
 
-## Purpose Findings
+## Key Threads
 
-### The Problem
-[What problem does this solve? Who has this problem? Why does it matter?]
+### [Thread that emerged - use their language]
+[What you learned about this aspect]
 
-### Who We Serve
-[Primary users. Their needs. Their constraints. Who this is NOT for.]
+### [Another thread]
+[What you learned]
 
-### Why This Approach
-[Key trade-offs. Why built this way vs alternatives.]
+### [Another thread]
+[What you learned]
 
-### Success Looks Like
-[Observable outcomes indicating success]
-
-## Principles Findings
-
-### Identified Principles
-
-**[Principle Name]**
-- Statement: [One-line principle]
-- Rationale: [Why this matters]
-- Example: [How it guided a real decision]
-
-**[Another Principle]**
-- Statement: [One-line principle]
-- Rationale: [Why this matters]
-- Example: [How it guided a real decision]
-
-[Repeat for 3-7 principles]
-
-### Key Trade-off Patterns
-[What consistently gets prioritized over what]
-
-## Boundaries Findings
-
-### What This Is NOT
-[Explicit non-goals]
-
-### Accepted Constraints
-[Limitations consciously accepted and why]
-
-### Out of Scope
-[Features/use cases deliberately excluded]
+## What This Isn't
+[Boundaries and non-goals that emerged naturally]
 
 ## Open Questions
+[Things not fully resolved. Tensions to explore. Uncertainties they named.]
 
-[Things not fully resolved. Tensions to revisit. Ambiguities that remain.]
+## Suggested Foundation Structure
+
+Based on this conversation, a [pattern-type] structure might fit:
+- [Suggested file 1]: [What it would capture]
+- [Suggested file 2]: [What it would capture]
+- [Suggested file 3]: [What it would capture]
+
+Or: This might work best as a single narrative document.
 
 ---
 
-*Ready for drafting: /docs:draft foundation*
+*Ready for drafting: /docs:write foundation*
 ```
 
-### 8. Close the Interview
+### 7. Close the Interview
 
 ```
 Interview complete.
 
 Saved to: docs/.drafts/foundation.interview.md
 
-Key findings:
-- Purpose: [Core purpose in one line]
-- Principles: [Number] principles identified
-- Boundaries: [Key boundary or non-goal]
+What I learned:
+- Core idea: [one line]
+- What matters most: [one line]
+- Suggested structure: [pattern name or "single narrative"]
 
-Next: Run /docs:draft foundation to generate Foundation documentation.
+Next: Run /docs:write foundation to generate Foundation documentation.
 ```
+
+---
 
 ## Guidance
 
-**Push for specificity.** Vague principles ("be user-friendly") aren't useful. Keep probing until you have concrete, actionable statements.
+**Be genuinely curious.** You're not checking boxes—you're trying to understand how they think about what they're building.
 
-**Distinguish "not yet" from "not ever."** Features not yet built are different from features deliberately excluded. Boundaries are about conscious decisions, not roadmap gaps.
+**Follow the energy.** When they're excited or clear about something, that's signal. Dig there.
 
-**Look for tensions.** When principles seem to conflict, that's valuable. "We want to be fast AND thorough" — which wins when they conflict?
+**Use their language.** The words they choose matter. Preserve them for the drafting phase.
 
-**Use their language.** The developer's terminology matters. Preserve it for the drafting phase.
+**Don't force structure.** Purpose/Principles/Boundaries is ONE possible pattern. Problem/Vision/Approach is another. Single narrative is another. Let what matters to them determine the shape.
 
-**Run until complete.** You're done when you could explain to another developer why this project exists, how to make decisions aligned with its values, and what not to build.
+**Silence is productive.** When they pause, they're thinking. Don't rush to fill it.
 
-**This is generative, not archaeological.** Unlike codebase interviews where you read code and ask about it, here you're helping the developer articulate things they may never have written down.
+**This is for focused projects.** The assumption is microservice-scale projects with a core idea they want to nail—not million-line monoliths. The Foundation should capture what this thing does extremely well.
+
+**Run until you understand.** You're done when you could explain to another developer what this project is trying to BE and what would feel right vs. wrong when building it.
 
 ## Output
 
 - Foundation interview report saved to `docs/.drafts/foundation.interview.md`
-- Structured findings ready for `/docs:draft foundation`
+- Suggested structure based on what emerged
+- Ready for `/docs:write foundation`

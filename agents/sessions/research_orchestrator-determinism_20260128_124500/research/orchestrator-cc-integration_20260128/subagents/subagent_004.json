@@ -1,0 +1,132 @@
+{
+  "id": "004",
+  "title": "Hook Systems for Observability Patterns",
+  "objective": "Examine hook systems in both codebases for observability patterns",
+  "search_hints": ["hooks", "pre_tool_use", "post_tool_use", "logging", "event capture"],
+  "status": "complete",
+  "started_at": "2026-01-28T12:45:30Z",
+  "examined": [
+    {
+      "file": "reference/orchestrator-agent-with-adws/.claude/hooks/post_tool_use.py",
+      "lines": "1-48",
+      "learned": [
+        "Simple file-based logging - appends all hook input_data to logs/post_tool_use.json",
+        "Uses uv run --script shebang for dependency-free execution",
+        "Gracefully handles JSON decode errors and other exceptions without blocking",
+        "Creates log directory at Path.cwd() / 'logs' if not exists"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/.claude/hooks/pre_tool_use.py",
+      "lines": "1-147",
+      "learned": [
+        "Combines safety checks with logging - blocks dangerous rm -rf commands",
+        "Has commented-out .env file access blocking logic",
+        "Logs all pre_tool_use events to logs/pre_tool_use.json",
+        "Exit code 2 blocks tool execution and shows error to Claude",
+        "Exit code 0 allows tool execution to proceed"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/apps/orchestrator_3_stream/backend/modules/orchestrator_hooks.py",
+      "lines": "1-169",
+      "learned": [
+        "Factory pattern creates hook callbacks with bound context (agent_id, logger, ws_manager)",
+        "Hooks signature: (input_data: Dict, tool_use_id: str, context: Any) -> Dict",
+        "PreToolUse hook inserts to orchestrator_chat table with metadata (type, tool_name, tool_input, tool_use_id)",
+        "PostToolUse captures tool_name and is_error flag but currently just logs without DB insert",
+        "Stop hook captures reason and num_turns from input_data",
+        "All hooks broadcast events via WebSocket for real-time UI updates"
+      ]
+    },
+    {
+      "file": ".claude/hooks/logging/universal_hook_logger.py",
+      "lines": "1-70",
+      "learned": [
+        "Logs all hook payloads to JSONL files per session_id and hook_event_name",
+        "Uses CLAUDE_PROJECT_DIR env var or cwd for log directory base",
+        "Directory structure: agents/logging/hook_logs/{session_id}/{hook_name}.jsonl",
+        "Each entry includes timestamp and full payload",
+        "Non-blocking errors - logs to stderr but exits 0"
+      ]
+    },
+    {
+      "file": ".claude/hooks/logging/context_bundle_builder.py",
+      "lines": "1-162",
+      "learned": [
+        "Tracks Read/Write file operations and user prompts for context reconstruction",
+        "File ops logged with relative path, operation type, and filtered tool_input params",
+        "Write operations track content_length instead of actual content",
+        "User prompts truncated to 500 chars",
+        "Output: agents/logging/context_bundles/{day_hour}_{session_id}.jsonl",
+        "CLI --type arg routes to file_ops or user_prompt handler"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/apps/orchestrator_3_stream/backend/modules/hooks.py",
+      "lines": "1-557",
+      "learned": [
+        "Implements 6 hook types: PreToolUse, PostToolUse, UserPromptSubmit, Stop, SubagentStop, PreCompact",
+        "Each hook uses factory pattern binding agent_id, task_slug, entry_counter to closure",
+        "entry_counter Dict maintains sequential indexing for deterministic tail reading",
+        "All hooks call insert_hook_event() to persist to agent_logs table in PostgreSQL",
+        "Payload structure: {tool_name, tool_input, tool_use_id, timestamp} for PreToolUse",
+        "PostToolUse includes result (truncated to 500 chars) and is_error flag",
+        "Stop hook captures reason, num_turns, duration_ms",
+        "PreCompact hook triggers reset_agent_tokens() to clear token counters after compaction",
+        "All hooks spawn async tasks for AI summarization via summarize_event()",
+        "WebSocket broadcast happens immediately; summary updates broadcast separately when ready"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/apps/orchestrator_3_stream/backend/modules/database.py",
+      "lines": "965-1017, 1073-1085",
+      "learned": [
+        "insert_hook_event() stores: agent_id, task_slug, entry_index, event_type, payload, content",
+        "Also accepts optional session_id, adw_id, adw_step for workflow tracking",
+        "event_category is always 'hook' for hook events, 'response' for message blocks",
+        "update_log_summary() adds AI summary to existing log entry post-hoc",
+        "Logs stored in agent_logs table with JSONB payload column"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/.claude/hooks/send_event.py",
+      "lines": "1-144",
+      "learned": [
+        "Sends hook events to external observability server via HTTP POST",
+        "Constructs event_data with source_app, session_id, hook_event_type, payload, timestamp, model_name",
+        "model_name extracted from transcript_path using get_model_from_transcript()",
+        "--add-chat flag includes full conversation transcript in event",
+        "--summarize flag generates AI summary before sending",
+        "Always exits 0 to avoid blocking Claude Code operations"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/.claude/hooks/session_start.py",
+      "lines": "1-213",
+      "learned": [
+        "Logs session start events to logs/session_start.json",
+        "Captures source field: 'startup', 'resume', or 'clear'",
+        "--load-context flag loads git status, TODO files, GitHub issues into additionalContext",
+        "hookSpecificOutput can inject context into Claude's session",
+        "--announce flag uses TTS to announce session state changes"
+      ]
+    },
+    {
+      "file": ".claude/settings.json",
+      "lines": "1-153",
+      "learned": [
+        "Hook configuration uses matcher patterns (*, Edit|Write, Read|Write) to filter tools",
+        "Multiple hooks can chain on same event type with different matchers",
+        "PreToolUse: universal_hook_logger.py logs all tool calls",
+        "PostToolUse: auto-format.py, sync-plan-md.py, context_bundle_builder.py, universal_hook_logger.py",
+        "UserPromptSubmit: context_bundle_builder.py and universal_hook_logger.py",
+        "Stop/SubagentStop/Notification/PreCompact: universal_hook_logger.py",
+        "SessionStart: setup-env.sh and universal_hook_logger.py",
+        "timeout parameter available for slow hooks (e.g., 30000ms for auto-format)"
+      ]
+    }
+  ],
+  "summary": "The codebase has two complementary hook systems: Claude Code config hooks (file-based, JSONL logging via settings.json) and Orchestrator SDK hooks (database-backed with WebSocket streaming). Claude Code hooks use exit codes (0=continue, 2=block) and log to agents/logging/ directories with session_id and hook_event_name partitioning. The Orchestrator uses factory functions to create hook callbacks that persist to PostgreSQL (agent_logs table with JSONB payloads), maintain sequential entry_index counters for deterministic ordering, and broadcast via WebSocket for real-time UI. Both systems capture tool_name, tool_input, timestamps, and results, but the Orchestrator adds AI summarization and workflow tracking (adw_id, adw_step). The key observability pattern is: capture every state-changing event with structured metadata, persist with ordering guarantees, and optionally broadcast for live monitoring.",
+  "completed_at": "2026-01-28T12:52:00Z"
+}

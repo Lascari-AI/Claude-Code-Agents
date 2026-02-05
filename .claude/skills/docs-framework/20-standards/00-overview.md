@@ -6,7 +6,9 @@ concepts: [standards, hierarchy, zones, layers, numbering, linking]
 
 # Standards Capability
 
-The structural rules that make the documentation system navigable. Defines the three zones, six-layer hierarchy, directory organization, numbering conventions, and linking patterns.
+The structural rules that make the documentation system navigable. 
+
+Defines the three zones, six-layer hierarchy, directory organization, numbering conventions, and linking patterns.
 
 ---
 
@@ -15,9 +17,12 @@ The structural rules that make the documentation system navigable. Defines the t
 The framework organizes `docs/` into three zones and six layers:
 
 **Three Zones** (by purpose):
-- `00-foundation/` — Intent (why, principles, boundaries)
-- `10-codebase/` — Structure (mirrors code, L1-L6)
-- `99-appendix/` — Operations (setup, tooling)
+- `00-foundation/` 
+  - Intent (why, principles, boundaries)
+- `10-codebase/`
+  - Structure (mirrors code, L1-L6)
+- `99-appendix/`
+  - Operations (setup, tooling)
 
 **Six Layers** (progressive depth in Codebase):
 - L1-L3: Documentation files (overview → sections → concepts)

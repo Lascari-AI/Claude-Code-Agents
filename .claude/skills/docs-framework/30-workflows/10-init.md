@@ -5,7 +5,7 @@ concepts: [init, initialization, setup, three-zones, manifest, scope]
 
 # Docs Init Workflow
 
-One-time initialization of `docs/` in your project. Creates the manifest (`.rwyn.yaml`), determines scope (repository or component), and sets up the three-zone structure (Foundation/Codebase/Appendix) with template files.
+One-time initialization of `docs/` in your project. Creates the manifest (`.rwyn.yaml`), determines scope (repository or component), and sets up the three-zone structure (Foundation/Codebase/Appendix) with minimal starting files.
 
 ---
 
@@ -99,15 +99,30 @@ root: [user-provided root path]
 
 ### 6. Create Three-Zone Structure
 
-Create these files using the templates:
+Create minimal starting files—Foundation structure will be determined by the interview:
 
-**Foundation Zone:**
-| File | Template Source |
-|------|-----------------|
-| `docs/00-foundation/00-overview.md` | `.claude/skills/docs-framework/40-templates/10-foundation/10-foundation-overview.md` |
-| `docs/00-foundation/10-purpose.md` | `.claude/skills/docs-framework/40-templates/10-foundation/20-purpose.md` |
-| `docs/00-foundation/20-principles.md` | `.claude/skills/docs-framework/40-templates/10-foundation/30-principles.md` |
-| `docs/00-foundation/30-boundaries.md` | `.claude/skills/docs-framework/40-templates/10-foundation/40-boundaries.md` |
+**Foundation Zone (minimal):**
+| File | Content |
+|------|---------|
+| `docs/00-foundation/00-overview.md` | Placeholder with note to run `/docs:interview-foundation` |
+
+```markdown
+---
+covers: Understanding of what this project is and why it exists.
+type: overview
+---
+
+# Foundation
+
+*This section will be populated after running `/docs:interview-foundation`.*
+
+The Foundation interview will explore:
+- What is this trying to BE?
+- What should it do extremely well?
+- How do you think about this problem?
+
+Structure will emerge from that conversation.
+```
 
 **Codebase Zone:**
 | File | Template Source |
@@ -139,16 +154,17 @@ Documentation initialized successfully.
 
 Created:
 - docs/.rwyn.yaml (manifest: scope=repository, coverage=partial)
-- docs/00-foundation/ (Intent zone - fill in purpose, principles, boundaries)
+- docs/00-foundation/00-overview.md (placeholder - run interview to populate)
 - docs/10-codebase/00-overview.md (L1 - describe your architecture)
 - docs/99-appendix/00-overview.md (Operations zone)
 - docs/.drafts/ (working directory for interviews)
 
 Next steps:
-1. Fill in docs/00-foundation/ - purpose, principles, boundaries
-2. Edit docs/10-codebase/00-overview.md to describe your architecture
-3. Run /docs:scaffold to map your source structure to documentation sections
-4. Once documentation is complete, update manifest: coverage → complete, status → stable
+1. Run /docs:interview-foundation — explore what you're building and why
+2. Run /docs:write foundation — generate Foundation docs from the interview
+3. Edit docs/10-codebase/00-overview.md to describe your architecture
+4. Run /docs:scaffold to map your source structure to documentation sections
+5. Once documentation is complete, update manifest: coverage → complete, status → stable
 ```
 
 **For component scope:**
@@ -157,7 +173,7 @@ Component documentation initialized successfully.
 
 Created:
 - docs/.rwyn.yaml (manifest: scope=component, root=[path])
-- docs/00-foundation/ (Intent zone - why this component exists)
+- docs/00-foundation/00-overview.md (placeholder - run interview to populate)
 - docs/10-codebase/00-overview.md (L1 - component architecture)
 - docs/99-appendix/00-overview.md (Operations zone)
 - docs/.drafts/ (working directory for interviews)
@@ -165,10 +181,11 @@ Created:
 This documentation is self-contained and will travel with the component.
 
 Next steps:
-1. Fill in docs/00-foundation/ - component purpose, principles, boundaries
-2. Edit docs/10-codebase/00-overview.md to describe component architecture
-3. Run /docs:scaffold [root] to map component structure to doc sections
-4. Once documentation is complete, update manifest: coverage → complete, status → stable
+1. Run /docs:interview-foundation — explore what this component is trying to BE
+2. Run /docs:write foundation — generate Foundation docs from the interview
+3. Edit docs/10-codebase/00-overview.md to describe component architecture
+4. Run /docs:scaffold [root] to map component structure to doc sections
+5. Once documentation is complete, update manifest: coverage → complete, status → stable
 ```
 
 ## Output Summary
@@ -177,4 +194,4 @@ Provide:
 - Manifest details (scope, coverage, status)
 - List of created files by zone
 - Project structure visualization
-- Clear next steps (Foundation first, then Codebase)
+- Clear next steps (Foundation interview first, then structure)

@@ -13,9 +13,11 @@ On-demand research for understanding code and gathering context.
 │                                                                             │
 │  Research is triggered ON-DEMAND, not automatically.                        │
 │                                                                             │
-│  Two entry points:                                                          │
+│  Single command with two modes:                                             │
 │  • /research [query] — Standalone, creates ephemeral session                │
-│  • /session:research — Within existing session                              │
+│  • /research [query] --session=X — Attaches to existing session             │
+│                                                                             │
+│  Dynamically assesses complexity and spawns subagents iteratively.          │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -39,11 +41,11 @@ On-demand research for understanding code and gathering context.
 │  └───────────────────────────────────────────────────────────────────────┘ │
 │                                                                             │
 │  ┌───────────────────────────────────────────────────────────────────────┐ │
-│  │  /session:research [query] --session=X --phase=X --triggered-by=X     │ │
-│  │  Research within existing session - stores in session's research/     │ │
+│  │  /research [query] --session=X --phase=X --triggered-by=X             │ │
+│  │  Session-attached - stores in existing session's research/            │ │
 │  │                                                                       │ │
 │  │  Example:                                                             │ │
-│  │  /session:research How does auth work? --session=2026-01-12_feature   │ │
+│  │  /research How does auth work? --session=2026-01-12_feature           │ │
 │  │    --phase=spec --triggered-by="Need to understand before planning"   │ │
 │  └───────────────────────────────────────────────────────────────────────┘ │
 │                                                                             │
@@ -52,50 +54,27 @@ On-demand research for understanding code and gathering context.
 
 ---
 
-## Research Modes
+## Complexity-Based Subagent Scaling
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  --mode=light (default)                                                     │
+│                      DYNAMIC COMPLEXITY ASSESSMENT                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  Single agent performs research directly:                                   │
-│  1. Explore codebase (tree, glob, grep)                                     │
-│  2. Read relevant files                                                     │
-│  3. Document findings incrementally                                         │
-│  4. Write report.md                                                         │
+│  Subagent count adapts based on exploration findings (1-15 range):          │
 │                                                                             │
-│  Best for: Quick questions during spec/plan phases                          │
+│  ┌─────────────┬───────────┬───────────────────────────────────────────┐   │
+│  │ SIMPLE      │ 1-2       │ Single file/module, focused question      │   │
+│  │             │ subagents │ Grep hits in one area                     │   │
+│  ├─────────────┼───────────┼───────────────────────────────────────────┤   │
+│  │ MEDIUM      │ 3-5       │ Multiple related modules                  │   │
+│  │             │ subagents │ Component interactions                    │   │
+│  ├─────────────┼───────────┼───────────────────────────────────────────┤   │
+│  │ COMPLEX     │ 5-10      │ Cross-cutting concerns                    │   │
+│  │             │ subagents │ Multiple systems/architectures            │   │
+│  └─────────────┴───────────┴───────────────────────────────────────────┘   │
 │                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  --mode=full                                                                │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  Parallel subagents for comprehensive investigation:                        │
-│                                                                             │
-│           ┌─────────────────┐                                               │
-│           │ Research        │                                               │
-│           │ Orchestrator    │                                               │
-│           └────────┬────────┘                                               │
-│                    │ spawns parallel                                        │
-│        ┌───────────┼───────────┐                                           │
-│        ▼           ▼           ▼                                           │
-│  ┌───────────┐ ┌───────────┐ ┌───────────┐                                 │
-│  │ subagent  │ │ subagent  │ │ subagent  │  (research-subagent type)       │
-│  │ 001       │ │ 002       │ │ 003       │                                 │
-│  └─────┬─────┘ └─────┬─────┘ └─────┬─────┘                                 │
-│        │             │             │                                        │
-│        └─────────────┼─────────────┘                                        │
-│                      ▼                                                      │
-│           ┌─────────────────┐                                               │
-│           │ report-writer   │  (synthesizes findings)                       │
-│           └────────┬────────┘                                               │
-│                    ▼                                                        │
-│               report.md                                                     │
-│                                                                             │
-│  Best for: Complex features needing comprehensive investigation             │
+│  Iterative: If gaps detected after batch, spawn more (up to MAX=15)         │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -144,67 +123,77 @@ On-demand research for understanding code and gathering context.
                                │
                                ▼
                     ┌─────────────────────┐
-                    │  Parse Arguments    │
+                    │  1. Parse Arguments │
                     │  - query            │
-                    │  - mode             │
                     │  - style            │
                     │  - session (if any) │
                     └──────────┬──────────┘
                                │
                                ▼
                     ┌─────────────────────┐
-                    │  Initialize         │
+                    │  2. Initialize      │
                     │  - Create session   │
                     │    (if standalone)  │
                     │  - Create research/ │
-                    │    directory        │
                     └──────────┬──────────┘
                                │
                                ▼
                     ┌─────────────────────┐
-                    │  Explore Codebase   │
+                    │  3. Explore         │
                     │  - Tree structure   │
                     │  - Glob for files   │
                     │  - Grep for terms   │
                     └──────────┬──────────┘
                                │
-                    ┌──────────┴──────────┐
-                    ▼                     ▼
-          ┌─────────────────┐   ┌─────────────────┐
-          │  mode=light     │   │  mode=full      │
-          │                 │   │                 │
-          │  Single agent   │   │  Spawn parallel │
-          │  researches     │   │  subagents      │
-          │  directly       │   │                 │
-          └────────┬────────┘   └────────┬────────┘
-                   │                     │
-                   │                     ▼
-                   │            ┌─────────────────┐
-                   │            │  Wait for all   │
-                   │            │  subagents      │
-                   │            └────────┬────────┘
-                   │                     │
-                   │                     ▼
-                   │            ┌─────────────────┐
-                   │            │  Spawn report   │
-                   │            │  writer         │
-                   │            └────────┬────────┘
-                   │                     │
-                   └──────────┬──────────┘
-                              │
-                              ▼
+                               ▼
                     ┌─────────────────────┐
-                    │  Write report.md    │
-                    │  using style        │
-                    │  template           │
+                    │  4. Clarify?        │
+                    │  (optional - ask    │
+                    │   if ambiguous)     │
                     └──────────┬──────────┘
                                │
                                ▼
                     ┌─────────────────────┐
-                    │  Update session     │
-                    │  state with         │
-                    │  research artifact  │
-                    └─────────────────────┘
+                    │  5. Assess          │
+                    │  Complexity         │
+                    │  (simple/medium/    │
+                    │   complex)          │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │  6. Create Plan     │
+                    │  (subtasks with     │
+                    │   objective +       │
+                    │   boundaries)       │
+                    └──────────┬──────────┘
+                               │
+              ┌────────────────┴────────────────┐
+              ▼                                 │
+    ┌─────────────────┐                         │
+    │  7. Spawn       │                         │
+    │  Subagents      │◄────────────────────────┤
+    │  (parallel)     │                         │
+    └────────┬────────┘                         │
+             │                                  │
+             ▼                                  │
+    ┌─────────────────┐                         │
+    │  8. Evaluate    │     gaps found          │
+    │  Coverage       │─────────────────────────┘
+    │  (gap detect)   │     (iterate)
+    └────────┬────────┘
+             │ no gaps / max reached
+             ▼
+    ┌─────────────────┐
+    │  9. Spawn       │
+    │  Report Writer  │
+    └────────┬────────┘
+             │
+             ▼
+    ┌─────────────────────┐
+    │  10. Update Session │
+    │  (research artifact)│
+    └─────────────────────┘
 ```
 
 ---
@@ -218,22 +207,22 @@ agents/sessions/{research-session-id}/
 ├── spec.md                       # Auto-generated from question
 └── research/
     └── {research-id}/
-        ├── state.json            # Research metadata
+        ├── state.json            # Research metadata + iterations
         ├── report.md             # Final report
-        └── subagents/            # (only if mode=full)
+        └── subagents/
             ├── subagent_001.json
             ├── subagent_002.json
-            └── subagent_003.json
+            └── ...               # Count varies by complexity
 
-Within-session research (/session:research):
+Session-attached research (/research --session=X):
 agents/sessions/{parent-session-id}/
 ├── state.json                    # Parent session (updated with artifact ref)
 ├── spec.md
 └── research/
     └── {research-id}/
-        ├── state.json            # Includes: phase, triggered_by, mode
+        ├── state.json            # Includes: phase, triggered_by, iterations
         ├── report.md             # Findings
-        └── subagents/            # (only if mode=full)
+        └── subagents/
 ```
 
 ---
@@ -242,15 +231,17 @@ agents/sessions/{parent-session-id}/
 
 | Command | Description |
 |---------|-------------|
-| `/research [query]` | Standalone research |
-| `/session:research [query] --session=X --phase=X --triggered-by=X` | Research within session |
+| `/research [query]` | Standalone research (creates ephemeral session) |
+| `/research [query] --session=X --phase=X --triggered-by=X` | Session-attached research |
 
 ### Optional Flags
 
 | Flag | Values | Default | Description |
 |------|--------|---------|-------------|
-| `--mode` | `light`, `full` | `light` | Single agent vs parallel subagents |
 | `--style` | `cookbook`, `understanding`, `context` | inferred | Report format |
+| `--session` | session ID | (none) | Attach to existing session |
+| `--phase` | `spec`, `plan`, `debug` | (required with --session) | Which phase triggered research |
+| `--triggered-by` | reason string | (required with --session) | Why research is needed |
 
 ---
 

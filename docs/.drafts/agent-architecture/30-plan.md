@@ -204,7 +204,7 @@ The PLAN phase designs HOW to implement what the spec defines.
 │        Needs: Research / User input / Experimentation                      │
 │                                                                             │
 │  IDK tasks are resolved BEFORE build begins:                                │
-│  • Research: Spawn /session:research                                        │
+│  • Research: Spawn /research --session=X                                    │
 │  • User input: Ask user to choose                                          │
 │  • Experimentation: Spike in debug mode                                    │
 │                                                                             │

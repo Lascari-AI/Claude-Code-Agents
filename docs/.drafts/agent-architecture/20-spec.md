@@ -149,7 +149,7 @@ The SPEC phase captures WHAT to build and WHY through an interactive interview.
          │                       │                       │
          │                       ▼                       │
          │          ┌────────────────────────┐           │
-         │          │ Trigger /session:research│          │
+         │          │ Trigger /research        │          │
          │          │ (optional, on-demand)  │           │
          │          └────────────┬───────────┘           │
          │                       │                       │
@@ -250,12 +250,11 @@ Research is triggered ONLY when:
                                    │
                                    ▼
                     ┌─────────────────────────────┐
-                    │  /session:research          │
+                    │  /research [query]          │
                     │                             │
                     │  --session={session_id}     │
                     │  --phase=spec               │
                     │  --triggered-by="reason"    │
-                    │  --mode=light (default)     │
                     └──────────────┬──────────────┘
                                    │
                                    ▼

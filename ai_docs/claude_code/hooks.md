@@ -1,6 +1,27 @@
-# Hooks reference
+# Hooks Reference
 
 For a quickstart guide with examples, see [Get started with Claude Code hooks](https://code.claude.com/docs/en/hooks-guide).
+
+## Hook lifecycle
+
+Hooks fire at specific points during a Claude Code session.
+
+![Hook lifecycle diagram showing the sequence of hooks from SessionStart through the agentic loop to SessionEnd](https://mintcdn.com/claude-code/z2YM37Ycg6eMbID3/images/hooks-lifecycle.png)
+
+| Hook | When it fires |
+|------|---------------|
+| `SessionStart` | Session begins or resumes |
+| `UserPromptSubmit` | User submits a prompt |
+| `PreToolUse` | Before tool execution |
+| `PermissionRequest` | When permission dialog appears |
+| `PostToolUse` | After tool succeeds |
+| `PostToolUseFailure` | After tool fails |
+| `SubagentStart` | When spawning a subagent |
+| `SubagentStop` | When subagent finishes |
+| `Stop` | Claude finishes responding |
+| `PreCompact` | Before context compaction |
+| `SessionEnd` | Session terminates |
+| `Notification` | Claude Code sends notifications |
 
 ## Configuration
 
@@ -39,13 +60,14 @@ Hooks are organized by matchers, where each matcher can have multiple hooks:
   - Simple strings match exactly: `Write` matches only the Write tool
   - Supports regex: `Edit|Write` or `Notebook.*`
   - Use `*` to match all tools. You can also use empty string (`""`) or leave `matcher` blank.
+
 - **hooks**: Array of hooks to execute when the pattern matches
   - `type`: Hook execution type - `"command"` for bash commands or `"prompt"` for LLM-based evaluation
   - `command`: (For `type: "command"`) The bash command to execute (can use `$CLAUDE_PROJECT_DIR` environment variable)
   - `prompt`: (For `type: "prompt"`) The prompt to send to the LLM for evaluation
   - `timeout`: (Optional) How long a hook should run, in seconds, before canceling that specific hook
 
-For events like `UserPromptSubmit`, `Stop`, and `SubagentStop` that don't use matchers, you can omit the matcher field:
+For events like `UserPromptSubmit`, `Stop`, `SubagentStop`, and `Setup` that don't use matchers, you can omit the matcher field:
 
 ```json
 {
@@ -91,7 +113,6 @@ You can use the environment variable `CLAUDE_PROJECT_DIR` (only available when C
 [Plugins](https://code.claude.com/docs/en/plugins) can provide hooks that integrate seamlessly with your user and project hooks. Plugin hooks are automatically merged with your configuration when plugins are enabled.
 
 **How plugin hooks work**:
-
 - Plugin hooks are defined in the plugin's `hooks/hooks.json` file or in a file given by a custom path to the `hooks` field.
 - When a plugin is enabled, its hooks are merged with user and project hooks
 - Multiple hooks from different sources can respond to the same event
@@ -124,16 +145,15 @@ Plugin hooks use the same format as regular hooks with an optional `description`
 Plugin hooks run alongside your custom hooks. If multiple hooks match an event, they all execute in parallel.
 
 **Environment variables for plugins**:
-
 - `${CLAUDE_PLUGIN_ROOT}`: Absolute path to the plugin directory
 - `${CLAUDE_PROJECT_DIR}`: Project root directory (same as for project hooks)
 - All standard environment variables are available
 
 See the [plugin components reference](https://code.claude.com/docs/en/plugins-reference#hooks) for details on creating plugin hooks.
 
-### Hooks in Skills, Agents, and Slash Commands
+### Hooks in skills and agents
 
-In addition to settings files and plugins, hooks can be defined directly in [Skills](https://code.claude.com/docs/en/skills), [subagents](https://code.claude.com/docs/en/sub-agents), and [slash commands](https://code.claude.com/docs/en/slash-commands) using frontmatter. These hooks are scoped to the component's lifecycle and only run when that component is active.
+In addition to settings files and plugins, hooks can be defined directly in [skills](https://code.claude.com/docs/en/skills) and [subagents](https://code.claude.com/docs/en/sub-agents) using frontmatter. These hooks are scoped to the component's lifecycle and only run when that component is active.
 
 **Supported events**: `PreToolUse`, `PostToolUse`, and `Stop`
 
@@ -169,9 +189,8 @@ hooks:
 
 Component-scoped hooks follow the same configuration format as settings-based hooks but are automatically cleaned up when the component finishes executing.
 
-**Additional option for skills and slash commands:**
-
-- `once`: Set to `true` to run the hook only once per session. After the first successful execution, the hook is removed. Note: This option is currently only supported for skills and slash commands, not for agents.
+**Additional option for skills:**
+- `once`: Set to `true` to run the hook only once per session. After the first successful execution, the hook is removed. Note: This option is currently only supported for skills, not for agents.
 
 ## Prompt-Based Hooks
 
@@ -180,7 +199,6 @@ In addition to bash command hooks (`type: "command"`), Claude Code supports prom
 ### How prompt-based hooks work
 
 Instead of executing a bash command, prompt-based hooks:
-
 1. Send the hook input and your prompt to a fast LLM (Haiku)
 2. The LLM responds with structured JSON containing a decision
 3. Claude Code processes the decision automatically
@@ -205,7 +223,6 @@ Instead of executing a bash command, prompt-based hooks:
 ```
 
 **Fields:**
-
 - `type`: Must be `"prompt"`
 - `prompt`: The prompt text to send to the LLM
   - Use `$ARGUMENTS` as a placeholder for the hook input JSON
@@ -218,26 +235,18 @@ The LLM must respond with JSON containing:
 
 ```json
 {
-  "decision": "approve" | "block",
-  "reason": "Explanation for the decision",
-  "continue": false,  // Optional: stops Claude entirely
-  "stopReason": "Message shown to user",  // Optional: custom stop message
-  "systemMessage": "Warning or context"  // Optional: shown to user
+  "ok": true | false,
+  "reason": "Explanation for the decision"
 }
 ```
 
 **Response fields:**
-
-- `decision`: `"approve"` allows the action, `"block"` prevents it
-- `reason`: Explanation shown to Claude when decision is `"block"`
-- `continue`: (Optional) If `false`, stops Claude's execution entirely
-- `stopReason`: (Optional) Message shown when `continue` is false
-- `systemMessage`: (Optional) Additional message shown to the user
+- `ok`: `true` allows the action, `false` prevents it
+- `reason`: Required when `ok` is `false`. Explanation shown to Claude
 
 ### Supported hook events
 
 Prompt-based hooks work with any hook event, but are most useful for:
-
 - **Stop**: Intelligently decide if Claude should continue working
 - **SubagentStop**: Evaluate if a subagent has completed its task
 - **UserPromptSubmit**: Validate user prompts with LLM assistance
@@ -254,7 +263,7 @@ Prompt-based hooks work with any hook event, but are most useful for:
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "You are evaluating whether Claude should stop working. Context: $ARGUMENTS\n\nAnalyze the conversation and determine if:\n1. All user-requested tasks are complete\n2. Any errors need to be addressed\n3. Follow-up work is needed\n\nRespond with JSON: {\"decision\": \"approve\" or \"block\", \"reason\": \"your explanation\"}",
+            "prompt": "You are evaluating whether Claude should stop working. Context: $ARGUMENTS\n\nAnalyze the conversation and determine if:\n1. All user-requested tasks are complete\n2. Any errors need to be addressed\n3. Follow-up work is needed\n\nRespond with JSON: {\"ok\": true} to allow stopping, or {\"ok\": false, \"reason\": \"your explanation\"} to continue working.",
             "timeout": 30
           }
         ]
@@ -274,7 +283,7 @@ Prompt-based hooks work with any hook event, but are most useful for:
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Evaluate if this subagent should stop. Input: $ARGUMENTS\n\nCheck if:\n- The subagent completed its assigned task\n- Any errors occurred that need fixing\n- Additional context gathering is needed\n\nReturn: {\"decision\": \"approve\" or \"block\", \"reason\": \"explanation\"}"
+            "prompt": "Evaluate if this subagent should stop. Input: $ARGUMENTS\n\nCheck if:\n- The subagent completed its assigned task\n- Any errors occurred that need fixing\n- Additional context gathering is needed\n\nReturn: {\"ok\": true} to allow stopping, or {\"ok\": false, \"reason\": \"explanation\"} to continue."
           }
         ]
       }
@@ -286,7 +295,7 @@ Prompt-based hooks work with any hook event, but are most useful for:
 ### Comparison with bash command hooks
 
 | Feature | Bash Command Hooks | Prompt-Based Hooks |
-| --- | --- | --- |
+|---------|-------------------|-------------------|
 | **Execution** | Runs bash script | Queries LLM |
 | **Decision logic** | You implement in code | LLM evaluates context |
 | **Setup complexity** | Requires script file | Configure prompt |
@@ -309,7 +318,6 @@ Prompt-based hooks work with any hook event, but are most useful for:
 Runs after Claude creates tool parameters and before processing the tool call.
 
 **Common matchers:**
-
 - `Task` - Subagent tasks (see [subagents documentation](https://code.claude.com/docs/en/sub-agents))
 - `Bash` - Shell commands
 - `Glob` - File pattern matching
@@ -319,11 +327,11 @@ Runs after Claude creates tool parameters and before processing the tool call.
 - `Write` - File writing
 - `WebFetch`, `WebSearch` - Web operations
 
-Use [PreToolUse decision control](#pretooluse-decision-control) to allow, deny, or ask for permission to use the tool.
+Use [PreToolUse decision control](https://code.claude.com/docs/en/hooks#pretooluse-decision-control) to allow, deny, or ask for permission to use the tool.
 
 ### PermissionRequest
 
-Runs when the user is shown a permission dialog. Use [PermissionRequest decision control](#permissionrequest-decision-control) to allow or deny on behalf of the user.
+Runs when the user is shown a permission dialog. Use [PermissionRequest decision control](https://code.claude.com/docs/en/hooks#permissionrequest-decision-control) to allow or deny on behalf of the user.
 
 Recognizes the same matcher values as PreToolUse.
 
@@ -338,7 +346,6 @@ Recognizes the same matcher values as PreToolUse.
 Runs when Claude Code sends notifications. Supports matchers to filter by notification type.
 
 **Common matchers:**
-
 - `permission_prompt` - Permission requests from Claude Code
 - `idle_prompt` - When Claude is waiting for user input (after 60+ seconds of idle time)
 - `auth_success` - Authentication success notifications
@@ -392,16 +399,28 @@ Runs when a Claude Code subagent (Task tool call) has finished responding.
 Runs before Claude Code is about to run a compact operation.
 
 **Matchers:**
-
 - `manual` - Invoked from `/compact`
 - `auto` - Invoked from auto-compact (due to full context window)
 
-### SessionStart
+### Setup
 
-Runs when Claude Code starts a new session or resumes an existing session (which currently does start a new session under the hood). Useful for loading in development context like existing issues or recent changes to your codebase, installing dependencies, or setting up environment variables.
+Runs when Claude Code is invoked with repository setup and maintenance flags (`--init`, `--init-only`, or `--maintenance`). Use this hook for operations you don't want on every session—such as installing dependencies, running migrations, or periodic maintenance tasks.
+
+Use **Setup** hooks for one-time or occasional operations (dependency installation, migrations, cleanup). Use **SessionStart** hooks for things you want on every session (loading context, setting environment variables). Setup hooks require explicit flags because running them automatically would slow down every session start.
 
 **Matchers:**
+- `init` - Invoked from `--init` or `--init-only` flags
+- `maintenance` - Invoked from `--maintenance` flag
 
+Setup hooks have access to the `CLAUDE_ENV_FILE` environment variable for persisting environment variables, similar to SessionStart hooks.
+
+### SessionStart
+
+Runs when Claude Code starts a new session or resumes an existing session (which currently does start a new session under the hood). Useful for loading development context like existing issues or recent changes to your codebase, or setting up environment variables.
+
+For one-time operations like installing dependencies or running migrations, use [Setup hooks](https://code.claude.com/docs/en/hooks#setup) instead. SessionStart runs on every session, so keep these hooks fast.
+
+**Matchers:**
 - `startup` - Invoked from startup
 - `resume` - Invoked from `--resume`, `--continue`, or `/resume`
 - `clear` - Invoked from `/clear`
@@ -455,7 +474,6 @@ Any variables written to this file will be available in all subsequent bash comm
 Runs when a Claude Code session ends. Useful for cleanup tasks, logging session statistics, or saving session state.
 
 The `reason` field in the hook input will be one of:
-
 - `clear` - Session cleared with /clear command
 - `logout` - User logged out
 - `prompt_input_exit` - User exited while prompt input was visible
@@ -481,7 +499,37 @@ Hooks receive JSON data via stdin containing session information and event-speci
 
 ### PreToolUse Input
 
-The exact schema for `tool_input` depends on the tool.
+The exact schema for `tool_input` depends on the tool. Here are examples for commonly hooked tools.
+
+#### Bash tool
+
+The Bash tool is the most commonly hooked tool for command validation:
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "/Users/...",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "psql -c 'SELECT * FROM users'",
+    "description": "Query the users table",
+    "timeout": 120000
+  },
+  "tool_use_id": "toolu_01ABC123..."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `command` | string | The shell command to execute |
+| `description` | string | Optional description of what the command does |
+| `timeout` | number | Optional timeout in milliseconds |
+| `run_in_background` | boolean | Whether to run the command in background |
+
+#### Write tool
 
 ```json
 {
@@ -498,6 +546,60 @@ The exact schema for `tool_input` depends on the tool.
   "tool_use_id": "toolu_01ABC123..."
 }
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `file_path` | string | Absolute path to the file to write |
+| `content` | string | Content to write to the file |
+
+#### Edit tool
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "/Users/...",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Edit",
+  "tool_input": {
+    "file_path": "/path/to/file.txt",
+    "old_string": "original text",
+    "new_string": "replacement text"
+  },
+  "tool_use_id": "toolu_01ABC123..."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `file_path` | string | Absolute path to the file to edit |
+| `old_string` | string | Text to find and replace |
+| `new_string` | string | Replacement text |
+| `replace_all` | boolean | Whether to replace all occurrences (default: false) |
+
+#### Read tool
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "/Users/.../.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "/Users/...",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Read",
+  "tool_input": {
+    "file_path": "/path/to/file.txt"
+  },
+  "tool_use_id": "toolu_01ABC123..."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `file_path` | string | Absolute path to the file to read |
+| `offset` | number | Optional line number to start reading from |
+| `limit` | number | Optional number of lines to read |
 
 ### PostToolUse Input
 
@@ -550,7 +652,7 @@ The exact schema for `tool_input` and `tool_response` depends on the tool.
 }
 ```
 
-### Stop and SubagentStop Input
+### Stop Input
 
 `stop_hook_active` is true when Claude Code is already continuing as a result of a stop hook. Check this value or process the transcript to prevent Claude Code from running indefinitely.
 
@@ -558,9 +660,27 @@ The exact schema for `tool_input` and `tool_response` depends on the tool.
 {
   "session_id": "abc123",
   "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "/Users/...",
   "permission_mode": "default",
   "hook_event_name": "Stop",
   "stop_hook_active": true
+}
+```
+
+### SubagentStop Input
+
+Triggered when a subagent finishes. The `transcript_path` is the main session's transcript, while `agent_transcript_path` is the subagent's own transcript stored in a nested `subagents/` folder.
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "~/.claude/projects/.../abc123.jsonl",
+  "cwd": "/Users/...",
+  "permission_mode": "default",
+  "hook_event_name": "SubagentStop",
+  "stop_hook_active": false,
+  "agent_id": "def456",
+  "agent_transcript_path": "~/.claude/projects/.../abc123/subagents/agent-def456.jsonl"
 }
 ```
 
@@ -579,17 +699,52 @@ For `manual`, `custom_instructions` comes from what the user passes into `/compa
 }
 ```
 
+### Setup Input
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "/Users/...",
+  "permission_mode": "default",
+  "hook_event_name": "Setup",
+  "trigger": "init"
+}
+```
+
+The `trigger` field will be either `"init"` (from `--init` or `--init-only`) or `"maintenance"` (from `--maintenance`).
+
 ### SessionStart Input
 
 ```json
 {
   "session_id": "abc123",
   "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "/Users/...",
   "permission_mode": "default",
   "hook_event_name": "SessionStart",
-  "source": "startup"
+  "source": "startup",
+  "model": "claude-sonnet-4-20250514"
 }
 ```
+
+The `source` field indicates how the session started: `"startup"` for new sessions, `"resume"` for resumed sessions, `"clear"` after `/clear`, or `"compact"` after compaction. The `model` field contains the model identifier when available. If you start Claude Code with `claude --agent <name>`, an `agent_type` field contains the agent name.
+
+### SubagentStart Input
+
+```json
+{
+  "session_id": "abc123",
+  "transcript_path": "~/.claude/projects/.../00893aaf-19fa-41d2-8238-13269b9b3ca0.jsonl",
+  "cwd": "/Users/...",
+  "permission_mode": "default",
+  "hook_event_name": "SubagentStart",
+  "agent_id": "agent-abc123",
+  "agent_type": "Explore"
+}
+```
+
+Triggered when a subagent is spawned. The `agent_id` field contains the unique identifier for the subagent, and `agent_type` contains the agent name (built-in agents like `"Bash"`, `"Explore"`, `"Plan"`, or custom agent names).
 
 ### SessionEnd Input
 
@@ -612,7 +767,7 @@ There are two mutually exclusive ways for hooks to return output back to Claude 
 
 Hooks communicate status through exit codes, stdout, and stderr:
 
-- **Exit code 0**: Success. `stdout` is shown to the user in verbose mode (ctrl+o), except for `UserPromptSubmit` and `SessionStart`, where stdout is added to the context. JSON output in `stdout` is parsed for structured control (see [Advanced: JSON Output](#advanced-json-output)).
+- **Exit code 0**: Success. `stdout` is shown to the user in verbose mode (ctrl+o), except for `UserPromptSubmit` and `SessionStart`, where stdout is added to the context. JSON output in `stdout` is parsed for structured control (see [Advanced: JSON Output](https://code.claude.com/docs/en/hooks#advanced-json-output)).
 - **Exit code 2**: Blocking error. Only `stderr` is used as the error message and fed back to Claude. The format is `[command]: {stderr}`. JSON in `stdout` is **not** processed for exit code 2. See per-hook-event behavior below.
 - **Other exit codes**: Non-blocking error. `stderr` is shown to the user in verbose mode (ctrl+o) with format `Failed with non-blocking status code: {stderr}`. If `stderr` is empty, it shows `No stderr output`. Execution continues.
 
@@ -621,7 +776,7 @@ Reminder: Claude Code does not see stdout if the exit code is 0, except for the 
 #### Exit Code 2 Behavior
 
 | Hook Event | Behavior |
-| --- | --- |
+|-----------|----------|
 | `PreToolUse` | Blocks the tool call, shows stderr to Claude |
 | `PermissionRequest` | Denies the permission, shows stderr to Claude |
 | `PostToolUse` | Shows stderr to Claude (tool already ran) |
@@ -630,6 +785,7 @@ Reminder: Claude Code does not see stdout if the exit code is 0, except for the 
 | `Stop` | Blocks stoppage, shows stderr to Claude |
 | `SubagentStop` | Blocks stoppage, shows stderr to Claude subagent |
 | `PreCompact` | N/A, shows stderr to user only |
+| `Setup` | N/A, shows stderr to user only |
 | `SessionStart` | N/A, shows stderr to user only |
 | `SessionEnd` | N/A, shows stderr to user only |
 
@@ -677,6 +833,10 @@ Additionally, hooks can modify tool inputs before execution using `updatedInput`
 - Combine with `"permissionDecision": "allow"` to modify the input and auto-approve the tool call
 - Combine with `"permissionDecision": "ask"` to modify the input and show it to the user for confirmation
 
+Hooks can also provide context to Claude using `additionalContext`:
+
+- `"hookSpecificOutput.additionalContext"` adds a string to Claude's context before the tool executes.
+
 ```json
 {
   "hookSpecificOutput": {
@@ -685,7 +845,8 @@ Additionally, hooks can modify tool inputs before execution using `updatedInput`
     "permissionDecisionReason": "My reason here",
     "updatedInput": {
       "field_to_modify": "new value"
-    }
+    },
+    "additionalContext": "Current environment: production. Proceed with caution."
   }
 }
 ```
@@ -773,6 +934,23 @@ The JSON format isn't required for simple use cases. To add context, you can pri
 {
   "decision": "block" | undefined,
   "reason": "Must be provided when Claude is blocked from stopping"
+}
+```
+
+#### Setup Decision Control
+
+`Setup` hooks allow you to load context and configure the environment during repository initialization or maintenance.
+
+- `"hookSpecificOutput.additionalContext"` adds the string to the context.
+- Multiple hooks' `additionalContext` values are concatenated.
+- Setup hooks have access to `CLAUDE_ENV_FILE` for persisting environment variables.
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "Setup",
+    "additionalContext": "Repository initialized with custom configuration"
+  }
 }
 ```
 
@@ -981,6 +1159,10 @@ You can target specific MCP tools or entire MCP servers:
 }
 ```
 
+## Examples
+
+For practical examples including code formatting, notifications, and file protection, see [More Examples](https://code.claude.com/docs/en/hooks-guide#more-examples) in the get started guide.
+
 ## Security Considerations
 
 ### Disclaimer
@@ -1029,7 +1211,7 @@ This prevents malicious hook modifications from affecting your current session.
 - **Output**:
   - PreToolUse/PermissionRequest/PostToolUse/Stop/SubagentStop: Progress shown in verbose mode (ctrl+o)
   - Notification/SessionEnd: Logged to debug only (`--debug`)
-  - UserPromptSubmit/SessionStart: stdout added as context for Claude
+  - UserPromptSubmit/SessionStart/Setup: stdout added as context for Claude
 
 ## Debugging
 

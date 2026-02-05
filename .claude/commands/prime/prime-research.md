@@ -14,12 +14,4 @@ Read all the research system documentation to understand its architecture, workf
 
 ## Report
 
-Summarize your understanding of the research system including:
-
-1. **Architecture Overview**: How the orchestrator, subagents, and report-writer coordinate
-2. **Workflow Phases**: The step-by-step process from request to final report
-3. **Directory Structure**: How sessions, queries, findings, and reports are organized
-4. **State Management**: How state.json tracks progress across all phases
-5. **Parallel Execution**: How subagents run concurrently and write findings independently
-6. **Report Synthesis**: How findings are combined into a comprehensive final report
-7. **Potential Improvements**: Identify areas where the system could be enhanced
+Summarize your understanding of the research system.

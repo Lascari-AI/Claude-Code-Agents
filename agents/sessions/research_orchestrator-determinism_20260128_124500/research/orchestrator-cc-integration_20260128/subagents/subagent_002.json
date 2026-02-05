@@ -1,0 +1,127 @@
+{
+  "id": "002",
+  "title": "Claude Code Session State.json Structure and Update Patterns",
+  "objective": "Understand Claude Code session state.json structure and current update patterns",
+  "boundaries": "Focus on state management, not skill workflows",
+  "search_hints": [".claude/skills/session", "state.json", "agents/sessions"],
+  "status": "complete",
+  "started_at": "2026-01-28T12:45:30Z",
+  "examined": [
+    {
+      "file": ".claude/skills/session/SKILL.md",
+      "lines": "1-263",
+      "learned": [
+        "Sessions follow SPEC -> PLAN -> BUILD -> DOCS -> COMPLETE lifecycle",
+        "Session directory contains state.json, spec.md, plan.json, plan.md, research/, context/, debug/",
+        "Session ID format: {YYYY-MM-DD}_{topic-slug}_{6-char-random-id}",
+        "Granularity levels: project, feature, sub_feature with parent_session linking",
+        "Atomic persistence principle: update spec.md AND state.json after EVERY exchange"
+      ]
+    },
+    {
+      "file": ".claude/skills/session/spec/OVERVIEW.md",
+      "lines": "1-110",
+      "learned": [
+        "Spec phase can reference prior_session for context continuity",
+        "state.json tracks current_phase, phases object with status/timestamps, open_questions, key_decisions",
+        "Phase statuses include: draft, finalized, finalized_complete (no plan needed)",
+        "Atomic persistence emphasized: update state.json after EVERY exchange to prevent losing work"
+      ]
+    },
+    {
+      "file": ".claude/skills/session/plan/OVERVIEW.md",
+      "lines": "1-298",
+      "learned": [
+        "plan_state in state.json tracks: status, current_checkpoint, current_task_group, current_task, last_updated",
+        "Two planning modes: Quick Plan (auto-generate) and Full Plan (interactive tier-by-tier)",
+        "State tracking enables resumability - progress saved at checkpoint/task_group/task level"
+      ]
+    },
+    {
+      "file": ".claude/skills/session/build/OVERVIEW.md",
+      "lines": "1-294",
+      "learned": [
+        "Build phase updates plan_state with execution progress",
+        "Commits array tracks checkpoint_id, sha, message, created_at for traceability",
+        "DevNotes captured in separate dev-notes.json (not state.json)",
+        "Error handling: exact position tracked so resume picks up where stopped",
+        "Checkpoint = commit boundary; state updated after each checkpoint completion"
+      ]
+    },
+    {
+      "file": ".claude/skills/session/spec/templates/state.json",
+      "lines": "1-72",
+      "learned": [
+        "Core fields: session_id, created_at, updated_at, topic, description, granularity, parent_session",
+        "phases object has spec/plan/build with status, started_at, finalized_at/completed_at",
+        "goals structured as high_level, mid_level, low_level arrays",
+        "key_decisions array with decision, rationale, made_at fields",
+        "plan_state object with detailed execution tracking fields",
+        "Arrays for: commits, research_artifacts, doc_updates"
+      ]
+    },
+    {
+      "file": "agents/sessions/2026-01-12_agent-session-overhaul_k9m2x7/state.json",
+      "lines": "1-180",
+      "learned": [
+        "Real example shows 6 commits tracked with checkpoint_id linkage",
+        "plan_state shows checkpoints_total, checkpoints_detailed, checkpoints_completed list",
+        "key_decisions array captures major architectural choices with rationale and date",
+        "research_artifacts and doc_updates arrays exist but empty in this example",
+        "updated_at field tracked but unclear when/how it gets updated"
+      ]
+    },
+    {
+      "file": "agents/sessions/2026-01-06_browser-mcp-skill_b7k2m9/state.json",
+      "lines": "1-112",
+      "learned": [
+        "Different session shows same structure but without commits array (older format or not tracked)",
+        "plan_state completed with checkpoints_completed: [1,2,3,4]",
+        "key_decisions have made_at timestamps tracking when decisions were made"
+      ]
+    },
+    {
+      "file": ".claude/skills/session/scripts/init-session.py",
+      "lines": "1-168",
+      "learned": [
+        "Session initialization is scripted via Python for efficiency (saves tokens)",
+        "Creates directory structure: research/, context/, debug/ subdirectories",
+        "Initializes state.json from template with placeholder substitution",
+        "Only runs at session creation - does not handle ongoing updates"
+      ]
+    },
+    {
+      "file": ".claude/skills/session/plan/reference/models.py",
+      "lines": "1-191",
+      "learned": [
+        "PlanState Pydantic model defines: status, current_checkpoint, current_task_group, current_task, checkpoints_completed, last_updated, summary",
+        "Status values: not_started, in_progress, complete",
+        "Type safety defined for plan structures but state.json updates are manual"
+      ]
+    },
+    {
+      "file": ".claude/commands/session/spec.md",
+      "lines": "1-483",
+      "learned": [
+        "Agent updates state.json via direct Edit tool calls - no automated scripting",
+        "Updates happen after EVERY user exchange (atomic persistence pattern)",
+        "After each answer: update spec.md, sync open_questions, update key_decisions, set updated_at",
+        "Finalization sets phases.spec.status and phases.spec.finalized_at",
+        "No locking mechanism - relies on sequential conversation flow"
+      ]
+    },
+    {
+      "file": ".claude/commands/session/build.md",
+      "lines": "1-216",
+      "learned": [
+        "Build mode updates state.json after EACH completed task (not just checkpoints)",
+        "State tracked at task granularity: current_checkpoint, current_task, last_updated",
+        "Checkpoint completion adds to checkpoints_completed array and commits array",
+        "All state updates via Edit tool - no Python scripts for ongoing updates",
+        "If user pauses, exact position is saved for resume"
+      ]
+    }
+  ],
+  "summary": "State.json serves as the central session state tracker with fields for: identity (session_id, topic), lifecycle (current_phase, phases with status/timestamps), goals (hierarchical arrays), decisions (key_decisions with rationale), and execution progress (plan_state with checkpoint/task position). Updates are performed exclusively via Claude's Edit tool - no automated scripts exist for ongoing state updates. The atomic persistence pattern requires state updates after EVERY user exchange in spec mode and after EACH task completion in build mode. This approach relies on sequential conversation flow with no locking mechanism, making it potentially vulnerable to race conditions if multiple agents were to update simultaneously. The current design assumes single-agent operation per session.",
+  "completed_at": "2026-01-28T12:50:45Z"
+}

@@ -49,15 +49,13 @@ This creates your `docs/` directory with the manifest and three-zone structure:
 ```
 docs/
 ├── .rwyn.yaml               # Manifest (scope, coverage, version)
-├── 00-foundation/           # Intent zone
-│   ├── 00-overview.md
-│   ├── 10-purpose.md
-│   ├── 20-principles.md
-│   └── 30-boundaries.md
+├── 00-foundation/           # Understanding zone (freeform)
+│   └── 00-overview.md       # Placeholder until interview
 ├── 10-codebase/             # Structure zone
 │   └── 00-overview.md       # L1 codebase overview
-└── 99-appendix/             # Operational zone
-    └── 00-overview.md
+├── 99-appendix/             # Operational zone
+│   └── 00-overview.md
+└── .drafts/                 # Working directory for interviews
 ```
 
 ### The Manifest (`.rwyn.yaml`)
@@ -74,18 +72,29 @@ updated: 2025-01-15    # Last update date
 
 For component scope, it also includes a `root` field pointing to the code directory.
 
-### Step 3: Fill In Foundation
+### Step 3: Run the Foundation Interview
 
-Start with the Foundation zone—this primes all future documentation.
+**This is the critical step.** The Foundation interview explores what you're building and why.
 
-**Option A: Interview-driven** (recommended)
-Run `/docs:interview-foundation` to have an interactive conversation that extracts your purpose, principles, and boundaries, then run `/docs:draft foundation` to generate the docs.
+Run:
+```
+/docs:interview-foundation
+```
 
-**Option B: Manual**
-Edit these files directly using the templates in `.claude/skills/docs-framework/40-templates/10-foundation/`:
-1. **Purpose** (`00-foundation/10-purpose.md`): Why does this system exist? Who does it serve?
-2. **Principles** (`00-foundation/20-principles.md`): What heuristics guide decisions?
-3. **Boundaries** (`00-foundation/30-boundaries.md`): What will this system NOT do?
+This is a curious, exploratory conversation—not a checklist. The agent will explore:
+- What is this trying to BE?
+- What should it do extremely well?
+- How do you think about this problem?
+- What would feel "right" vs. "wrong"?
+
+Structure emerges from the conversation. You might end up with:
+- Problem-focused docs (problem.md, landscape.md, approach.md)
+- Vision-focused docs (vision.md, constraints.md, direction.md)
+- Thinking-focused docs (context.md, ideas.md, decisions.md)
+- A single narrative document
+- Or something else entirely
+
+After the interview, run `/docs:write foundation` to generate the docs.
 
 ### Step 4: Write Your L1 Codebase Overview
 
@@ -99,7 +108,7 @@ Edit `docs/10-codebase/00-overview.md` to describe your system architecture:
 ```
 your-project/
 ├── docs/                # YOUR project documentation
-│   ├── 00-foundation/       # Intent zone (purpose, principles, boundaries)
+│   ├── 00-foundation/       # Understanding zone (structure varies)
 │   ├── 10-codebase/         # Structure zone (mirrors your code)
 │   └── 99-appendix/         # Operational zone (setup, deployment)
 └── .claude/
@@ -148,11 +157,11 @@ To update the framework, copy the new `.claude/skills/docs-framework/` and `.cla
 - **`/docs:scaffold`** - Generate section structure from source code
 
 ### Knowledge Extraction
-- **`/docs:interview-foundation`** - Extract project purpose, principles, and boundaries through Socratic dialogue
+- **`/docs:interview-foundation`** - Explore understanding through curious dialogue
 - **`/docs:interview-codebase <path>`** - Extract understanding of a specific code area through interactive conversation
 
 ### Documentation Generation
-- **`/docs:draft <section>`** - Generate documentation from interview notes
+- **`/docs:write <section>`** - Generate documentation from interview notes
 
 ### Code Annotation
 - **`/docs:annotate <path>`** - Add L4 file headers and L5 function docstrings to source code

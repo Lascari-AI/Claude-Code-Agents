@@ -18,323 +18,76 @@ Here are some commonly used MCP servers you can connect to Claude Code:
 
 > **Warning**: Use third party MCP servers at your own risk - Anthropic has not verified the correctness or security of all these servers. Make sure you trust MCP servers you are installing. Be especially careful when using MCP servers that could fetch untrusted content, as these can expose you to prompt injection risk.
 
-### Healthcare & Life Sciences
+### Remote MCP Servers (HTTP/SSE)
 
-- **[bioRxiv](https://docs.mcp.deepsense.ai/guides/biorxiv.html)** - Access bioRxiv and medRxiv preprint data
+- **[Circleback](https://circleback.ai/docs/mcp)** - Search and access context from meetings
   ```bash
-  claude mcp add biorxiv --transport http https://mcp.deepsense.ai/biorxiv/mcp
+  claude mcp add circleback --transport http https://app.circleback.ai/api/mcp
   ```
-
-- **[ChEMBL](https://docs.mcp.deepsense.ai/guides/chembl.html)** - Access the ChEMBL Database
-  ```bash
-  claude mcp add chembl --transport http https://mcp.deepsense.ai/chembl/mcp
-  ```
-
-- **[Clinical Trials](https://docs.mcp.deepsense.ai/guides/clinical_trials.html)** - Access ClinicalTrials.gov data
-  ```bash
-  claude mcp add clinical-trials --transport http https://mcp.deepsense.ai/clinical_trials/mcp
-  ```
-
-- **[CMS Coverage](https://docs.mcp.deepsense.ai/guides/cms_coverage.html)** - Access the CMS Coverage Database
-  ```bash
-  claude mcp add cms-coverage --transport http https://mcp.deepsense.ai/cms_coverage/mcp
-  ```
-
-- **[ICD-10 Codes](https://docs.mcp.deepsense.ai/guides/icd10_codes.html)** - Access ICD-10-CM and ICD-10-PCS code sets
-  ```bash
-  claude mcp add icd-10-codes --transport http https://mcp.deepsense.ai/icd10_codes/mcp
-  ```
-
-- **[NPI Registry](https://docs.mcp.deepsense.ai/guides/npi_registry.html)** - Access US National Provider Identifier (NPI) Registry
-  ```bash
-  claude mcp add npi-registry --transport http https://mcp.deepsense.ai/npi_registry/mcp
-  ```
-
-- **[BioRender](https://help.biorender.com/hc/en-gb/articles/30870978672157-How-to-use-the-BioRender-MCP-connector)** - Search for and use scientific templates and icons
-  ```bash
-  claude mcp add biorender --transport http https://mcp.services.biorender.com/mcp
-  ```
-
-- **[Benchling](https://help.benchling.com/hc/en-us/articles/40342713479437-Benchling-MCP)** - Connect to R&D data, source experiments, and notebooks (requires user-specific URL)
-
-### Research & Academia
-
-- **[Scholar Gateway](https://docs.scholargateway.ai/)** - Enhance responses with scholarly research and citations
-  ```bash
-  claude mcp add scholar-gateway --transport http https://connector.scholargateway.ai/mcp
-  ```
-
-- **[PubMed](https://support.claude.com/en/articles/12614801-using-the-pubmed-connector-in-claude)** - Search biomedical literature from PubMed
-  ```bash
-  claude mcp add pubmed --transport http https://pubmed.mcp.claude.com/mcp
-  ```
-
-- **[Synapse.org](https://github.com/susheel/synapse-mcp?tab=readme-ov-file#synapse-mcp-server)** - Search and metadata tools for Synapse scientific data
-  ```bash
-  claude mcp add synapse-org --transport http https://mcp.synapse.org/mcp
-  ```
-
-### Project Management & Collaboration
-
-- **[Linear](https://linear.app/docs/mcp)** - Manage issues, projects & team workflows in Linear
-  ```bash
-  claude mcp add --transport http linear https://mcp.linear.app/mcp
-  ```
-
-- **[Atlassian](https://www.atlassian.com/platform/remote-mcp-server)** - Access Jira & Confluence from Claude
-  ```bash
-  claude mcp add --transport sse atlassian https://mcp.atlassian.com/v1/sse
-  ```
-
-- **[Asana](https://developers.asana.com/docs/using-asanas-model-control-protocol-mcp-server)** - Connect to Asana to coordinate tasks, projects, and goals
-  ```bash
-  claude mcp add --transport sse asana https://mcp.asana.com/sse
-  ```
-
-- **[ClickUp](https://help.clickup.com/hc/en-us/articles/33335772678423-What-is-ClickUp-MCP)** - Project management & collaboration for teams & agents
-  ```bash
-  claude mcp add clickup --transport http https://mcp.clickup.com/mcp
-  ```
-
-- **[Monday](https://developer.monday.com/apps/docs/mondaycom-mcp-integration)** - Manage projects, boards, and workflows in monday.com
-  ```bash
-  claude mcp add --transport http monday https://mcp.monday.com/mcp
-  ```
-
-- **[Notion](https://developers.notion.com/docs/mcp)** - Connect your Notion workspace to search, update, and power workflows across tools
-  ```bash
-  claude mcp add --transport http notion https://mcp.notion.com/mcp
-  ```
-
-- **[Airtable](https://github.com/domdomegg/airtable-mcp-server)** - Read and write Airtable databases
-
-### Development & Infrastructure
-
-- **[Figma](https://help.figma.com/hc/en-us/articles/32132100833559)** - Create better code with Figma context
-  ```bash
-  claude mcp add --transport http figma-remote-mcp https://mcp.figma.com/mcp
-  ```
-
-- **[Netlify](https://docs.netlify.com/build/build-with-ai/netlify-mcp-server/)** - Create, deploy, manage, and secure websites on Netlify
-  ```bash
-  claude mcp add --transport http netlify https://netlify-mcp.netlify.app/mcp
-  ```
-
-- **[Vercel](https://vercel.com/docs/mcp/vercel-mcp)** - Analyze, debug, and manage projects and deployments
-  ```bash
-  claude mcp add --transport http vercel https://mcp.vercel.com
-  ```
-
-- **[Cloudflare](https://developers.cloudflare.com/agents/model-context-protocol/mcp-servers-for-cloudflare/)** - Build applications with compute, storage, and AI
-  ```bash
-  claude mcp add --transport http cloudflare https://bindings.mcp.cloudflare.com/mcp
-  ```
-
-- **[AWS Marketplace](https://docs.aws.amazon.com/marketplace/latest/APIReference/marketplace-mcp-server.html)** - Discover, evaluate, and buy solutions for the cloud
-  ```bash
-  claude mcp add aws-marketplace --transport http https://marketplace-mcp.us-east-1.api.aws/mcp
-  ```
-
-- **[Hugging Face](https://huggingface.co/settings/mcp)** - Access the HF Hub and thousands of Gradio Apps
-  ```bash
-  claude mcp add --transport http hugging-face https://huggingface.co/mcp
-  ```
-
-### Monitoring & Debugging
-
-- **[Sentry](https://docs.sentry.io/product/sentry-mcp/)** - Search, query, and debug errors intelligently
-  ```bash
-  claude mcp add --transport http sentry https://mcp.sentry.dev/mcp
-  ```
-
-- **[Jam](https://jam.dev/docs/debug-a-jam/mcp)** - Record screen and collect automatic context for issues
-  ```bash
-  claude mcp add --transport http jam https://mcp.jam.dev/mcp
-  ```
-
-- **[Honeycomb](https://docs.honeycomb.io/troubleshoot/product-lifecycle/beta/mcp/)** - Query and explore observability data and SLOs
-  ```bash
-  claude mcp add honeycomb --transport http https://mcp.honeycomb.io/mcp
-  ```
-
-### Data & Analytics
-
-- **[Databricks](https://docs.databricks.com/aws/en/generative-ai/mcp/connect-external-services)** - Managed MCP servers with Unity Catalog and Mosaic AI (requires user-specific URL)
-
-- **[Snowflake](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-mcp)** - Retrieve both structured and unstructured data (requires user-specific URL)
-
-- **[Hex](https://learn.hex.tech/docs/administration/mcp-server)** - Answer questions with the Hex agent (requires user-specific URL)
-
-- **[Coupler.io](https://help.coupler.io/article/592-coupler-local-mcp-server)** - Access business data from hundreds of sources
-  ```bash
-  claude mcp add --transport http coupler https://mcp.coupler.io/mcp
-  ```
-
-- **[CData Connect AI](https://cloud.cdata.com/docs/Claude-Client.html)** - Managed MCP platform for 350 sources
-  ```bash
-  claude mcp add cdata-connect-ai --transport http https://mcp.cloud.cdata.com/mcp
-  ```
-
-### CRM & Sales
 
 - **[Day AI](https://day.ai/mcp)** - Analyze & update CRM records
   ```bash
   claude mcp add day-ai --transport http https://day.ai/api/mcp
   ```
 
-- **[Aura](https://docs.getaura.ai/)** - Company intelligence & workforce analytics
+- **[DevRev](https://support.devrev.ai/en-US/devrev/article/ART-21859-remote-mcp-server)** - Search and update your company's knowledge graph
   ```bash
-  claude mcp add --transport http auraintelligence https://mcp.auraintelligence.com/mcp
+  claude mcp add devrev --transport http https://api.devrev.ai/mcp/v1
   ```
 
-- **[ZoomInfo](https://docs.zoominfo.com/docs/zi-api-mcp-overview/)** - Enrich contacts & accounts with GTM intelligence
+- **[Harmonic](https://support.harmonic.ai/en/articles/12785899-harmonic-mcp-server-getting-started-guide)** - Discover, research, and enrich companies and people
   ```bash
-  claude mcp add --transport http zoominfo https://mcp.zoominfo.com/mcp
+  claude mcp add harmonic --transport http https://mcp.api.harmonic.ai
   ```
 
-- **[Crossbeam](https://help.crossbeam.com/en/articles/12601327-crossbeam-mcp-server-beta)** - Explore partner data and ecosystem insights in Claude
+- **[LunarCrush](https://lunarcrush.com/developers/api/ai)** - Add real-time social media data
   ```bash
-  claude mcp add crossbeam --transport http https://mcp.crossbeam.com
+  claude mcp add lunarcrush --transport http https://lunarcrush.ai/mcp
   ```
 
-- **[Visier](https://docs.visier.com/developer/agents/mcp/mcp-server.htm)** - Find people, productivity and business impact insights (requires user-specific URL)
+- **[Scholar Gateway](https://docs.scholargateway.ai/)** - Enhance responses with scholarly research
+  ```bash
+  claude mcp add scholar-gateway --transport http https://connector.scholargateway.ai/mcp
+  ```
 
-### Finance & Payments
+- **[Linear](https://linear.app/docs/mcp)** - Manage issues, projects & team workflows
+  ```bash
+  claude mcp add --transport http linear https://mcp.linear.app/mcp
+  ```
 
-- **[Stripe](https://docs.stripe.com/mcp)** - Payment processing and financial infrastructure tools
+- **[Notion](https://developers.notion.com/docs/mcp)** - Connect your Notion workspace
+  ```bash
+  claude mcp add --transport http notion https://mcp.notion.com/mcp
+  ```
+
+- **[Slack](https://docs.slack.dev/ai/mcp-server)** - Send messages, create canvases, and fetch data
+  ```bash
+  claude mcp add slack --transport http https://mcp.slack.com/mcp
+  ```
+
+- **[Stripe](https://docs.stripe.com/mcp)** - Payment processing and financial infrastructure
   ```bash
   claude mcp add --transport http stripe https://mcp.stripe.com
   ```
 
-- **[Square](https://developer.squareup.com/docs/mcp)** - Search and manage transaction, merchant, and payment data
+- **[Sentry](https://docs.sentry.io/product/sentry-mcp/)** - Search, query, and debug errors
   ```bash
-  claude mcp add --transport sse square https://mcp.squareup.com/sse
+  claude mcp add --transport http sentry https://mcp.sentry.dev/mcp
   ```
 
-- **[PayPal](https://developer.paypal.com/tools/mcp-server/)** - Access PayPal payments platform
+- **[GitHub](https://api.githubcopilot.com/mcp/)** - Code reviews, PRs, and repository management
   ```bash
-  claude mcp add --transport http paypal https://mcp.paypal.com/mcp
+  claude mcp add --transport http github https://api.githubcopilot.com/mcp/
   ```
 
-- **[Ramp](https://docs.ramp.com/developer-api/v1/guides/ramp-mcp-remote)** - Search, access, and analyze your Ramp financial data
+- **[Figma](https://help.figma.com/hc/en-us/articles/32132100833559)** - Generate diagrams and code from Figma
   ```bash
-  claude mcp add --transport http ramp https://ramp-mcp-remote.ramp.com/mcp
+  claude mcp add --transport http figma-remote-mcp https://mcp.figma.com/mcp
   ```
 
-- **[Crypto.com](https://mcp.crypto.com/docs)** - Real time prices, orders, charts, and more for crypto
+- **[Atlassian](https://community.atlassian.com/forums/Atlassian-Platform-articles/Using-the-Atlassian-Remote-MCP-Server-beta/ba-p/3005104)** - Access Jira & Confluence
   ```bash
-  claude mcp add crypto-com --transport http https://mcp.crypto.com/market-data/mcp
-  ```
-
-- **[MT Newswires](https://console.blueskyapi.com/docs/EDGE/news/MT_NEWSWIRES_Global#mcp)** - Trusted real-time global financial news provider
-  ```bash
-  claude mcp add --transport http mtnewswire
-  ```
-
-- **[Blockscout](https://github.com/blockscout/mcp-server)** - Access and analyze blockchain data
-  ```bash
-  claude mcp add blockscout --transport http https://mcp.blockscout.com/mcp
-  ```
-
-- **[Chronograph](https://lp-help.chronograph.pe/article/735-chronograph-mcp)** - Interact with your Chronograph data directly in Claude
-  ```bash
-  claude mcp add --transport http chronograph https://ai.chronograph.pe/mcp
-  ```
-
-- **[Pendo](https://support.pendo.io/hc/en-us/articles/41102236924955)** - Connect to Pendo for product and user insights (requires user-specific URL)
-
-### Marketing & Automation
-
-- **[ActiveCampaign](https://developers.activecampaign.com/page/mcp)** - Autonomous marketing to transform how you work (requires user-specific URL)
-
-- **[Intercom](https://developers.intercom.com/docs/guides/mcp)** - AI access to Intercom data for better customer insights
-  ```bash
-  claude mcp add --transport http intercom https://mcp.intercom.com/mcp
-  ```
-
-- **[Zapier](https://docs.zapier.com/mcp/home)** - Automate workflows across thousands of apps via conversation (requires user-specific URL)
-
-- **[Workato](https://docs.workato.com/en/mcp/mcp-cloud.html)** - Automate workflows and connect your business apps (requires user-specific URL)
-
-- **[n8n](https://docs.n8n.io/advanced-ai/accessing-n8n-mcp-server/)** - Access and run your n8n workflows (requires user-specific URL)
-
-- **[Bitly](https://dev.bitly.com/bitly-mcp/)** - Shorten links, generate QR Codes, and track performance
-  ```bash
-  claude mcp add bitly --transport http https://api-ssl.bitly.com/v4/mcp
-  ```
-
-### Content & Media
-
-- **[Canva](https://www.canva.dev/docs/connect/canva-mcp-server-setup/)** - Search, create, autofill, and export Canva designs from a prompt
-  ```bash
-  claude mcp add --transport http canva https://mcp.canva.com/mcp
-  ```
-
-- **[Cloudinary](https://cloudinary.com/documentation/cloudinary_llm_mcp#available_mcp_servers)** - Manage, transform and deliver your images & videos
-  ```bash
-  claude mcp add --transport http cloudinary https://asset-management.mcp.cloudinary.com/sse
-  ```
-
-- **[Egnyte](https://developers.egnyte.com/docs/Remote_MCP_Server)** - Securely access and analyze Egnyte content
-  ```bash
-  claude mcp add --transport http egnyte https://mcp-server.egnyte.com/mcp
-  ```
-
-- **[Melon](https://tech.kakaoent.com/ai/using-melon-mcp-server-en/)** - Browse music charts & your personalized music picks
-  ```bash
-  claude mcp add melon --transport http https://mcp.melon.com/mcp/
-  ```
-
-### Other Tools
-
-- **[Ticket Tailor](https://help.tickettailor.com/en/articles/11892797-how-to-connect-ticket-tailor-to-your-favourite-ai-agent)** - Event platform for managing tickets, orders & more
-  ```bash
-  claude mcp add --transport http tickettailor https://mcp.tickettailor.ai/mcp
-  ```
-
-- **[Fellow.ai](https://help.fellow.ai/en/articles/12622641-fellow-s-mcp-server)** - Chat with your meetings to uncover actionable insights
-  ```bash
-  claude mcp add fellow-ai --transport http https://fellow.app/mcp
-  ```
-
-- **[Clockwise](https://support.getclockwise.com/article/238-connecting-to-clockwise-mcp)** - Advanced scheduling and time management for work
-  ```bash
-  claude mcp add --transport http clockwise https://mcp.getclockwise.com/mcp
-  ```
-
-- **[GoDaddy](https://developer.godaddy.com/mcp)** - Search domains and check availability
-  ```bash
-  claude mcp add godaddy --transport http https://api.godaddy.com/v1/domains/mcp
-  ```
-
-- **[Jotform](https://www.jotform.com/developers/mcp)** - Create forms & analyze submissions inside Claude
-  ```bash
-  claude mcp add --transport http jotform https://mcp.jotform.com/
-  ```
-
-- **[Kiwi.com](https://mcp-install-instructions.alpic.cloud/servers/kiwi-com-flight-search)** - Search flights in Claude
-  ```bash
-  claude mcp add kiwi-com --transport http https://mcp.kiwi.com
-  ```
-
-- **[Trivago](https://mcp.trivago.com/docs)** - Find your ideal hotel at the best price
-  ```bash
-  claude mcp add --transport http trivago https://mcp.trivago.com/mcp
-  ```
-
-- **[Stytch](https://stytch.com/docs/workspace-management/stytch-mcp)** - Manage your Stytch Project
-  ```bash
-  claude mcp add stytch --transport http https://mcp.stytch.dev/mcp
-  ```
-
-- **[Benevity](https://support.claude.com/en/articles/12923227-using-the-benevity-connector-in-claude)** - Find and engage with verified nonprofits
-  ```bash
-  claude mcp add benevity --transport http https://mcp.benevity.org/general/v1/nonprofit
-  ```
-
-- **[Candid](https://support.claude.com/en/articles/12923235-using-the-candid-connector-in-claude)** - Research nonprofits and funders using Candid's data
-  ```bash
-  claude mcp add candid --transport http https://mcp.candid.org/mcp
+  claude mcp add --transport sse atlassian https://mcp.atlassian.com/v1/mcp
   ```
 
 **Need a specific integration?** [Find hundreds more MCP servers on GitHub](https://github.com/modelcontextprotocol/servers), or build your own using the [MCP SDK](https://modelcontextprotocol.io/quickstart/server).
@@ -481,37 +234,13 @@ Or inline in `plugin.json`:
 }
 ```
 
-**Plugin MCP features:**
-
-- **Automatic lifecycle**: Servers start when plugin enables, but you must restart Claude Code to apply MCP server changes (enabling or disabling)
-- **Environment variables**: Use `${CLAUDE_PLUGIN_ROOT}` for plugin-relative paths
-- **User environment access**: Access to same environment variables as manually configured servers
-- **Multiple transport types**: Support stdio, SSE, and HTTP transports (transport support may vary by server)
-
-**Viewing plugin MCP servers:**
-
-```bash
-# Within Claude Code, see all MCP servers including plugin ones
-/mcp
-```
-
-Plugin servers appear in the list with indicators showing they come from plugins.
-
-**Benefits of plugin MCP servers:**
-
-- **Bundled distribution**: Tools and servers packaged together
-- **Automatic setup**: No manual MCP configuration needed
-- **Team consistency**: Everyone gets the same tools when plugin is installed
-
-See the [plugin components reference](https://code.claude.com/docs/en/plugins-reference#mcp-servers) for details on bundling MCP servers with plugins.
-
 ## MCP installation scopes
 
-MCP servers can be configured at three different scope levels, each serving distinct purposes for managing server accessibility and sharing. Understanding these scopes helps you determine the best way to configure servers for your specific needs.
+MCP servers can be configured at three different scope levels, each serving distinct purposes for managing server accessibility and sharing.
 
 ### Local scope
 
-Local-scoped servers represent the default configuration level and are stored in `~/.claude.json` under your project's path. These servers remain private to you and are only accessible when working within the current project directory. This scope is ideal for personal development servers, experimental configurations, or servers containing sensitive credentials that shouldn't be shared.
+Local-scoped servers represent the default configuration level and are stored in `~/.claude.json` under your project's path. These servers remain private to you and are only accessible when working within the current project directory.
 
 ```bash
 # Add a local-scoped server (default)
@@ -523,7 +252,7 @@ claude mcp add --transport http stripe --scope local https://mcp.stripe.com
 
 ### Project scope
 
-Project-scoped servers enable team collaboration by storing configurations in a `.mcp.json` file at your project's root directory. This file is designed to be checked into version control, ensuring all team members have access to the same MCP tools and services. When you add a project-scoped server, Claude Code automatically creates or updates this file with the appropriate configuration structure.
+Project-scoped servers enable team collaboration by storing configurations in a `.mcp.json` file at your project's root directory. This file is designed to be checked into version control, ensuring all team members have access to the same MCP tools and services.
 
 ```bash
 # Add a project-scoped server
@@ -548,7 +277,7 @@ For security reasons, Claude Code prompts for approval before using project-scop
 
 ### User scope
 
-User-scoped servers are stored in `~/.claude.json` and provide cross-project accessibility, making them available across all projects on your machine while remaining private to your user account. This scope works well for personal utility servers, development tools, or services you frequently use across different projects.
+User-scoped servers are stored in `~/.claude.json` and provide cross-project accessibility, making them available across all projects on your machine while remaining private to your user account.
 
 ```bash
 # Add a user server
@@ -567,11 +296,11 @@ Select your scope based on:
 
 - **User and local scope**: `~/.claude.json` (in the `mcpServers` field or under project paths)
 - **Project scope**: `.mcp.json` in your project root (checked into source control)
-- **Managed**: `managed-mcp.json` in system directories (see Managed MCP configuration)
+- **Managed**: `managed-mcp.json` in system directories
 
 ### Scope hierarchy and precedence
 
-MCP server configurations follow a clear precedence hierarchy. When servers with the same name exist at multiple scopes, the system resolves conflicts by prioritizing local-scoped servers first, followed by project-scoped servers, and finally user-scoped servers. This design ensures that personal configurations can override shared ones when needed.
+MCP server configurations follow a clear precedence hierarchy. When servers with the same name exist at multiple scopes, the system resolves conflicts by prioritizing local-scoped servers first, followed by project-scoped servers, and finally user-scoped servers.
 
 ### Environment variable expansion in .mcp.json
 
@@ -585,7 +314,6 @@ Claude Code supports environment variable expansion in `.mcp.json` files, allowi
 **Expansion locations:**
 
 Environment variables can be expanded in:
-
 - `command` - The server executable path
 - `args` - Command-line arguments
 - `env` - Environment variables passed to the server
@@ -607,8 +335,6 @@ Environment variables can be expanded in:
   }
 }
 ```
-
-If a required environment variable is not set and has no default value, Claude Code will fail to parse the config.
 
 ## Practical examples
 
@@ -660,24 +386,18 @@ claude mcp add --transport stdio db -- npx -y @bytebase/dbhub \
 
 Many cloud-based MCP servers require authentication. Claude Code supports OAuth 2.0 for secure connections.
 
-1. **Add the server that requires authentication**
-
-   For example:
+1. Add the server that requires authentication
    ```bash
    claude mcp add --transport http sentry https://mcp.sentry.dev/mcp
    ```
 
-2. **Use the /mcp command within Claude Code**
-
-   In Claude code, use the command:
-   ```
+2. Use the /mcp command within Claude Code
+   ```bash
    > /mcp
    ```
-
    Then follow the steps in your browser to login.
 
 **Tips:**
-
 - Authentication tokens are stored securely and refreshed automatically
 - Use "Clear authentication" in the `/mcp` menu to revoke access
 - If your browser doesn't open automatically, copy the provided URL
@@ -687,27 +407,18 @@ Many cloud-based MCP servers require authentication. Claude Code supports OAuth 
 
 If you have a JSON configuration for an MCP server, you can add it directly:
 
-1. **Add an MCP server from JSON**
+```bash
+# Basic syntax
+claude mcp add-json <name> '<json>'
 
-   ```bash
-   # Basic syntax
-   claude mcp add-json <name> '<json>'
+# Example: Adding an HTTP server with JSON configuration
+claude mcp add-json weather-api '{"type":"http","url":"https://api.weather.com/mcp","headers":{"Authorization":"Bearer token"}}'
 
-   # Example: Adding an HTTP server with JSON configuration
-   claude mcp add-json weather-api '{"type":"http","url":"https://api.weather.com/mcp","headers":{"Authorization":"Bearer token"}}'
-
-   # Example: Adding a stdio server with JSON configuration
-   claude mcp add-json local-weather '{"type":"stdio","command":"/path/to/weather-cli","args":["--api-key","abc123"],"env":{"CACHE_DIR":"/tmp"}}'
-   ```
-
-2. **Verify the server was added**
-
-   ```bash
-   claude mcp get weather-api
-   ```
+# Example: Adding a stdio server with JSON configuration
+claude mcp add-json local-weather '{"type":"stdio","command":"/path/to/weather-cli","args":["--api-key","abc123"],"env":{"CACHE_DIR":"/tmp"}}'
+```
 
 **Tips:**
-
 - Make sure the JSON is properly escaped in your shell
 - The JSON must conform to the MCP server configuration schema
 - You can use `--scope user` to add the server to your user configuration instead of the project-specific one
@@ -716,30 +427,19 @@ If you have a JSON configuration for an MCP server, you can add it directly:
 
 If you've already configured MCP servers in Claude Desktop, you can import them:
 
-1. **Import servers from Claude Desktop**
+```bash
+# Basic syntax
+claude mcp add-from-claude-desktop
+```
 
-   ```bash
-   # Basic syntax
-   claude mcp add-from-claude-desktop
-   ```
-
-2. **Select which servers to import**
-
-   After running the command, you'll see an interactive dialog that allows you to select which servers you want to import.
-
-3. **Verify the servers were imported**
-
-   ```bash
-   claude mcp list
-   ```
+After running the command, you'll see an interactive dialog that allows you to select which servers you want to import.
 
 **Tips:**
-
 - This feature only works on macOS and Windows Subsystem for Linux (WSL)
 - It reads the Claude Desktop configuration file from its standard location on those platforms
 - Use the `--scope user` flag to add servers to your user configuration
 - Imported servers will have the same names as in Claude Desktop
-- If servers with the same names already exist, they will get a numerical suffix (for example, `server_1`)
+- If servers with the same names already exist, they will get a numerical suffix (e.g., `server_1`)
 
 ## Use Claude Code as an MCP server
 
@@ -773,28 +473,7 @@ To find the full path:
 which claude
 ```
 
-Then use the full path in your configuration:
-
-```json
-{
-  "mcpServers": {
-    "claude-code": {
-      "type": "stdio",
-      "command": "/full/path/to/claude",
-      "args": ["mcp", "serve"],
-      "env": {}
-    }
-  }
-}
-```
-
-Without the correct executable path, you'll encounter errors like `spawn claude ENOENT`.
-
-**Tips:**
-
-- The server provides access to Claude's tools like View, Edit, LS, etc.
-- In Claude Desktop, try asking Claude to read files in a directory, make edits, and more.
-- Note that this MCP server is only exposing Claude Code's tools to your MCP client, so your own client is responsible for implementing user confirmation for individual tool calls.
+Then use the full path in your configuration.
 
 ## MCP output limits and warnings
 
@@ -813,12 +492,9 @@ claude
 ```
 
 This is particularly useful when working with MCP servers that:
-
 - Query large datasets or databases
 - Generate detailed reports or documentation
 - Process extensive log files or debugging information
-
-If you frequently encounter output warnings with specific MCP servers, consider increasing the limit or configuring the server to paginate or filter its responses.
 
 ## Use MCP resources
 
@@ -826,67 +502,98 @@ MCP servers can expose resources that you can reference using @ mentions, simila
 
 ### Reference MCP resources
 
-1. **List available resources**
+1. **List available resources** - Type `@` in your prompt to see available resources from all connected MCP servers. Resources appear alongside files in the autocomplete menu.
 
-   Type `@` in your prompt to see available resources from all connected MCP servers. Resources appear alongside files in the autocomplete menu.
-
-2. **Reference a specific resource**
-
-   Use the format `@server:protocol://resource/path` to reference a resource:
-
+2. **Reference a specific resource** - Use the format `@server:protocol://resource/path` to reference a resource:
    ```
    > Can you analyze @github:issue://123 and suggest a fix?
-   ```
-
-   ```
    > Please review the API documentation at @docs:file://api/authentication
    ```
 
-3. **Multiple resource references**
-
-   You can reference multiple resources in a single prompt:
-
+3. **Multiple resource references** - You can reference multiple resources in a single prompt:
    ```
    > Compare @postgres:schema://users with @docs:file://database/user-model
    ```
 
 **Tips:**
-
 - Resources are automatically fetched and included as attachments when referenced
 - Resource paths are fuzzy-searchable in the @ mention autocomplete
 - Claude Code automatically provides tools to list and read MCP resources when servers support them
 - Resources can contain any type of content that the MCP server provides (text, JSON, structured data, etc.)
 
-## Use MCP prompts as slash commands
+## Scale with MCP Tool Search
 
-MCP servers can expose prompts that become available as slash commands in Claude Code.
+When you have many MCP servers configured, tool definitions can consume a significant portion of your context window. MCP Tool Search solves this by dynamically loading tools on-demand instead of preloading all of them.
+
+### How it works
+
+Claude Code automatically enables Tool Search when your MCP tool descriptions would consume more than 10% of the context window. When triggered:
+
+1. MCP tools are deferred rather than loaded into context upfront
+2. Claude uses a search tool to discover relevant MCP tools when needed
+3. Only the tools Claude actually needs are loaded into context
+4. MCP tools continue to work exactly as before from your perspective
+
+### For MCP server authors
+
+If you're building an MCP server, the server instructions field becomes more useful with Tool Search enabled. Server instructions help Claude understand when to search for your tools, similar to how [skills](https://code.claude.com/docs/en/skills) work.
+
+Add clear, descriptive server instructions that explain:
+- What category of tasks your tools handle
+- When Claude should search for your tools
+- Key capabilities your server provides
+
+### Configure tool search
+
+Tool search runs in auto mode by default, meaning it activates only when your MCP tool definitions exceed the context threshold. This feature requires models that support `tool_reference` blocks: Sonnet 4 and later, or Opus 4 and later. Haiku models do not support tool search.
+
+Control tool search behavior with the `ENABLE_TOOL_SEARCH` environment variable:
+
+| Value | Behavior |
+|-------|----------|
+| `auto` | Activates when MCP tools exceed 10% of context (default) |
+| `auto:<N>` | Activates at custom threshold, where `<N>` is a percentage (e.g., `auto:5` for 5%) |
+| `true` | Always enabled |
+| `false` | Disabled, all MCP tools loaded upfront |
+
+```bash
+# Use a custom 5% threshold
+ENABLE_TOOL_SEARCH=auto:5 claude
+
+# Disable tool search entirely
+ENABLE_TOOL_SEARCH=false claude
+```
+
+You can also disable the MCPSearch tool specifically using the `disallowedTools` setting:
+
+```json
+{
+  "permissions": {
+    "deny": ["MCPSearch"]
+  }
+}
+```
+
+## Use MCP prompts as commands
+
+MCP servers can expose prompts that become available as commands in Claude Code.
 
 ### Execute MCP prompts
 
-1. **Discover available prompts**
-
-   Type `/` to see all available commands, including those from MCP servers. MCP prompts appear with the format `/mcp__servername__promptname`.
+1. **Discover available prompts** - Type `/` to see all available commands, including those from MCP servers. MCP prompts appear with the format `/mcp__servername__promptname`.
 
 2. **Execute a prompt without arguments**
-
    ```
    > /mcp__github__list_prs
    ```
 
-3. **Execute a prompt with arguments**
-
-   Many prompts accept arguments. Pass them space-separated after the command:
-
+3. **Execute a prompt with arguments** - Many prompts accept arguments. Pass them space-separated after the command:
    ```
    > /mcp__github__pr_review 456
-   ```
-
-   ```
    > /mcp__jira__create_issue "Bug in login flow" high
    ```
 
 **Tips:**
-
 - MCP prompts are dynamically discovered from connected servers
 - Arguments are parsed based on the prompt's defined parameters
 - Prompt results are injected directly into the conversation
@@ -900,22 +607,19 @@ For organizations that need centralized control over MCP servers, Claude Code su
 2. **Policy-based control with allowlists/denylists**: Allow users to add their own servers, but restrict which ones are permitted
 
 These options allow IT administrators to:
-
 - **Control which MCP servers employees can access**: Deploy a standardized set of approved MCP servers across the organization
 - **Prevent unauthorized MCP servers**: Restrict users from adding unapproved MCP servers
 - **Disable MCP entirely**: Remove MCP functionality completely if needed
 
 ### Option 1: Exclusive control with managed-mcp.json
 
-When you deploy a `managed-mcp.json` file, it takes **exclusive control** over all MCP servers. Users cannot add, modify, or use any MCP servers other than those defined in this file. This is the simplest approach for organizations that want complete control.
+When you deploy a `managed-mcp.json` file, it takes **exclusive control** over all MCP servers. Users cannot add, modify, or use any MCP servers other than those defined in this file.
 
 System administrators deploy the configuration file to a system-wide directory:
 
 - macOS: `/Library/Application Support/ClaudeCode/managed-mcp.json`
 - Linux and WSL: `/etc/claude-code/managed-mcp.json`
 - Windows: `C:\Program Files\ClaudeCode\managed-mcp.json`
-
-These are system-wide paths (not user home directories like `~/Library/...`) that require administrator privileges. They are designed to be deployed by IT administrators.
 
 The `managed-mcp.json` file uses the same format as a standard `.mcp.json` file:
 
@@ -988,128 +692,40 @@ Each entry in the allowlist or denylist can restrict servers in three ways:
 }
 ```
 
-#### How command-based restrictions work
+#### How restrictions work
 
-**Exact matching:**
-
+**Command-based restrictions:**
 - Command arrays must match **exactly** - both the command and all arguments in the correct order
-- Example: `["npx", "-y", "server"]` will NOT match `["npx", "server"]` or `["npx", "-y", "server", "--flag"]`
-
-**Stdio server behavior:**
-
 - When the allowlist contains **any** `serverCommand` entries, stdio servers **must** match one of those commands
 - Stdio servers cannot pass by name alone when command restrictions are present
-- This ensures administrators can enforce which commands are allowed to run
 
-**Non-stdio server behavior:**
-
-- Remote servers (HTTP, SSE, WebSocket) use URL-based matching when `serverUrl` entries exist in the allowlist
-- If no URL entries exist, remote servers fall back to name-based matching
-- Command restrictions do not apply to remote servers
-
-#### How URL-based restrictions work
-
-URL patterns support wildcards using `*` to match any sequence of characters. This is useful for allowing entire domains or subdomains.
+**URL-based restrictions:**
+- URL patterns support wildcards using `*` to match any sequence of characters
+- When the allowlist contains **any** `serverUrl` entries, remote servers **must** match one of those URL patterns
+- Remote servers cannot pass by name alone when URL restrictions are present
 
 **Wildcard examples:**
-
 - `https://mcp.company.com/*` - Allow all paths on a specific domain
 - `https://*.example.com/*` - Allow any subdomain of example.com
 - `http://localhost:*/*` - Allow any port on localhost
 
-**Remote server behavior:**
-
-- When the allowlist contains **any** `serverUrl` entries, remote servers **must** match one of those URL patterns
-- Remote servers cannot pass by name alone when URL restrictions are present
-- This ensures administrators can enforce which remote endpoints are allowed
-
-**Example: URL-only allowlist**
-
-```json
-{
-  "allowedMcpServers": [
-    { "serverUrl": "https://mcp.company.com/*" },
-    { "serverUrl": "https://*.internal.corp/*" }
-  ]
-}
-```
-
-**Result:**
-
-- HTTP server at `https://mcp.company.com/api`: ✅ Allowed (matches URL pattern)
-- HTTP server at `https://api.internal.corp/mcp`: ✅ Allowed (matches wildcard subdomain)
-- HTTP server at `https://external.com/mcp`: ❌ Blocked (doesn't match any URL pattern)
-- Stdio server with any command: ❌ Blocked (no name or command entries to match)
-
-**Example: Command-only allowlist**
-
-```json
-{
-  "allowedMcpServers": [
-    { "serverCommand": ["npx", "-y", "approved-package"] }
-  ]
-}
-```
-
-**Result:**
-
-- Stdio server with `["npx", "-y", "approved-package"]`: ✅ Allowed (matches command)
-- Stdio server with `["node", "server.js"]`: ❌ Blocked (doesn't match command)
-- HTTP server named "my-api": ❌ Blocked (no name entries to match)
-
-**Example: Mixed name and command allowlist**
-
-```json
-{
-  "allowedMcpServers": [
-    { "serverName": "github" },
-    { "serverCommand": ["npx", "-y", "approved-package"] }
-  ]
-}
-```
-
-**Result:**
-
-- Stdio server named "local-tool" with `["npx", "-y", "approved-package"]`: ✅ Allowed (matches command)
-- Stdio server named "local-tool" with `["node", "server.js"]`: ❌ Blocked (command entries exist but doesn't match)
-- Stdio server named "github" with `["node", "server.js"]`: ❌ Blocked (stdio servers must match commands when command entries exist)
-- HTTP server named "github": ✅ Allowed (matches name)
-- HTTP server named "other-api": ❌ Blocked (name doesn't match)
-
-**Example: Name-only allowlist**
-
-```json
-{
-  "allowedMcpServers": [
-    { "serverName": "github" },
-    { "serverName": "internal-tool" }
-  ]
-}
-```
-
-**Result:**
-
-- Stdio server named "github" with any command: ✅ Allowed (no command restrictions)
-- Stdio server named "internal-tool" with any command: ✅ Allowed (no command restrictions)
-- HTTP server named "github": ✅ Allowed (matches name)
-- Any server named "other": ❌ Blocked (name doesn't match)
-
-#### Allowlist behavior (allowedMcpServers)
+#### Allowlist behavior
 
 - `undefined` (default): No restrictions - users can configure any MCP server
 - Empty array `[]`: Complete lockdown - users cannot configure any MCP servers
 - List of entries: Users can only configure servers that match by name, command, or URL pattern
 
-#### Denylist behavior (deniedMcpServers)
+#### Denylist behavior
 
 - `undefined` (default): No servers are blocked
 - Empty array `[]`: No servers are blocked
 - List of entries: Specified servers are explicitly blocked across all scopes
 
-#### Important notes
-
+**Important notes:**
 - **Option 1 and Option 2 can be combined**: If `managed-mcp.json` exists, it has exclusive control and users cannot add servers. Allowlists/denylists still apply to the managed servers themselves.
 - **Denylist takes absolute precedence**: If a server matches a denylist entry (by name, command, or URL), it will be blocked even if it's on the allowlist
 - Name-based, command-based, and URL-based restrictions work together: a server passes if it matches **either** a name entry, a command entry, or a URL pattern (unless blocked by denylist)
 
-**When using `managed-mcp.json`**: Users cannot add MCP servers through `claude mcp add` or configuration files. The `allowedMcpServers` and `deniedMcpServers` settings still apply to filter which managed servers are actually loaded.
+---
+
+**Source**: https://docs.anthropic.com/en/docs/claude-code/mcp

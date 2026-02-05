@@ -13,3 +13,6 @@ __pycache__/
 .DS_Store
 
 .env
+
+# Reference submodules
+reference/orchestrator-agent-with-adws

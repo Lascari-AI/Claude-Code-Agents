@@ -1,0 +1,83 @@
+{
+  "id": "003",
+  "title": "ADW Workflow Deterministic Step Execution Patterns",
+  "objective": "Investigate ADW workflows for deterministic step execution patterns",
+  "search_hints": ["adw_workflows", "adw_plan_build", "STEP_", "current_step", "update_adw_status"],
+  "status": "complete",
+  "started_at": "2026-01-28T12:45:30Z",
+  "examined": [
+    {
+      "file": "reference/orchestrator-agent-with-adws/adws/adw_workflows/adw_plan_build.py",
+      "lines": "84-91, 388-535, 603-750, 757-948",
+      "learned": [
+        "Steps are defined as constants (STEP_PLAN='plan', STEP_BUILD='build') with TOTAL_STEPS=2",
+        "Each step function follows consistent pattern: create agent record, log step start, update ADW status, execute agent, log step end",
+        "Step transitions tracked via update_adw_status(adw_id, status, current_step, completed_steps)",
+        "Failures handled with error_message and error_step fields set on ADW record",
+        "Duration tracked per-step using step_start_time with time.time() and duration_ms calculation",
+        "Agent status lifecycle: idle -> executing -> complete/blocked",
+        "Workflow main function orchestrates sequential steps with early exit on failure",
+        "Final status states: 'completed', 'failed', 'cancelled' (with completed_at timestamp)"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/adws/adw_modules/adw_database.py",
+      "lines": "117-178, 185-326",
+      "learned": [
+        "update_adw_status builds dynamic SQL with parameterized updates for: status, current_step, completed_steps, error_message, error_step",
+        "Status-specific auto-updates: 'in_progress' sets started_at via COALESCE; terminal states set completed_at and calculate duration_seconds",
+        "Agent records track: status, session_id, input_tokens, output_tokens, total_cost",
+        "Agent creation broadcasts via WebSocket for real-time UI updates",
+        "Agent status changes trigger broadcast_agent_status_change(agent_id, old_status, new_status)",
+        "Database operations use asyncpg with connection pooling (min 1, max 5 connections)"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/adws/adw_modules/adw_logging.py",
+      "lines": "94-194, 259-365",
+      "learned": [
+        "log_step_start writes to agent_logs with event_category='adw_step', event_type='StepStart'",
+        "log_step_end writes with event_type='StepEnd', includes status and optional duration_ms in payload",
+        "Both functions broadcast via WebSocket using ws_broadcast_adw_step_change for real-time swimlane visualization",
+        "update_adw_status wrapper updates DB and broadcasts status change via ws_broadcast_adw_status",
+        "log_system_event writes to system_logs table for workflow-level observability",
+        "All logging functions are resilient - WebSocket failures silently ignored, workflow continues"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/apps/orchestrator_db/models.py",
+      "lines": "338-390",
+      "learned": [
+        "AiDeveloperWorkflow Pydantic model defines: status (Literal['pending', 'in_progress', 'completed', 'failed', 'cancelled'])",
+        "Step tracking fields: current_step (str), total_steps (int), completed_steps (int)",
+        "Error tracking fields: error_message, error_step, error_count",
+        "Timing fields: started_at, completed_at, duration_seconds",
+        "JSONB fields: input_data, output_data, metadata for flexible workflow configuration"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/adws/adw_workflows/adw_plan_build_review.py",
+      "lines": "85-93, 754-931, 938-1175",
+      "learned": [
+        "Three-step workflow adds STEP_REVIEW with TOTAL_STEPS=3",
+        "Review step extracts verdict (PASS/FAIL) from agent result by parsing result text",
+        "Completed_steps incremented at each step transition (0->1->2->3)",
+        "Each step updates ADW status to 'in_progress' with new current_step and completed_steps values",
+        "Workflow completion logs all agent IDs and session IDs in metadata for traceability"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/adws/adw_workflows/adw_plan_build_review_fix.py",
+      "lines": "85-94, 1317-1435",
+      "learned": [
+        "Four-step workflow adds STEP_FIX with TOTAL_STEPS=4 for conditional remediation",
+        "Fix step conditionally executed only if review verdict is 'FAIL'",
+        "Skipped steps still logged via log_system_event for audit trail",
+        "Workflow maintains completed_steps counter even when steps are conditionally skipped",
+        "Final metadata includes fix_executed boolean to track whether remediation was applied"
+      ]
+    }
+  ],
+  "summary": "ADW workflows implement deterministic step execution through: (1) Step constants (STEP_PLAN, STEP_BUILD, etc.) with TOTAL_STEPS counter, (2) Atomic state updates via update_adw_status tracking current_step, completed_steps, and error_step/error_message, (3) Consistent step function pattern (create agent -> log_step_start -> update status to in_progress -> execute -> log_step_end), (4) Sequential orchestration with early exit on failure, and (5) WebSocket broadcasting for real-time observability. These patterns directly apply to session phase transitions: phases map to steps, phase.json maps to the ADW status fields, and the log_step_start/log_step_end pattern provides the same observability for phase boundaries.",
+  "completed_at": "2026-01-28T12:52:00Z"
+}

@@ -8,22 +8,27 @@ Read all session files to understand the spec/plan/build workflow system.
 
 ## Read
 
+# Core skill definition
 .claude/skills/session/SKILL.md
+
+# Phase overviews
+.claude/skills/session/spec/OVERVIEW.md
+.claude/skills/session/plan/OVERVIEW.md
+.claude/skills/session/build/OVERVIEW.md
+
+# Commands
 .claude/commands/session/spec.md
 .claude/commands/session/plan.md
+.claude/commands/session/build.md
+.claude/commands/session/quick-plan.md
+.claude/commands/session/build-interactive.md
+.claude/commands/session/build-background.md
+
+# Templates
 .claude/skills/session/spec/templates/state.json
 .claude/skills/session/spec/templates/spec.md
-.claude/skills/session/plan/templates/plan.md
+.claude/skills/session/plan/templates/plan.json
 
 ## Report
 
-Summarize your understanding of the session system including:
-
-1. **Purpose**: The spec → plan → build workflow philosophy
-2. **Spec Mode**: How requirements are gathered through question-driven exploration
-3. **Plan Mode**: How implementation plans are created from finalized specs
-4. **Session Management**: How sessions are created, tracked, and resumed via $1/$2 arguments
-5. **Directory Structure**: How SESSIONS_DIR and TEMPLATES_DIR organize session data
-6. **State Tracking**: How state.json manages phase transitions and progress
-7. **Templates**: The structure of spec.md, plan.md, and state.json templates
-8. **Finalization Flow**: How specs and plans are finalized and handed off
+Summarize your understanding of the session system.

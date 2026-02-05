@@ -1,0 +1,184 @@
+{
+  "id": "005",
+  "title": "Integration Patterns and Trade-offs",
+  "objective": "Identify integration patterns and trade-offs for applying Orchestrator concepts to Claude Code config",
+  "search_hints": ["reference/orchestrator-agent-with-adws", ".claude/skills/session", "state", "logging", "events"],
+  "status": "complete",
+  "started_at": "2026-01-28T12:45:30Z",
+  "examined": [
+    {
+      "file": "reference/orchestrator-agent-with-adws/understanding.md",
+      "lines": "1-262",
+      "learned": [
+        "Orchestrator uses Claude Agent SDK directly (Python library, not CLI subprocess)",
+        "PostgreSQL stores all state: sessions, agents, logs, chat, workflows",
+        "Hook system captures PreToolUse, PostToolUse, Stop events and logs to DB",
+        "Real-time events via WebSocket broadcast to frontend",
+        "Sub-agents managed via MCP tools registered with SDK",
+        "Sessions tracked via session_id in database, resumable",
+        "ADWs are the ONLY subprocess spawning - for detached background workflows"
+      ]
+    },
+    {
+      "file": ".claude/skills/session/SKILL.md",
+      "lines": "1-263",
+      "learned": [
+        "Session skill uses file-based state via state.json",
+        "Lifecycle: SPEC -> PLAN -> BUILD -> DOCS -> COMPLETE",
+        "Checkpoints structured as verifiable intermediate states (waypoints)",
+        "Plan stored in both plan.json (source of truth) and plan.md (human-readable)",
+        "Research artifacts organized in session directories with subagents/",
+        "Debug sub-phase is ephemeral - changes not committed",
+        "Session ID format: {YYYY-MM-DD}_{topic-slug}_{6-char-random-id}"
+      ]
+    },
+    {
+      "file": "agents/sessions/research_orchestrator-determinism_20260128_124500/research/orchestrator-cc-integration_20260128/research-plan.md",
+      "lines": "1-56",
+      "learned": [
+        "Research goal: identify portable patterns for determinism without full infrastructure",
+        "Need to map Orchestrator DB models to Claude Code session state concepts",
+        "Key success criteria: assess trade-offs of file-based vs database-backed state"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/apps/orchestrator_db/models.py",
+      "lines": "1-405",
+      "learned": [
+        "Pydantic models map directly to PostgreSQL tables with automatic UUID/JSON handling",
+        "OrchestratorAgent tracks: session_id, status, working_dir, tokens, cost, metadata",
+        "Agent model includes: orchestrator_agent_id, name, model, adw_id, adw_step for workflow tracking",
+        "AgentLog model: agent_id, session_id, task_slug, adw_id, event_category (hook/response/adw_step), event_type, content, payload, summary",
+        "OrchestratorChat is append-only log with sender_type/receiver_type (user/orchestrator/agent)",
+        "AiDeveloperWorkflow tracks: status, current_step, total_steps, completed_steps, input_data, output_data, error tracking"
+      ]
+    },
+    {
+      "file": ".claude/hooks/logging/universal_hook_logger.py",
+      "lines": "1-69",
+      "learned": [
+        "Hook logger writes to JSONL files (append-only log pattern)",
+        "Log structure: timestamp + full payload from stdin",
+        "Files organized by session_id and hook_name in agents/logging/hook_logs/",
+        "Non-blocking errors - failures don't stop hook execution",
+        "Already implements file-based event sourcing pattern"
+      ]
+    },
+    {
+      "file": "agents/sessions/2026-01-12_agent-session-overhaul_k9m2x7/state.json",
+      "lines": "1-180",
+      "learned": [
+        "state.json tracks: session_id, topic, granularity, phases with timestamps",
+        "Commits linked to checkpoints with sha and message",
+        "plan_state tracks: checkpoints_total, checkpoints_completed array, current_task",
+        "key_decisions array captures decision/rationale/date for traceability",
+        "research_artifacts and doc_updates arrays for linking outputs"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/adws/adw_workflows/adw_plan_build.py",
+      "lines": "1-977",
+      "learned": [
+        "ADW workflow implements deterministic step execution: PLAN -> extract_plan_path -> BUILD",
+        "Each step: create_agent -> log_step_start -> execute -> update_agent -> log_step_end",
+        "Hook factory creates PreToolUse/PostToolUse/Stop logging hooks per step",
+        "Message handlers log TextBlock/ThinkingBlock/ToolUseBlock with async AI summarization",
+        "Workflow tracks duration, status transitions, error_step for debugging",
+        "Status state machine: pending -> in_progress -> completed/failed with error tracking"
+      ]
+    }
+  ],
+  "integration_patterns": {
+    "portable_without_database": [
+      {
+        "pattern": "Append-only JSONL logging",
+        "orchestrator_source": "AgentLog model logged to PostgreSQL",
+        "cc_implementation": "universal_hook_logger.py already does this - extend to structured events",
+        "benefit": "Deterministic event replay, debugging, observability"
+      },
+      {
+        "pattern": "Pydantic schema validation",
+        "orchestrator_source": "models.py with field_validators for UUID/JSON/Decimal",
+        "cc_implementation": "Create state_models.py for state.json, plan.json validation",
+        "benefit": "Type safety, automatic validation, clear contracts"
+      },
+      {
+        "pattern": "State machine status tracking",
+        "orchestrator_source": "status field with literals: idle/executing/waiting/blocked/complete",
+        "cc_implementation": "Enhance state.json phases with explicit status transitions",
+        "benefit": "Clear lifecycle, resumability, error recovery"
+      },
+      {
+        "pattern": "Step logging with start/end",
+        "orchestrator_source": "log_step_start/log_step_end with duration_ms tracking",
+        "cc_implementation": "Add checkpoint_started_at/checkpoint_completed_at to plan_state",
+        "benefit": "Duration tracking, performance profiling, progress visibility"
+      },
+      {
+        "pattern": "Structured event categories",
+        "orchestrator_source": "event_category: hook/response/adw_step",
+        "cc_implementation": "Categorize JSONL events: tool/response/state_change/checkpoint",
+        "benefit": "Filterable logs, swimlane visualization potential"
+      }
+    ],
+    "requires_infrastructure": [
+      {
+        "pattern": "Real-time WebSocket streaming",
+        "orchestrator_source": "WebSocketManager broadcasts to frontend",
+        "why_needed": "Requires persistent server process and client connections",
+        "alternative": "File watchers with polling, or VS Code extension integration"
+      },
+      {
+        "pattern": "ACID transactions for multi-agent coordination",
+        "orchestrator_source": "PostgreSQL transactions for consistent state",
+        "why_needed": "File-based writes are not atomic across multiple files",
+        "alternative": "Single state.json with atomic write (write to temp, rename)"
+      },
+      {
+        "pattern": "Session resumption by ID query",
+        "orchestrator_source": "SELECT * FROM orchestrator_agents WHERE session_id = ?",
+        "why_needed": "Database enables indexed queries across all sessions",
+        "alternative": "File-based: glob for state.json files, read each (slower but works)"
+      }
+    ],
+    "hybrid_approaches": [
+      {
+        "pattern": "SQLite as local database",
+        "description": "Single-file database with SQL queries, ACID transactions, no server needed",
+        "tradeoffs": "More complexity than JSON, but less than PostgreSQL. Good middle ground.",
+        "recommendation": "Consider for multi-session querying and complex state relationships"
+      },
+      {
+        "pattern": "Append-only log files for determinism",
+        "description": "JSONL files are already append-only. Add sequence numbers for ordering.",
+        "tradeoffs": "Simpler than DB, but no queries. Good for single-session replay.",
+        "recommendation": "Enhance existing universal_hook_logger with sequence numbers and event types"
+      },
+      {
+        "pattern": "Atomic file writes for state.json",
+        "description": "Write to temp file, then rename (atomic on POSIX). Prevents corruption.",
+        "tradeoffs": "Minimal complexity, significant reliability improvement.",
+        "recommendation": "Implement in state update helpers immediately"
+      }
+    ]
+  },
+  "tradeoff_analysis": {
+    "complexity_vs_determinism": {
+      "observation": "Orchestrator achieves high determinism via PostgreSQL + Pydantic + hooks",
+      "cc_current": "state.json is already deterministic for single session; hooks log to JSONL",
+      "recommendation": "Focus on Pydantic validation and structured JSONL - minimal complexity, significant gain"
+    },
+    "file_portability_vs_database_power": {
+      "observation": "Files are portable (git, rsync, human-readable). DB requires connection.",
+      "cc_current": "Session directories are completely portable and version-controllable",
+      "recommendation": "Keep files as primary. Use SQLite only if cross-session queries become critical."
+    },
+    "agent_simplicity_vs_observability": {
+      "observation": "Orchestrator logs everything (verbose). CC hooks log raw payloads.",
+      "cc_current": "universal_hook_logger captures payload but no categorization or summarization",
+      "recommendation": "Add event_type categorization to JSONL. Defer AI summarization until needed."
+    }
+  },
+  "summary": "Three tiers of integration are practical: (1) Immediate wins - atomic file writes for state.json, Pydantic models for schema validation, event_type categorization in JSONL logs; (2) Medium effort - checkpoint timing tracking in plan_state, status state machine with explicit transitions, structured event categories for filtering; (3) Future consideration - SQLite for cross-session queries if needed. The existing JSONL hook logging already implements event sourcing; enhancing it with sequence numbers and event types would enable deterministic replay. Database infrastructure (WebSocket streaming, multi-agent ACID) is not needed for single-agent CLI workflows.",
+  "completed_at": "2026-01-28T12:52:00Z"
+}

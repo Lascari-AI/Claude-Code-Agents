@@ -1,0 +1,67 @@
+{
+  "id": "001",
+  "title": "Orchestrator DB Schema and State Models Analysis",
+  "objective": "Analyze Orchestrator DB schema and state models for deterministic patterns",
+  "search_hints": ["models.py", "orch_database_models.py", "schema", "status", "state"],
+  "status": "complete",
+  "started_at": "2026-01-28T12:45:30Z",
+  "examined": [
+    {
+      "file": "reference/orchestrator-agent-with-adws/apps/orchestrator_db/models.py",
+      "lines": "1-405",
+      "learned": [
+        "7 Pydantic models map to PostgreSQL tables: OrchestratorAgent, Agent, Prompt, AgentLog, SystemLog, OrchestratorChat, AiDeveloperWorkflow",
+        "Status fields use Literal types for state machine semantics: 'idle'|'executing'|'waiting'|'blocked'|'complete' for agents",
+        "AiDeveloperWorkflow uses different states: 'pending'|'in_progress'|'completed'|'failed'|'cancelled'",
+        "Cost/token tracking: input_tokens, output_tokens, total_cost fields on OrchestratorAgent and Agent models",
+        "Field validators handle UUID conversion from asyncpg, Decimal-to-float conversion, and JSON parsing for metadata",
+        "OrchestratorChat is append-only with sender_type/receiver_type Literals for 3-way communication (user|orchestrator|agent)",
+        "AiDeveloperWorkflow tracks step progress via current_step, total_steps, completed_steps, plus error tracking with error_message, error_step, error_count"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/understanding.md",
+      "lines": "1-262",
+      "learned": [
+        "PostgreSQL (NeonDB) is central persistence layer - not filesystem-based",
+        "All execution happens via Claude Agent SDK (direct Python library), not CLI subprocess",
+        "Hook system captures PreToolUse, PostToolUse, Stop events and logs to agent_logs table",
+        "Session management uses session_id stored in orchestrator_agents table for resumption",
+        "Only ADW workflows use subprocess spawning - all other execution is direct SDK calls",
+        "WebSocket broadcasts events in real-time from backend to frontend"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/apps/orchestrator_3_stream/app_docs/database-expert-swimlane-schema.md",
+      "lines": "1-1338",
+      "learned": [
+        "6 existing tables in production: orchestrator_agents, agents, prompts, agent_logs, system_logs, orchestrator_chat",
+        "Tables use UUID primary keys with gen_random_uuid() for deterministic uniqueness",
+        "Foreign key constraints with ON DELETE CASCADE ensure referential integrity",
+        "Status columns use CHECK constraints to enforce valid state values (Literal types in Pydantic match)",
+        "All tables have created_at/updated_at TIMESTAMPTZ columns with NOW() defaults for audit trail",
+        "JSONB columns (metadata, payload, config) provide flexible extensibility while maintaining queryability",
+        "Session uniqueness enforced via UNIQUE constraint on session_id column",
+        "Performance indexes on status, timestamp DESC, and composite indexes for common query patterns",
+        "ADW swimlane design adds 4 more tables: adw_workflows, adw_stages, adw_work_items, adw_transitions",
+        "Transition types provide state machine semantics: start, advance, skip, reject, reassign, pause, resume, complete, fail, cancel"
+      ]
+    },
+    {
+      "file": "reference/orchestrator-agent-with-adws/apps/orchestrator_3_stream/backend/modules/database.py",
+      "lines": "1-899",
+      "learned": [
+        "asyncpg connection pool pattern with init_pool/get_pool/close_pool for connection management",
+        "get_or_create_orchestrator implements singleton pattern with WHERE archived=false check",
+        "Incremental cost updates use SQL: input_tokens = input_tokens + $1 for atomic updates",
+        "update_orchestrator_session only updates when session_id IS NULL to prevent overwrites",
+        "JSONB merge operator (||) used for partial metadata updates without full replacement",
+        "Chat history queries use DESC ordering with LIMIT then reverse for chronological pagination",
+        "Agent names are unique per orchestrator via composite constraint (orchestrator_agent_id, name)",
+        "All database operations use context manager pattern: async with get_connection() as conn"
+      ]
+    }
+  ],
+  "summary": "The Orchestrator uses PostgreSQL (NeonDB) with 6 core tables and Pydantic models providing strict schema enforcement. Determinism is achieved through: (1) UUID primary keys with gen_random_uuid(), (2) Literal type status fields enforced by CHECK constraints for state machine semantics, (3) UNIQUE constraints on session_id and agent names, (4) Foreign keys with ON DELETE CASCADE for referential integrity, (5) TIMESTAMPTZ columns with NOW() defaults for audit trails, (6) Atomic incremental updates for cost/token tracking, and (7) JSONB with merge operator for flexible but type-safe metadata. The append-only OrchestratorChat table and agent_logs provide complete audit trails of all agent interactions.",
+  "completed_at": "2026-01-28T12:52:00Z"
+}
