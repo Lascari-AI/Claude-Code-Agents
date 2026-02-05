@@ -37,38 +37,149 @@ The implementation layer can be anything.
 
 What matters is that there's a clear idea behind it — the problem it solves, what it's supposed to do, why it exists — and then there's the implementation that makes it real.
 
-### 2.2 Two Layers
+### 2.2 Three Layers
 
-Every system has two layers:
+Every system has three layers, each with a different rate of change:
 
-#### 2.2.1 The Intent Layer
+#### 2.2.1 The Intent Layer (Changes Rarely)
 
-The core idea. 
+The inspiration behind the system.
 
-The problem it's trying to solve. 
+What problem we're trying to solve. What we're trying to accomplish and why.
 
-What it's supposed to do and why. 
-- This lives in the Foundation — the thinking that predates any code.
+This lives in the Foundation — the thinking that predates any implementation. Once established, the intent rarely changes. It's the anchor that everything else references.
 
-#### 2.2.2 The Implementation Layer
+#### 2.2.2 The Documentation Layer (Changes Deliberately)
 
-How it's actually built. 
+How we're solving the problem.
 
-The code, the configuration, the integrations. 
-- This is what sessions operate on — structured changes that move the implementation forward while keeping a complete record of how it got there.
+The architecture, the design decisions, the things we've learned along the way. Architecture Decision Records, diagrams, explanations of how the codebase is structured and why.
 
-### 2.3 Tying It All Together
+This layer is the **source of truth**. It changes, but deliberately — when the approach evolves, when we learn something new, when architecture shifts. The key property: **you should be able to regenerate the code from this documentation and get essentially the same system.**
 
-This system is what ties those layers together across every project you manage. 
+#### 2.2.3 The Implementation Layer (Changes Rapidly)
 
-Each system — large or small, complex or simple — gets the same treatment: 
-- A clear Foundation that captures the idea
-- An implementation that's managed through sessions
-- A paper trail that shows the complete lifecycle
+The actual code.
+
+This is fluid. When something needs to change, the code changes. It's the most volatile layer — updates happen frequently, implementations get refined, bugs get fixed.
+
+The code is a **projection** of the documentation layer, not the other way around. The docs describe what the system should be; the code is the current realization of that description.
+
+### 2.3 The Rate of Change
+
+```
+INTENT LAYER         → Changes rarely      → The anchor
+DOCUMENTATION LAYER  → Changes deliberately → The source of truth
+IMPLEMENTATION LAYER → Changes rapidly     → The current realization
+```
+
+This layering means that the most stable artifact is the intent, the most reliable description is the documentation, and the most fluid artifact is the code itself.
+
+### 2.4 Documentation as Source of Truth
+
+Traditional thinking: code is truth, documentation describes it (and inevitably drifts out of sync).
+
+This system inverts that: **documentation is truth, code implements it.**
+
+The documentation layer captures:
+- What the system does and why it's structured that way
+- Architectural decisions and the reasoning behind them
+- Learnings accumulated through development
+- The mental model for how everything fits together
+
+If the code disappeared tomorrow, you could regenerate it from the documentation and get essentially the same system. 
+
+The actual implementation is fluid — it can be rewritten, refactored, replaced — but the understanding captured in the documentation persists.
+
+### 2.5 Tying It All Together
+
+This system is what ties those layers together across every project you manage.
+
+Each system — large or small, complex or simple — gets the same treatment:
+- A clear Foundation that captures the intent (rarely changes)
+- Documentation that captures the approach (source of truth, changes deliberately)
+- Implementation that realizes the documentation (changes rapidly)
+- A paper trail that shows how all three evolved
 
 ---
 
-## 3. What "Managed" Means
+## 3. The End State Vision
+
+### 3.1 The SaaS Generalization Problem
+
+Traditional SaaS products are built for volume. To run a company, you need to serve a large audience. That means the product has to be generalizable — it can't be hyper-specific to one person's life circumstances or exact needs.
+
+You get software that's good enough for most people, but optimized for no one.
+
+### 3.2 AI Changes the Economics
+
+AI changes this fundamentally.
+
+Now you can have systems that are hyper-specific to YOUR life, YOUR circumstances, YOUR exact needs. Not a general-purpose tool that sort of works — a purpose-built system that does exactly what you need.
+
+"I want to optimize this specific area of my life." So you build a system for it. And then another for something else. And another. Each one tailored precisely to what you're trying to accomplish.
+
+### 3.3 The Management Problem at Scale
+
+But now you have a different problem.
+
+You have many systems. Each one was built at a different time. Each one has its own context, its own decisions, its own state. When you need to update one of them:
+
+- When was the last time we worked on this?
+- What's the current state?
+- What decisions were made and why?
+- What do I need to understand before making changes?
+
+Without a management layer, you're back to keeping everything in your head — which doesn't scale.
+
+### 3.4 The Orchestrator Pattern
+
+The end state is an orchestrator that sits above all your managed systems.
+
+```
+                    ┌─────────────────────┐
+                    │    ORCHESTRATOR     │
+                    │  "I want to do X"   │
+                    └──────────┬──────────┘
+                               │
+           ┌───────────────────┼───────────────────┐
+           ▼                   ▼                   ▼
+    ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+    │  System A   │     │  System B   │     │  System C   │
+    │  (managed)  │     │  (managed)  │     │  (managed)  │
+    └─────────────┘     └─────────────┘     └─────────────┘
+```
+
+You talk to the orchestrator: "Hey, I want to do X."
+
+It figures out which system that applies to, loads the context (Foundation, docs, session history), creates a session, and delegates the work. You can go into that session, participate in it, or let it run autonomously.
+
+### 3.5 Living Systems with Full History
+
+Each system's main branch is alive and stable — the running implementation.
+
+When changes happen, they happen through sessions. The session creates a branch, does the work, merges back. If something goes wrong:
+
+- Roll back to a previous state
+- Look at the session that made the change
+- Understand what was done and why
+- Make an informed decision about how to fix it
+
+The full paper trail means you're never guessing. Every system, every change, every decision — traceable.
+
+### 3.6 The Complete Picture
+
+Many hyper-personalized systems, each optimized for a specific purpose in your life or business.
+
+All managed through the same structured process — intent, documentation, implementation.
+
+A top-level orchestrator that knows about all of them and can delegate work to the right place.
+
+Full observability into every system's lifecycle — what it is, why it exists, how it evolved, what changed and when.
+
+---
+
+## 4. What "Managed" Means
 
 ### 3.1 Documented Context
 
@@ -108,9 +219,9 @@ This means the documentation is always aligned with the actual state of the code
 
 ---
 
-## 4. Full Observability
+## 5. Full Observability
 
-### 4.1 The Chain of Custody
+### 5.1 The Chain of Custody
 
 When something isn't working right — "Wait, why is it doing this now?" — you can go in and trace it. 
 
@@ -120,7 +231,7 @@ Every session has an intent (the spec), an approach (the plan), an execution (th
 
 The full lifecycle of the application is observable.
 
-### 4.2 From Manual to Autonomous
+### 5.2 From Manual to Autonomous
 
 Today, sessions are human-driven — you start a session, work through it, close it. 
 
@@ -130,7 +241,7 @@ An API layer triggers a session, the system specs the change, plans it, builds i
 
 The same structured process, just without a human initiating every step.
 
-### 4.3 Why Observability Matters Even More at Scale
+### 5.3 Why Observability Matters Even More at Scale
 
 The more autonomous these systems become, the more critical the paper trail is. 
 
@@ -142,9 +253,9 @@ The chain of custody isn't just nice to have; it's what makes autonomous operati
 
 ---
 
-## 5. Why This Layer Matters
+## 6. Why This Layer Matters
 
-### 5.1 The Current State of AI-Assisted Development
+### 6.1 The Current State of AI-Assisted Development
 
 AI coding tools can write code, debug, and refactor. 
 
@@ -154,7 +265,7 @@ There's no structure around how changes are made, no record of why things were d
 
 That works for quick scripts. It doesn't work for systems that need to be maintained, understood, and changed over time.
 
-### 5.2 The Gap
+### 6.2 The Gap
 
 The models are capable. 
 
@@ -167,7 +278,7 @@ This system provides that layer:
 - Documentation that updates as a natural part of the workflow
 - A complete audit trail grouped by codebase
 
-### 5.3 What Won't Improve On Its Own
+### 6.3 What Won't Improve On Its Own
 
 Models will keep getting faster and smarter. 
 
@@ -177,9 +288,9 @@ That's what this system provides, regardless of which model is doing the work or
 
 ---
 
-## 6. Codebase as the Organizing Unit
+## 7. Codebase as the Organizing Unit
 
-### 6.1 Everything Groups to the Codebase
+### 7.1 Everything Groups to the Codebase
 
 Sessions, documentation, history — all of it is organized around the codebase. 
 
@@ -189,7 +300,7 @@ When you need to make a change, you start a new session on that codebase.
 
 The codebase is the anchor that everything attaches to.
 
-### 6.2 Scaling Across Systems
+### 7.2 Scaling Across Systems
 
 This naturally scales to managing many systems. Each one is its own managed entity — large or small, complex or simple:
 
@@ -207,53 +318,53 @@ They're independent managed entities, all using the same structured process.
 
 ---
 
-## 7. The Documentation Compound Effect
+## 8. The Documentation Compound Effect
 
-### 7.1 How Knowledge Accumulates
+### 8.1 How Knowledge Accumulates
 
 Documentation in this system compounds over time:
 
-#### 7.1.1 Onboarding
+#### 8.1.1 Onboarding
 
 Creates the baseline — Foundation captures the idea and intent, codebase docs capture structure.
 
-#### 7.1.2 Each Session
+#### 8.1.2 Each Session
 
 Adds to the record — spec captures new intent, docs update captures what changed.
 
-#### 7.1.3 Session History
+#### 8.1.3 Session History
 
 Becomes the audit trail — why was this built? What was the approach? What was decided?
 
-### 7.2 The Opposite of Documentation Rot
+### 8.2 The Opposite of Documentation Rot
 
 The documentation stays aligned with the codebase because it's updated as part of every change — not as a separate chore. The more changes flow through the system, the richer the documentation becomes.
 
 ---
 
-## 8. What This Is NOT
+## 9. What This Is NOT
 
-### 8.1 Not a Replacement for Engineering Skill
+### 9.1 Not a Replacement for Engineering Skill
 
 This assumes you're an experienced developer who knows good practices. The system provides structure and traceability, not engineering knowledge.
 
-### 8.2 Not Vibe Coding with Extra Steps
+### 9.2 Not Vibe Coding with Extra Steps
 
 The structure exists because maintained systems need structure. Ad-hoc changes without traceability aren't what this system is for.
 
-### 8.3 Not Just Documentation
+### 9.3 Not Just Documentation
 
 The docs are the context layer. The value is the entire lifecycle — spec, plan, build, docs — working together as one managed process.
 
-### 8.4 Not Locked to One Implementation Platform
+### 9.4 Not Locked to One Implementation Platform
 
 The principles (structured sessions, persistent documentation, chain of custody) are platform-agnostic. Currently implemented on Claude Code with traditional codebases, but the ideas apply to any system that needs managed change — whether that's code, automation platforms, or something that doesn't exist yet.
 
 ---
 
-## 9. The Flow
+## 10. The Flow
 
-### 9.1 Onboard a System
+### 10.1 Onboard a System
 
 ```
 → Define the idea (Foundation — why it exists, what it solves)
@@ -261,7 +372,7 @@ The principles (structured sessions, persistent documentation, chain of custody)
 → System is now a managed entity
 ```
 
-### 9.2 Make Changes (Sessions)
+### 10.2 Make Changes (Sessions)
 
 ```
 → Start a session on the system
@@ -272,7 +383,7 @@ The principles (structured sessions, persistent documentation, chain of custody)
 → Session archived — full paper trail
 ```
 
-### 9.3 Full Observability
+### 10.3 Full Observability
 
 ```
 → Every session grouped to its system
